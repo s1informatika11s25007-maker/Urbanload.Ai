@@ -14,6 +14,13 @@ import {
   Play,
   Pause,
   RefreshCw,
+  RotateCcw,
+  RotateCw,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUp,
+  ArrowDown,
+  Eye,
 } from 'lucide-react';
 
 // ESRI High-Resolution Satellite Map Style Definition
@@ -83,7 +90,6 @@ export function LiveMapHero() {
   const [is3D, setIs3D] = useState(true);
   const [autoRotate, setAutoRotate] = useState(false);
   const [showZones, setShowZones] = useState(true);
-  const [show3DBuildings, setShow3DBuildings] = useState(true);
   const [showTrucks, setShowTrucks] = useState(true);
 
   // Real Database States
@@ -98,7 +104,6 @@ export function LiveMapHero() {
     const supabase = createClient();
 
     try {
-      // 1. Fetch Real Zones
       const { data: zonesData } = await supabase
         .from('zones')
         .select('*')
@@ -108,7 +113,6 @@ export function LiveMapHero() {
         setRealZones(zonesData);
       }
 
-      // 2. Fetch Real Active Bookings & Trucks
       const { data: bookingsData } = await supabase
         .from('bookings')
         .select('*, profiles(full_name), zones(name, boundary_polygon)')
@@ -136,9 +140,13 @@ export function LiveMapHero() {
       pitch: 55,
       bearing: -18,
       antialias: true,
+      dragRotate: true,
+      pitchWithRotate: true,
+      touchPitch: true,
+      touchZoomRotate: true,
     });
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'top-right');
 
     map.on('load', () => {
       loadDatabaseData();
@@ -174,14 +182,12 @@ export function LiveMapHero() {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
 
-    // Build GeoJSON FeatureCollection from Real Database Zones
     const zoneFeatures = realZones.map((z, idx) => {
       let coords = parseBoundaryPolygon(z.boundary_polygon);
       if (!coords && JAKARTA_ZONE_COORDS[z.id]) {
         coords = JAKARTA_ZONE_COORDS[z.id];
       }
 
-      // Default fallback polygon around center if missing
       if (!coords) {
         const offsetLat = (idx % 3) * 0.03;
         const offsetLng = Math.floor(idx / 3) * 0.03;
@@ -229,7 +235,6 @@ export function LiveMapHero() {
         data: realGeoJSON,
       });
 
-      // 2D Fill Layer
       map.addLayer({
         id: 'zones-fill',
         type: 'fill',
@@ -240,7 +245,6 @@ export function LiveMapHero() {
         },
       });
 
-      // Outline Layer
       map.addLayer({
         id: 'zones-outline',
         type: 'line',
@@ -252,7 +256,6 @@ export function LiveMapHero() {
         },
       });
 
-      // 3D Extrusion Wall for Real Zones
       map.addLayer({
         id: 'zones-extrusion-3d',
         type: 'fill-extrusion',
@@ -265,7 +268,6 @@ export function LiveMapHero() {
         },
       });
 
-      // Interactive Click Event on Zones
       map.on('click', 'zones-fill', (e) => {
         if (e.features && e.features[0]) {
           const props = e.features[0].properties;
@@ -285,7 +287,7 @@ export function LiveMapHero() {
     }
   }, [realZones]);
 
-  // Handle Style Switching (Vektor, Satelit, Dark)
+  // Handle Style Switching
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -364,14 +366,12 @@ export function LiveMapHero() {
     const map = mapRef.current;
     if (!map) return;
 
-    // Remove old markers
     truckMarkersRef.current.forEach((m) => m.remove());
     truckMarkersRef.current = [];
 
     if (!showTrucks) return;
 
     realBookings.forEach((b, idx) => {
-      // Determine coordinates based on associated zone or real GPS
       let coords = [106.8272 + ((idx % 4) * 0.02) - 0.03, -6.1754 + (Math.floor(idx / 4) * 0.02) - 0.02];
 
       if (b.zones && b.zones.boundary_polygon) {
@@ -413,17 +413,66 @@ export function LiveMapHero() {
     });
   }, [realBookings, showTrucks]);
 
-  // Reset Camera to Jakarta Center
-  const handleResetCamera = () => {
+  // MANUAL CAMERA ROTATION & PANNING CONTROLS
+  const handleRotateLeft = () => {
     const map = mapRef.current;
     if (!map) return;
+    map.easeTo({ bearing: map.getBearing() - 35, duration: 400 });
+  };
 
-    map.flyTo({
+  const handleRotateRight = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.easeTo({ bearing: map.getBearing() + 35, duration: 400 });
+  };
+
+  const handlePanLeft = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.panBy([-180, 0], { duration: 400 });
+  };
+
+  const handlePanRight = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.panBy([180, 0], { duration: 400 });
+  };
+
+  const handlePanUp = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.panBy([0, -180], { duration: 400 });
+  };
+
+  const handlePanDown = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.panBy([0, 180], { duration: 400 });
+  };
+
+  const handleTiltUp = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    const newPitch = Math.min(map.getPitch() + 15, 80);
+    map.easeTo({ pitch: newPitch, duration: 400 });
+  };
+
+  const handleTiltDown = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    const newPitch = Math.max(map.getPitch() - 15, 0);
+    map.easeTo({ pitch: newPitch, duration: 400 });
+  };
+
+  const handleResetNorth = () => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.easeTo({
       center: [106.8272, -6.1754],
       zoom: 12.8,
       pitch: is3D ? 55 : 0,
-      bearing: is3D ? -18 : 0,
-      duration: 1000,
+      bearing: 0,
+      duration: 800,
     });
   };
 
@@ -501,16 +550,101 @@ export function LiveMapHero() {
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-teal-400' : ''}`} />
         </button>
+      </div>
 
-        {/* Reset Camera Button */}
-        <button
-          type="button"
-          onClick={handleResetCamera}
-          className="p-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
-          title="Reset Kamera Ke Tengah Jakarta"
-        >
-          <Compass className="h-4 w-4" />
-        </button>
+      {/* MANUAL CAMERA NAVIGATION & ROTATION CONTROL PANEL (Bawah Kanan) */}
+      <div className="absolute bottom-16 right-4 z-20 bg-slate-900/90 p-2.5 rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-2xl flex flex-col items-center gap-2 text-white text-xs">
+        <div className="text-[10px] font-black uppercase text-teal-400 tracking-wider flex items-center gap-1">
+          <Compass className="h-3 w-3" /> Kontrol Manual Kamera
+        </div>
+
+        {/* Rotasi Kiri & Kanan */}
+        <div className="flex items-center gap-1.5 w-full justify-center">
+          <button
+            type="button"
+            onClick={handleRotateLeft}
+            className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
+            title="Putar Kamera Ke Kiri 35°"
+          >
+            <RotateCcw className="h-3.5 w-3.5" /> Putar Kiri
+          </button>
+          <button
+            type="button"
+            onClick={handleResetNorth}
+            className="p-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-amber-400 font-bold transition shadow-md"
+            title="Reset Arah Utara (North)"
+          >
+            <Compass className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleRotateRight}
+            className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
+            title="Putar Kamera Ke Kanan 35°"
+          >
+            Putar Kanan <RotateCw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* D-Pad Pan & Tilt Direction Controls */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handlePanLeft}
+            className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+            title="Geser Peta Ke Kiri"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={handlePanUp}
+              className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+              title="Geser Peta Ke Atas"
+            >
+              <ArrowUp className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={handlePanDown}
+              className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+              title="Geser Peta Ke Bawah"
+            >
+              <ArrowDown className="h-4 w-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={handlePanRight}
+            className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+            title="Geser Peta Ke Kanan"
+          >
+            <ArrowRight className="h-4 w-4" />
+          </button>
+
+          {/* Kemiringan Tilt 3D */}
+          <div className="flex flex-col gap-1 border-l border-slate-700 pl-1.5">
+            <button
+              type="button"
+              onClick={handleTiltUp}
+              className="px-2 py-1 rounded-xl bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[10px] font-bold transition active:scale-95"
+              title="Miringkan Ke Atas (3D Tilt)"
+            >
+              Tilt +
+            </button>
+            <button
+              type="button"
+              onClick={handleTiltDown}
+              className="px-2 py-1 rounded-xl bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[10px] font-bold transition active:scale-95"
+              title="Miringkan Ke Bawah (Flat)"
+            >
+              Tilt -
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Floating Layer Filters Panel Top Left */}

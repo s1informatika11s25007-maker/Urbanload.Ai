@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
+import { createClient } from '../lib/supabase/client.js';
 import {
   Truck,
   MapPin,
@@ -20,13 +21,28 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+  const [zonesCount, setZonesCount] = useState(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from('zones').select('id', { count: 'exact', head: true }).then(({ count }) => {
+      if (count !== null && count !== undefined) {
+        setZonesCount(count);
+      }
+    });
+  }, []);
+
   return (
     <div className="space-y-20 py-10 max-w-6xl mx-auto px-4">
       {/* 1. HERO SECTION */}
       <div className="text-center space-y-6 max-w-3xl mx-auto pt-4">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-semibold text-xs mb-1">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>12 Zona Logistik Perkotaan Aktif Real-Time</span>
+          <span>
+            {zonesCount !== null && zonesCount > 0
+              ? `${zonesCount} Zona Logistik Perkotaan Aktif Real-Time`
+              : 'Zona Logistik Perkotaan Aktif Real-Time'}
+          </span>
         </div>
 
         <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight">
