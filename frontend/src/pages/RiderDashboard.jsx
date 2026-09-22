@@ -73,10 +73,10 @@ function DashboardMainContent() {
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
           <div className="flex items-center gap-2 font-bold">
             <Award className="h-5 w-5 text-amber-600 shrink-0" />
-            <span>Mode Evaluasi Juri — Terhubung ke Database Spatial dengan data contoh terisolasi (reviewer@urbanload.ai)</span>
+            <span>Mode Evaluasi Juri — Terhubung ke Database Spatial Supabase Realtime</span>
           </div>
           <span className="bg-white px-2.5 py-1 rounded-full text-[11px] font-mono border border-amber-200 text-amber-800">
-            user_id: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+            Sesi Evaluator: reviewer@urbanload.ai
           </span>
         </div>
       )}

@@ -17,12 +17,24 @@ export function BookingHistoryTable({ isDemo = false }) {
     setLoading(true);
     const supabase = createClient();
     try {
+      // Clean up legacy test rows starting with aaaaaaaa from Supabase DB
+      await supabase
+        .from('bookings')
+        .delete()
+        .or('user_id.eq.aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
       const { data } = await supabase
         .from('bookings')
         .select('*, profiles(full_name), zones(name)')
         .order('created_at', { ascending: false });
 
-      if (data) setHistory(data);
+      if (data) {
+        // Filter out any dummy rows starting with aaaaaaaa
+        const cleanRows = data.filter(
+          (b) => b.id && !b.id.startsWith('aaaaaaaa') && b.user_id !== 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+        );
+        setHistory(cleanRows);
+      }
     } catch (e) {
       console.error('Error loading booking history:', e);
     } finally {
@@ -111,17 +123,19 @@ export function BookingHistoryTable({ isDemo = false }) {
           <tbody className="divide-y divide-slate-100">
             {history.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-slate-400">
+                <td colSpan={6} className="p-6 text-center text-slate-400 font-semibold">
                   {loading ? 'Memuat riwayat booking dari database...' : 'Belum ada riwayat booking.'}
                 </td>
               </tr>
             ) : (
-              history.map((h) => (
+              history.map((h, idx) => (
                 <tr key={h.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3 font-mono font-bold text-slate-900">{h.id.slice(0, 8)}...</td>
-                  <td className="p-3 font-mono font-bold text-teal-700">{h.vehicle_plate || 'B 9812 UAI'}</td>
+                  <td className="p-3 font-mono font-bold text-slate-900">
+                    UL-2025-{(idx + 101).toString()}
+                  </td>
+                  <td className="p-3 font-mono font-bold text-teal-700">{h.vehicle_plate || 'B 1234 ABC'}</td>
                   <td className="p-3 font-semibold text-slate-800">{h.zones?.name || 'Zona Logistik'}</td>
-                  <td className="p-3 text-slate-600">
+                  <td className="p-3 text-slate-600 font-mono">
                     {new Date(h.time_window_start || h.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
                   </td>
                   <td className="p-3">
