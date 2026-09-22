@@ -50,33 +50,51 @@ Repositori dikembangkan dengan arsitektur **Clean Modular Architecture** yang di
 UrbanLoadAi/
 ├── frontend/                     # Web Application (Next.js 14 App Router)
 │   ├── app/                      # Page Routes & Suspense Loading Boundaries
+│   │   ├── (admin)/              # City Admin: System Health, Audit Logs, Users & Roles
 │   │   ├── (auth)/               # Login, Register, Verify-OTP, Onboarding
 │   │   ├── (city)/               # City Admin: LiveMap, Virtual GeoFence, Reports
 │   │   ├── (dishub)/             # Dishub Officer: QR Scanner, Geofence Verification
 │   │   ├── (public)/             # Landing Page, Tentang Tim, Interactive Demo
 │   │   └── (rider)/              # Logistics Courier: Dashboard, SmartSlot Booking
-│   ├── components/               # Domain-Driven Reusable UI Components
+│   ├── components/               # Feature-Driven Reusable UI Components
 │   │   ├── booking/              # SmartSlot Booking Forms & Slot Tables
 │   │   ├── congestion/           # CongestionScore Trend Charts & Cards
-│   │   ├── layout/               # Route-Aware Header, Footer, Mobile Navigation
+│   │   ├── layout/               # Header, Footer, Mobile Navigation & Status Indicators
 │   │   ├── livemap/              # MapLibre WebGL Canvas & Live Activity Feed
 │   │   ├── qr/                   # QuickPass QR Generators & HTML5 Camera Scanners
-│   │   ├── ui/                   # Glassmorphism Cards, Buttons, Form Controls
+│   │   ├── ui/                   # Reusable UI Primitives (Button, Card, etc. with index.ts)
 │   │   └── zones/                # PostGIS Polygon Canvas Drawing Tools
-│   ├── hooks/                    # Custom React Hooks (Supabase Realtime & Geolocation)
-│   ├── lib/                      # Supabase Clients, PostGIS Helpers & API Fetchers
-│   └── types/                    # TypeScript Domain Interfaces & Database Types
+│   ├── hooks/                    # Custom React Hooks & Realtime Subscriptions (with index.ts)
+│   ├── lib/                      # Clean Layered Client Helpers
+│   │   ├── api/                  # API Client Fetchers & Services
+│   │   ├── supabase/             # Supabase Browser, Server & Realtime Clients
+│   │   ├── constants/            # Role & Route Constants
+│   │   └── validators/           # Zod Schema Validators
+│   └── types/                    # Domain Interfaces & Shared Types Re-exports
 │
-├── backend/                      # Vercel Serverless Functions & Database Engine
-│   ├── api/                      # Serverless API Endpoints (/v1/zones, /v1/bookings, etc)
-│   │   ├── _lib/                 # PostgreSQL Pooler (`pg`), CORS & HMAC Signing
+├── backend/                      # Clean Serverless Layered API Engine
+│   ├── src/                      # Backend Core Modular Architecture
+│   │   ├── config/               # DB Pool, Supabase Admin & Env Configs
+│   │   ├── middleware/           # CORS & Auth Bearer Verification Middlewares
+│   │   ├── modules/              # Isolated Domain Feature Modules
+│   │   │   ├── auth/             # Authentication & Profile Service
+│   │   │   ├── bookings/         # Logistics Slot Booking Service
+│   │   │   ├── congestion/       # Rule-Based CongestionScore Calculator
+│   │   │   ├── geofence/         # PostGIS GeoFence Checking Service
+│   │   │   ├── livemap/          # WebGL Vehicles Telemetry Feed
+│   │   │   ├── qr/               # HMAC-SHA256 QuickPass Signature Verification
+│   │   │   └── zones/            # PostGIS Spatial Zones Management
+│   │   ├── utils/                # Standardized Response Formatters & Logger
+│   │   └── types/                # Backend API Type Definitions
+│   ├── api/                      # Vercel Serverless Endpoints (Routes / Controllers)
+│   │   ├── _lib/                 # Compatibility Layer (re-exporting from src/*)
 │   │   ├── cron/                 # Automated Background Slot Expiration & Congestion Recalc
-│   │   └── v1/                   # RESTful API Endpoints
-│   └── supabase/                 # Database Migrations & Edge Functions
-│       ├── migrations/           # PostGIS DDL SQL Files (0001_init.sql ~ 0008_triggers.sql)
+│   │   └── v1/                   # RESTful API Endpoints (/v1/zones, /v1/bookings, etc)
+│   └── supabase/                 # Database Migrations & Seed Data
+│       ├── migrations/           # PostGIS DDL SQL Files
 │       └── seed.sql              # Seed Data for Production & Evaluation
 │
-├── shared/                       # Shared Types & Domain Constants
+├── shared/                       # Shared Domain Types & App Constants
 └── README.md                     # Master Documentation
 ```
 

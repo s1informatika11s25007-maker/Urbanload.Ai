@@ -8,9 +8,10 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
+      "@api/*": ["./api/*"],
       "@shared/*": ["../shared/*"]
     }
   },
-  "include": ["api/**/*", "_lib/**/*", "scripts/**/*"]
+  "include": ["src/**/*", "api/**/*", "_lib/**/*", "scripts/**/*"]
 }
