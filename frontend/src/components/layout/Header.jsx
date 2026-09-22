@@ -101,19 +101,19 @@ function HeaderNavContent() {
         </nav>
       ) : (
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
-          <Link to="/rider/dashboard" className="hover:text-teal-600 transition">
+          <Link to="/rider/dashboard" className={`hover:text-teal-600 transition ${pathname === '/rider/dashboard' ? 'text-teal-600 font-bold' : ''}`}>
             Dashboard
           </Link>
-          <Link to="/rider/bookings/new" className="hover:text-teal-600 transition">
+          <Link to="/rider/bookings/new" className={`hover:text-teal-600 transition ${pathname === '/rider/bookings/new' ? 'text-teal-600 font-bold' : ''}`}>
             Booking
           </Link>
-          <Link to="/city/livemap" className="hover:text-teal-600 transition">
+          <Link to="/rider/congestion" className={`hover:text-teal-600 transition ${pathname === '/rider/congestion' ? 'text-teal-600 font-bold' : ''}`}>
             Kepadatan
           </Link>
-          <Link to="/city/zones" className="hover:text-teal-600 transition">
+          <Link to="/city/zones" className={`hover:text-teal-600 transition ${pathname === '/city/zones' ? 'text-teal-600 font-bold' : ''}`}>
             Zona
           </Link>
-          <Link to="/city/livemap" className="hover:text-teal-600 transition">
+          <Link to="/city/livemap" className={`hover:text-teal-600 transition ${pathname === '/city/livemap' ? 'text-teal-600 font-bold' : ''}`}>
             LiveMap
           </Link>
         </nav>

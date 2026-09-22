@@ -4,6 +4,7 @@ import Home from './pages/Home.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import RiderDashboard from './pages/RiderDashboard.jsx';
+import RiderCongestion from './pages/RiderCongestion.jsx';
 import CityZones from './pages/CityZones.jsx';
 import LiveMap from './pages/LiveMap.jsx';
 import NewBooking from './pages/NewBooking.jsx';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/verify-otp" element={<VerifyOtp />} />
               <Route path="/rider/dashboard" element={<RiderDashboard />} />
               <Route path="/rider/bookings/new" element={<NewBooking />} />
+              <Route path="/rider/congestion" element={<RiderCongestion />} />
               <Route path="/city/zones" element={<CityZones />} />
               <Route path="/city/livemap" element={<LiveMap />} />
               <Route path="/fitur/congestion" element={<FeatureCongestion />} />
