@@ -33,14 +33,10 @@ function DashboardMainContent() {
       const { data: bookings } = await query;
 
       if (bookings && bookings.length > 0) {
-        const active = bookings.filter((b) => b.status === 'confirmed' || b.status === 'pending').length;
+        const active = bookings.filter((b) => b.status === 'confirmed' || b.status === 'pending' || b.status === 'active').length;
         const completed = bookings.filter((b) => b.status === 'completed').length;
         setActiveCount(active);
         setCompletedCount(completed);
-        setComplianceScore(100);
-      } else if (isDemo) {
-        setActiveCount(1);
-        setCompletedCount(18);
         setComplianceScore(100);
       } else {
         setActiveCount(0);
@@ -95,7 +91,7 @@ function DashboardMainContent() {
         </div>
 
         <Link to="/rider/bookings/new">
-          <Button className="text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm font-bold">
+          <Button className="text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm font-bold bg-teal-600 hover:bg-teal-700">
             <Plus className="h-4 w-4" /> Pesan Slot Booking Baru
           </Button>
         </Link>
@@ -112,7 +108,7 @@ function DashboardMainContent() {
             <span className="flex items-center gap-1.5"><Database className="h-3.5 w-3.5 text-teal-600" /> Booking Aktif Realtime</span>
             {loadingMetrics && <RefreshCw className="h-3 w-3 animate-spin text-teal-600" />}
           </span>
-          <span className="text-3xl font-black text-slate-900">{activeCount} Slot</span>
+          <span className="text-3xl font-black text-slate-900">{activeCount} Booking</span>
         </Card>
 
         <Card className="p-5 bg-gradient-to-br from-blue-50 to-white border-blue-100 space-y-1">
@@ -120,7 +116,7 @@ function DashboardMainContent() {
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-blue-600" /> Total Transaksi Selesai</span>
             {loadingMetrics && <RefreshCw className="h-3 w-3 animate-spin text-blue-600" />}
           </span>
-          <span className="text-3xl font-black text-slate-900">{completedCount} Slot</span>
+          <span className="text-3xl font-black text-slate-900">{completedCount} Booking</span>
         </Card>
 
         <Card className="p-5 bg-gradient-to-br from-emerald-50 to-white border-emerald-100 space-y-1">

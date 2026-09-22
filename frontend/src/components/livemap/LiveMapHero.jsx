@@ -20,6 +20,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowDown,
+  Activity,
 } from 'lucide-react';
 
 // 1. Street / Vektor Mode (100% Free OpenStreetMap - No API Key, Complete Cities)
@@ -710,6 +711,25 @@ export function LiveMapHero() {
               <Truck className="h-3 w-3 text-amber-400 shrink-0" /> Truk Booking Real ({realBookings.length})
             </span>
           </label>
+        </div>
+      </div>
+
+      {/* VISUAL CONGESTIONSCORE LEGEND OVERLAY */}
+      <div className="absolute top-28 left-3 sm:top-36 sm:left-4 z-20 bg-slate-900/90 p-2 sm:p-2.5 rounded-xl border border-slate-800/90 backdrop-blur-md shadow-xl text-[9px] sm:text-[10px] text-white space-y-1">
+        <div className="font-bold text-slate-300 flex items-center gap-1 border-b border-slate-800 pb-1">
+          <Activity className="h-3 w-3 text-teal-400" /> Legenda CongestionScore
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+          <span>1.0 - 4.9: Lancar</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+          <span>5.0 - 7.4: Sedang</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+          <span>7.5 - 10.0: Macet Parah</span>
         </div>
       </div>
 
