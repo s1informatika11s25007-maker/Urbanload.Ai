@@ -9,7 +9,10 @@ export const metadata: Metadata = {
   title: 'UrbanLoad.AI — Smart Logistics & Spatial Zone Management',
   description: 'Sistem manajemen zona logistik perkotaan berbasis PostGIS, Next.js 14, dan Supabase.',
   icons: {
-    icon: '/icon.svg',
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
     shortcut: '/favicon.ico',
     apple: '/icon.svg',
   },
@@ -18,11 +21,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <head>
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="alternate icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icon.svg" />
-      </head>
       <body className="flex min-h-screen flex-col bg-slate-50 text-slate-900 antialiased font-sans">
         <Header />
         <main className="flex-1 pb-16 md:pb-0">{children}</main>
