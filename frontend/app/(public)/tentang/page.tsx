@@ -7,6 +7,7 @@ import { useState } from 'react';
 export default function TentangPage() {
   const [glenSrc, setGlenSrc] = useState('/assets/glen.jpeg');
   const [tianSrc, setTianSrc] = useState('/assets/tian.jpeg');
+  const [mikeSrc, setMikeSrc] = useState('/assets/michael.jpeg');
 
   const handleGlenError = () => {
     if (glenSrc === '/assets/glen.jpeg') setGlenSrc('/glen.jpeg');
@@ -22,8 +23,15 @@ export default function TentangPage() {
     else if (tianSrc === '/assets/tian.png') setTianSrc('/assets/tian.svg');
   };
 
+  const handleMikeError = () => {
+    if (mikeSrc === '/assets/michael.jpeg') setMikeSrc('/michael.jpeg');
+    else if (mikeSrc === '/michael.jpeg') setMikeSrc('/assets/michael.jpg');
+    else if (mikeSrc === '/assets/michael.jpg') setMikeSrc('/assets/michael.png');
+    else if (mikeSrc === '/assets/michael.png') setMikeSrc('/assets/michael.svg');
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-12 space-y-10 px-4">
+    <div className="max-w-5xl mx-auto py-12 space-y-10 px-4">
       {/* Header */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold">
@@ -37,8 +45,8 @@ export default function TentangPage() {
         </p>
       </div>
 
-      {/* Grid Tim Pengembang */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
+      {/* Grid 3 Tim Pengembang */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Glen Rejeki Sitorus */}
         <Card className="p-6 border-slate-200 shadow-md bg-white hover:shadow-lg transition duration-200 text-center space-y-4">
           <div className="relative h-32 w-32 rounded-full overflow-hidden bg-slate-100 mx-auto border-4 border-teal-500 shadow-md flex items-center justify-center text-teal-700 font-black text-3xl">
@@ -51,7 +59,7 @@ export default function TentangPage() {
           </div>
 
           <div className="space-y-1.5">
-            <h2 className="text-xl font-black text-slate-900">
+            <h2 className="text-lg font-black text-slate-900">
               Glen Rejeki Sitorus
             </h2>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
@@ -72,11 +80,32 @@ export default function TentangPage() {
           </div>
 
           <div className="space-y-1.5">
-            <h2 className="text-xl font-black text-slate-900">
+            <h2 className="text-lg font-black text-slate-900">
               Christian Johannes Hutahaean
             </h2>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
               <GraduationCap className="h-3.5 w-3.5 text-teal-600" /> S1 Informatika 2023
+            </div>
+          </div>
+        </Card>
+
+        {/* Michael */}
+        <Card className="p-6 border-slate-200 shadow-md bg-white hover:shadow-lg transition duration-200 text-center space-y-4">
+          <div className="relative h-32 w-32 rounded-full overflow-hidden bg-slate-100 mx-auto border-4 border-teal-500 shadow-md flex items-center justify-center text-teal-700 font-black text-3xl">
+            <img
+              src={mikeSrc}
+              alt="Michael"
+              onError={handleMikeError}
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <h2 className="text-lg font-black text-slate-900">
+              Michael
+            </h2>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+              <GraduationCap className="h-3.5 w-3.5 text-teal-600" /> S1 Informatika 2025
             </div>
           </div>
         </Card>
