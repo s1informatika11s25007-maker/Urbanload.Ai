@@ -11,12 +11,14 @@ function HeaderNavContent() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState({ name: 'Pengguna', roleLabel: 'Kurir', initial: 'K' });
 
   useEffect(() => {
     async function loadUserProfile() {
       const isDemo = searchParams.get('demo') === 'true';
       if (isDemo) {
+        setCurrentUser({ id: 'demo-user' });
         setUserProfile({ name: 'Juri Reviewer', roleLabel: 'Evaluator Juri', initial: 'J' });
         return;
       }
@@ -25,6 +27,7 @@ function HeaderNavContent() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        setCurrentUser(user);
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name, role')
@@ -40,15 +43,18 @@ function HeaderNavContent() {
 
         const initial = name.charAt(0).toUpperCase() || 'K';
         setUserProfile({ name, roleLabel, initial });
+      } else {
+        setCurrentUser(null);
       }
     }
 
     loadUserProfile();
-  }, [searchParams]);
+  }, [searchParams, pathname]);
 
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
 
-  const isPublicPage =
+  // If user is authenticated, they are NEVER treated as public visitor!
+  const isPublicPage = !currentUser && (
     pathname === '/' ||
     pathname.startsWith('/fitur') ||
     pathname.startsWith('/cara-kerja') ||
@@ -59,13 +65,14 @@ function HeaderNavContent() {
     pathname.startsWith('/demo') ||
     pathname === '/login' ||
     pathname === '/register' ||
-    isPublicPreviewMap;
+    isPublicPreviewMap
+  );
 
   return (
-    <header className="sticky top-0 z-50 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/80 px-6 backdrop-blur-md text-slate-800">
+    <header className="sticky top-0 z-50 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/80 px-4 sm:px-6 backdrop-blur-md text-slate-800">
       {/* Kiri: Logo + Wordmark */}
       <div className="flex items-center gap-3">
-        <Link to="/" className="flex items-center gap-2.5 group">
+        <Link to={currentUser ? '/rider/dashboard' : '/'} className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20 group-hover:scale-105 transition duration-200">
             <Truck className="h-5 w-5" />
           </div>
@@ -100,7 +107,7 @@ function HeaderNavContent() {
           <Link to="/rider/bookings/new" className="hover:text-teal-600 transition">
             Booking
           </Link>
-          <Link to="/fitur/congestion" className="hover:text-teal-600 transition">
+          <Link to="/city/livemap" className="hover:text-teal-600 transition">
             Kepadatan
           </Link>
           <Link to="/city/zones" className="hover:text-teal-600 transition">
@@ -150,6 +157,7 @@ function HeaderNavContent() {
               onClick={async () => {
                 const supabase = createClient();
                 await supabase.auth.signOut();
+                setCurrentUser(null);
                 navigate('/login');
               }}
               className="text-slate-400 hover:text-rose-600 transition p-1"
