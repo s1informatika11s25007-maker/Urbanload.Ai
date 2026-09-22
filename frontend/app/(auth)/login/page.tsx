@@ -218,9 +218,6 @@ export default function LoginPage() {
               <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5 text-slate-400" /> Email atau Username
               </label>
-              <span className="text-[10px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
-                Otomatis @gmail.com
-              </span>
             </div>
             <input
               type="text"
