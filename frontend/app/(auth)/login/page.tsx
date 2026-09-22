@@ -54,14 +54,12 @@ export default function LoginPage() {
     const supabase = createClient();
 
     try {
-      // 1. Try Supabase Auth Sign In
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Check if user exists in public.profiles as fallback validation
         const { data: profile } = await supabase
           .from('profiles')
           .select('id, email, role')
@@ -69,7 +67,7 @@ export default function LoginPage() {
           .maybeSingle();
 
         if (!profile) {
-          setErrorMessage('Gagal Masuk: Akun tidak ditemukan dalam database Supabase. Silakan Daftar Akun Baru terlebih dahulu.');
+          setErrorMessage('Akun tidak ditemukan. Silakan periksa kembali email atau daftar akun baru.');
           setLoading(false);
           return;
         }
@@ -79,7 +77,6 @@ export default function LoginPage() {
         return;
       }
 
-      // 2. Fetch authenticated user profile role
       if (data?.user) {
         const { data: profile } = await supabase
           .from('profiles')
@@ -118,7 +115,7 @@ export default function LoginPage() {
             Masuk ke UrbanLoad<span className="text-teal-600">.AI</span>
           </h1>
           <p className="text-xs text-slate-500">
-            Akses real-time dashboard logistik perkotaan & Supabase Auth
+            Akses dashboard operasional logistik perkotaan & PostGIS spatial
           </p>
         </div>
 
@@ -245,9 +242,10 @@ export default function LoginPage() {
             className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md pt-1"
           >
             {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Memverifikasi Akun Realtime...
-              </>
+              <span className="inline-flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                <span>Memuat...</span>
+              </span>
             ) : (
               <>
                 Masuk ke Dashboard {role === 'city' ? 'Admin Kota' : role === 'dishub' ? 'Petugas Dishub' : 'Kurir'}

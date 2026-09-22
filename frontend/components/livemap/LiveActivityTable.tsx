@@ -46,7 +46,7 @@ export function LiveActivityTable() {
   return (
     <Card className="p-4 h-60 overflow-y-auto border-slate-200 bg-white shadow-sm">
       <h4 className="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">
-        Aktivitas Terkini (Supabase Realtime Feed)
+        Aktivitas Terkini (Realtime Live Feed)
       </h4>
       <div className="space-y-2 text-xs">
         {activities.length === 0 ? (

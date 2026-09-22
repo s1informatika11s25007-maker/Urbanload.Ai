@@ -63,7 +63,6 @@ export default function RegisterPage() {
     const supabase = createClient();
 
     try {
-      // 1. Register with Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: finalEmail,
         password,
@@ -82,7 +81,6 @@ export default function RegisterPage() {
         return;
       }
 
-      // 2. Insert or Upsert into public.profiles real-time
       if (data?.user) {
         await supabase.from('profiles').upsert({
           id: data.user.id,
@@ -95,7 +93,6 @@ export default function RegisterPage() {
         });
       }
 
-      // 3. Redirect to Verify OTP
       if (role === 'rider') {
         router.push(`/verify-otp?phone=${encodeURIComponent(phone)}&role=rider`);
       } else {
@@ -122,7 +119,7 @@ export default function RegisterPage() {
             Daftar Akun Baru
           </h1>
           <p className="text-xs text-slate-500">
-            Registrasi real-time akun logistik ke database Supabase
+            Registrasi real-time akun logistik perkotaan
           </p>
         </div>
 
@@ -282,9 +279,10 @@ export default function RegisterPage() {
             className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md mt-2"
           >
             {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Mendaftarkan Akun ke Supabase...
-              </>
+              <span className="inline-flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                <span>Memuat...</span>
+              </span>
             ) : role === 'rider' ? (
               <>
                 <MessageSquare className="h-4 w-4" /> Lanjut Verifikasi OTP WhatsApp

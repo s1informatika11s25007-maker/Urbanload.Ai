@@ -7,7 +7,7 @@ import { MobileTabBar } from '@/components/layout/MobileTabBar';
 
 export const metadata: Metadata = {
   title: 'UrbanLoad.AI — Smart Logistics & Spatial Zone Management',
-  description: 'Sistem manajemen zona logistik perkotaan berbasis PostGIS, Next.js 14, dan Supabase.',
+  description: 'Sistem manajemen zona logistik perkotaan berbasis PostGIS & Next.js 14.',
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },

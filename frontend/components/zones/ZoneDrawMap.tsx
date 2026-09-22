@@ -26,7 +26,6 @@ export function ZoneDrawMap() {
   const [saving, setSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState('');
 
-  // Format WKT string for PostGIS ST_GeomFromText
   const getWKT = (pts: [number, number][]) => {
     if (pts.length < 3) return '';
     const closedPts = [...pts, pts[0]];
@@ -34,7 +33,6 @@ export function ZoneDrawMap() {
     return `POLYGON((${str}))`;
   };
 
-  // Instant Route Transition + Idle WebGL Map Initialization
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -52,7 +50,6 @@ export function ZoneDrawMap() {
       map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
       map.on('load', () => {
-        // 1. ESRI Satellite Source
         if (!map.getSource('esri-satellite-draw')) {
           map.addSource('esri-satellite-draw', {
             type: 'raster',
@@ -68,7 +65,6 @@ export function ZoneDrawMap() {
           });
         }
 
-        // 2. High-Contrast Overlay Labels
         if (!map.getSource('carto-labels-draw-source')) {
           map.addSource('carto-labels-draw-source', {
             type: 'raster',
@@ -84,7 +80,6 @@ export function ZoneDrawMap() {
           });
         }
 
-        // 3. Zone Editor Polygon Source
         const initialCoords = points.length >= 3 ? [...points, points[0]] : [];
         if (!map.getSource('zone-editor-source')) {
           map.addSource('zone-editor-source', {
@@ -138,7 +133,6 @@ export function ZoneDrawMap() {
     };
   }, []);
 
-  // Handle map click drawing
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -159,7 +153,6 @@ export function ZoneDrawMap() {
     };
   }, [isDrawing]);
 
-  // Update MapLibre source when points change
   const updateMapPolygon = (pts: [number, number][]) => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
@@ -183,7 +176,6 @@ export function ZoneDrawMap() {
     }
   };
 
-  // Toggle Draw Mode
   const toggleDrawMode = () => {
     const next = !isDrawing;
     setIsDrawing(next);
@@ -193,7 +185,6 @@ export function ZoneDrawMap() {
     }
   };
 
-  // Clear / Delete Polygon
   const handleClear = () => {
     setPoints([]);
     updateMapPolygon([]);
@@ -203,7 +194,6 @@ export function ZoneDrawMap() {
     if (map) map.getCanvas().style.cursor = '';
   };
 
-  // Layer Switching
   const handleStyleChange = (newStyle: 'standard' | 'satellite') => {
     setMapStyle(newStyle);
     const map = mapRef.current;
@@ -224,7 +214,6 @@ export function ZoneDrawMap() {
     }
   };
 
-  // Save Drawn Polygon directly to Supabase Postgres
   const handleSaveZone = async () => {
     if (points.length < 3) {
       setStatusMsg('Klik minimal 3 titik koordinat di peta untuk membentuk poligon.');
@@ -252,7 +241,7 @@ export function ZoneDrawMap() {
 
       const data = await res.json();
       if (data.success) {
-        setStatusMsg('Poligon Zona Berhasil Disimpan ke Supabase PostgreSQL!');
+        setStatusMsg('Poligon Zona Berhasil Disimpan ke Database Spatial!');
       } else {
         setStatusMsg(`Gagal menyimpan: ${data.error || 'Terjadi kesalahan'}`);
       }
@@ -271,7 +260,6 @@ export function ZoneDrawMap() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 z-10 bg-slate-900/90 p-3 rounded-xl backdrop-blur border border-slate-700 shadow-md">
           <span className="text-xs font-bold text-teal-400">Drawing Tools PostGIS WGS84: MapLibre GL JS</span>
 
-          {/* Layer Switcher & Draw / Delete Actions */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => handleStyleChange('standard')}
@@ -310,10 +298,8 @@ export function ZoneDrawMap() {
           </div>
         </div>
 
-        {/* MapLibre Canvas Container */}
         <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
-        {/* Bottom Info Bar */}
         <div className="flex justify-between items-center z-10 bg-slate-900/90 p-2.5 rounded-xl text-xs backdrop-blur border border-slate-700 mt-auto shadow-md">
           <span>
             {isDrawing
@@ -324,7 +310,7 @@ export function ZoneDrawMap() {
         </div>
       </Card>
 
-      {/* Kanan (30%): Form Properti & Simpan Supabase */}
+      {/* Kanan (30%): Form Properti & Simpan Database */}
       <Card className="lg:col-span-4 p-5 space-y-4 border-slate-200 bg-white shadow-sm">
         <h4 className="text-sm font-bold text-slate-900 border-b pb-2">Properti Zona Logistik</h4>
 
@@ -392,7 +378,7 @@ export function ZoneDrawMap() {
           className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-          Simpan Poligon Zona ke Supabase
+          Simpan Poligon Zona ke Database
         </Button>
       </Card>
     </div>

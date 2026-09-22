@@ -16,7 +16,6 @@ export function BookingHistoryTable({ isDemo = false }: { isDemo?: boolean }) {
         if (res.success && res.data && res.data.length > 0) {
           setHistory(res.data);
         } else if (isDemo) {
-          // Evaluation seed fallback for Guest Reviewer
           setHistory([
             { id: 'aaaaaaaa-1111-1111-1111-aaaaaaaaaaaa', zone_name: 'Zona A - Pasar Tanah Abang', created_at: new Date().toISOString(), status: 'confirmed', notes: '[Data Contoh Evaluasi] Slot Bongkar Muat Tekstil Tanah Abang' },
             { id: 'aaaaaaaa-2222-2222-2222-aaaaaaaaaaaa', zone_name: 'Zona B - Kawasan Monas & Gambir', created_at: new Date(Date.now() - 86400000).toISOString(), status: 'completed', notes: '[Data Contoh Evaluasi] Slot Logistik Monas Selesai' },
@@ -34,7 +33,7 @@ export function BookingHistoryTable({ isDemo = false }: { isDemo?: boolean }) {
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-900">Riwayat Booking Slot Logistik</h3>
-          <p className="text-xs text-slate-500">Query langsung dari database Supabase PostgreSQL <code className="font-mono text-teal-700">public.bookings</code></p>
+          <p className="text-xs text-slate-500">Query langsung dari database spatial <code className="font-mono text-teal-700">public.bookings</code></p>
         </div>
         {isDemo && (
           <span className="text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full">
@@ -59,13 +58,13 @@ export function BookingHistoryTable({ isDemo = false }: { isDemo?: boolean }) {
             {loading ? (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-slate-400 text-xs">
-                  Memuat data riwayat dari Supabase PostgreSQL...
+                  Memuat data riwayat transaksi...
                 </td>
               </tr>
             ) : history.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">
-                  Belum ada riwayat booking. Buat booking baru untuk menyimpan transaksi pertama Anda di Supabase!
+                  Belum ada riwayat booking. Buat booking baru untuk menyimpan transaksi pertama Anda!
                 </td>
               </tr>
             ) : (

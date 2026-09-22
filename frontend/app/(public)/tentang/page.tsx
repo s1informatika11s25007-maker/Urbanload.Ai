@@ -41,7 +41,7 @@ export default function TentangPage() {
           Tim Pengembang UrbanLoad.AI
         </h1>
         <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-          Inovasi Sistem Manajemen Logistik Perkotaan Berbasis PostGIS, Next.js 14, dan Supabase Realtime.
+          Inovasi Sistem Manajemen Logistik Perkotaan Berbasis PostGIS, Next.js 14, dan WebSockets Realtime.
         </p>
       </div>
 

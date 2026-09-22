@@ -48,7 +48,7 @@ function LiveMapMainContent() {
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-            <Radio className="h-3.5 w-3.5 animate-pulse" /> Supabase Realtime: Connected
+            <Radio className="h-3.5 w-3.5 animate-pulse text-emerald-600" /> Realtime Live Feed: Connected
           </div>
           <button className="p-2 border rounded-lg text-slate-600 hover:bg-slate-100" title="Fullscreen">
             <Maximize2 className="h-4 w-4" />

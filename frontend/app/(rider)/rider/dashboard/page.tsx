@@ -19,7 +19,7 @@ function DashboardMainContent() {
         <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
           <div className="flex items-center gap-2 font-bold">
             <Award className="h-5 w-5 text-amber-600 shrink-0" />
-            <span>Mode Evaluasi Juri — Terhubung ke Supabase PostgreSQL dengan data contoh terisolasi (reviewer@urbanload.ai)</span>
+            <span>Mode Evaluasi Juri — Terhubung ke Database Spatial dengan data contoh terisolasi (reviewer@urbanload.ai)</span>
           </div>
           <span className="bg-white px-2.5 py-1 rounded-full text-[11px] font-mono border border-amber-200 text-amber-800">
             user_id: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
@@ -32,7 +32,7 @@ function DashboardMainContent() {
         <div>
           <h1 className="text-2xl font-black text-slate-900">Dashboard Operasional Kurir Logistik</h1>
           <p className="text-xs text-slate-500">
-            Manajemen slot bongkar muat & status tiket QuickPass QR real-time Supabase.
+            Manajemen slot bongkar muat & status tiket QuickPass QR real-time.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ function DashboardMainContent() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-5 bg-gradient-to-br from-teal-50 to-white border-teal-100 space-y-1">
           <span className="text-xs font-semibold text-teal-800 flex items-center gap-1.5">
-            <Database className="h-3.5 w-3.5 text-teal-600" /> Booking Aktif Supabase
+            <Database className="h-3.5 w-3.5 text-teal-600" /> Booking Aktif Realtime
           </span>
           <span className="text-3xl font-black text-slate-900">1 Slot</span>
         </Card>
