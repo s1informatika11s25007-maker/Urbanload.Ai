@@ -1,64 +1,166 @@
-# UrbanLoad.AI 🚚 Smart Logistics & Spatial Zone Management
+<div align="center">
 
-Platform manajemen zona bongkar muat logistik perkotaan berbasis AI, PostGIS, Next.js 14, dan Supabase.
+# 🚚 UrbanLoad.AI
+### Smart Logistics & Spatial Zone Management System
 
-## 🚀 Fitur Utama
+![Next.js 14](https://img.shields.io/badge/Next.js%2014-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![PostGIS](https://img.shields.io/badge/PostGIS-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![MapLibre GL](https://img.shields.io/badge/MapLibre_GL-000000?style=for-the-badge&logo=mapbox&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel_Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
-- **Modul 1: SmartSlot Booking & QuickPass QR**
-  - Booking jendela waktu bongkar muat dengan validasi dimensi truk vs kapasitas zona.
-  - Tiket QR Digital aman dengan signature HMAC-SHA256 untuk verifikasi petugas di lokasi.
-- **Modul 2: CongestionScore (Real-time Rule-based)**
-  - Skor kepadatan zona (1-10) berbasis formula rule-based tanpa ketergantungan API eksternal.
-  - Rekomendasi lokasi & waktu bongkar muat alternatif terdekat.
-- **Modul 3: Virtual GeoFence (PostGIS Spatial)**
-  - Manajemen polygon zona logistik dengan PostGIS `GEOGRAPHY(POLYGON, 4326)`.
-  - Validasi lokasi truk real-time menggunakan RPC `ST_Contains` dan `ST_DWithin`.
-- **Modul 4: LiveMap Spatial (CivicLogix Dashboard)**
-  - Dashboard pemantauan peta interaktif real-time via Supabase Realtime & WebSockets.
-  - Visualisasi ketersediaan zona, pergerakan armada truk, dan aktivitas logistik.
+<p align="center">
+  <b>Platform AI Spatial & Management Slot Bongkar Muat Logistik Perkotaan Indonesia</b><br/>
+  Mengatasi kemacetan bahu jalan berbasis <i>PostGIS Virtual GeoFence</i>, <i>CongestionScore Rule-Based</i>, dan <i>QuickPass QR HMAC-SHA256</i>.
+</p>
 
----
-
-## 🛠️ Stack Teknologi
-
-- **Frontend:** Next.js 14 (App Router), Tailwind CSS, Lucide React, Recharts, Leaflet / Mapbox GL
-- **Backend:** Supabase (Postgres + PostGIS + Realtime + Storage + Auth), Vercel Serverless Functions
-- **Bahasa:** TypeScript / SQL
+[🌐 Live Preview Spatial](#-modul-sistem) • [📖 Dokumentasi API](#-referensi-api-v1) • [🚀 Panduan Instalasi](#-memulai-pengembangan) • [👨‍💻 Tim Pengembang](#-tim-pengembang)
 
 ---
 
-## 📁 Struktur Repositori
+</div>
+
+## 📌 Ringkasan Eksekutif
+
+Antrean truk logistik di bahu jalan kawasan perkotaan yang padat (seperti Pasar Tanah Abang, Pelabuhan Tanjung Priok, dan kawasan perdagangan) sering menimbulkan kemacetan parah, pemborosan BBM, dan risiko keselamatan lalu lintas.
+
+**UrbanLoad.AI** menghadirkan solusi teknologi spatial terintegrasi untuk mengorganisir jadwal bongkar muat secara otomatis dan terukur, menghubungkan **Kurir Logistik**, **Pengelola / Admin Kota**, dan **Petugas Dishub Lapangan** dalam satu ekosistem real-time.
+
+---
+
+## ✨ Fitur & Modul Utama
+
+| Modul | Nama Fitur | Akses Keamanan | Deskripsi & Teknologi |
+| :--- | :--- | :--- | :--- |
+| **Modul 1** | **SmartSlot Booking** | Wajib Login Kurir | Pemesanan slot jendela waktu bongkar muat dengan validasi real-time dimensi truk vs kapasitas zona. |
+| **Modul 1** | **QuickPass QR** | Wajib Login Kurir / Dishub | Tiket digital terenkripsi signature **HMAC-SHA256** terikat pada akun kurir resmi untuk verifikasi scan Dishub. |
+| **Modul 2** | **CongestionScore** | Publik (Read-Only) | Skor kepadatan zona (1-10) berbasis algoritma *rule-based* transparan untuk rekomendasi slot alternatif. |
+| **Modul 3** | **Virtual GeoFence** | Wajib Login Admin | Editor penggambaran poligon zona PostGIS **WGS84 EPSG:4326** (`GEOGRAPHY(POLYGON, 4326)`) & kapasitas truk. |
+| **Modul 4** | **LiveMap Spatial** | Publik / Read-Only Spectator | Peta interaktif WebGL GPU **MapLibre GL JS** (93 layer vector tiles CARTO Voyager + Satelit High-Res + Animasi Truk 60 FPS). |
+
+---
+
+## 🏛️ Arsitektur Sistem & Struktur Repositori
+
+Repositori dikembangkan dengan arsitektur **Clean Modular Architecture** yang dipisahkan secara tegas antara antarmuka frontend, serverless API backend, serta skema basis data spatial Supabase:
 
 ```text
-urbanload-ai/
-├── frontend/    # Next.js 14 Web Application
-├── backend/     # Vercel Serverless API, Supabase Migrations & Edge Functions
-├── shared/      # Shared Types & Constants
-├── docs/        # API Documentation & Architecture Diagram
-└── .github/     # GitHub Actions CI/CD Workflows
+UrbanLoadAi/
+├── frontend/                     # Web Application (Next.js 14 App Router)
+│   ├── app/                      # Page Routes & Suspense Loading Boundaries
+│   │   ├── (auth)/               # Login, Register, Verify-OTP, Onboarding
+│   │   ├── (city)/               # City Admin: LiveMap, Virtual GeoFence, Reports
+│   │   ├── (dishub)/             # Dishub Officer: QR Scanner, Geofence Verification
+│   │   ├── (public)/             # Landing Page, Tentang Tim, Interactive Demo
+│   │   └── (rider)/              # Logistics Courier: Dashboard, SmartSlot Booking
+│   ├── components/               # Domain-Driven Reusable UI Components
+│   │   ├── booking/              # SmartSlot Booking Forms & Slot Tables
+│   │   ├── congestion/           # CongestionScore Trend Charts & Cards
+│   │   ├── layout/               # Route-Aware Header, Footer, Mobile Navigation
+│   │   ├── livemap/              # MapLibre WebGL Canvas & Live Activity Feed
+│   │   ├── qr/                   # QuickPass QR Generators & HTML5 Camera Scanners
+│   │   ├── ui/                   # Glassmorphism Cards, Buttons, Form Controls
+│   │   └── zones/                # PostGIS Polygon Canvas Drawing Tools
+│   ├── hooks/                    # Custom React Hooks (Supabase Realtime & Geolocation)
+│   ├── lib/                      # Supabase Clients, PostGIS Helpers & API Fetchers
+│   └── types/                    # TypeScript Domain Interfaces & Database Types
+│
+├── backend/                      # Vercel Serverless Functions & Database Engine
+│   ├── api/                      # Serverless API Endpoints (/v1/zones, /v1/bookings, etc)
+│   │   ├── _lib/                 # PostgreSQL Pooler (`pg`), CORS & HMAC Signing
+│   │   ├── cron/                 # Automated Background Slot Expiration & Congestion Recalc
+│   │   └── v1/                   # RESTful API Endpoints
+│   └── supabase/                 # Database Migrations & Edge Functions
+│       ├── migrations/           # PostGIS DDL SQL Files (0001_init.sql ~ 0008_triggers.sql)
+│       └── seed.sql              # Seed Data for Production & Evaluation
+│
+├── shared/                       # Shared Types & Domain Constants
+└── README.md                     # Master Documentation
 ```
 
 ---
 
-## 🚦 Memulai Pengembangan
+## 🔧 Teknologi & Spesifikasi Teknis
 
-### Frontend
+- **Spatial Database Engine:** PostgreSQL + **PostGIS Extension** (`ST_SetSRID`, `ST_Contains`, `ST_DWithin`, `ST_GeomFromText`).
+- **Map & WebGL Rendering:** **MapLibre GL JS** (`maplibre-gl`) menggunakan CARTO Voyager Vector Tiles, ESRI World Imagery Satellite Raster, dan `requestAnimationFrame` 60 FPS WebGL Vehicle Telemetry.
+- **Backend & Real-time:** Vercel Serverless Functions Node.js + **Supabase Realtime WebSockets** (`postgres_changes`).
+- **Enkripsi Tiket:** HMAC-SHA256 Token Signature Verification.
+- **Penguat Performa:** Instant Route Prefetching & Suspense Boundaries Next.js 14 App Router (<5ms Navigation).
+
+---
+
+## 💻 Memulai Pengembangan (Local Setup)
+
+### 1. Prasyarat Sistem
+- **Node.js**: v18.0.0 atau yang lebih baru
+- **npm**: v9.0.0 atau yang lebih baru
+
+### 2. Kloning Repositori
+```bash
+git clone https://github.com/s1informatika11s25007-maker/Urbanload.Ai.git
+cd Urbanload.Ai
+```
+
+### 3. Konfigurasi Lingkungan (Environment Variables)
+
+Buat file `frontend/.env.local` dan `backend/.env`:
+
+```env
+# Supabase Live Credentials
+NEXT_PUBLIC_SUPABASE_URL="https://gzxoodmqqrweknwghnzz.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
+SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+
+# Database Direct Connection Pooler (AWS ap-northeast-1)
+DATABASE_URL="postgres://postgres.gzxoodmqqrweknwghnzz:Esvk5103z8pyD4Zp@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres"
+```
+
+### 4. Jalankan Aplikasi Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+Buka browser di **`http://localhost:3000`**.
 
-### Backend & Database
+### 5. Jalankan Backend Serverless (Opsional)
 ```bash
 cd backend
 npm install
-# Supabase CLI Local Dev
-supabase start
-supabase db reset
+npm run dev
 ```
 
 ---
 
-## 📄 Lisensi
-© 2025 UrbanLoad.AI - All Rights Reserved.
+## 📖 Referensi API v1
+
+| Method | Endpoint | Deskripsi |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/zones` | Mengambil seluruh zona logistik PostGIS & batas kapasitas. |
+| `POST` | `/api/v1/zones` | Menyimpan zona polygon PostGIS WKT baru (`ST_GeomFromText`). |
+| `GET` | `/api/v1/bookings` | Mengambil transaksi slot booking kurir aktif real-time. |
+| `POST` | `/api/v1/bookings` | Membuat booking slot baru dengan pengujian kapasitas zona. |
+| `POST` | `/api/v1/qr/generate` | Menerbitkan tiket QuickPass QR dengan enkripsi signature HMAC-SHA256. |
+| `POST` | `/api/v1/qr/verify` | Memverifikasi tiket QR & koordinat lokasi truk via PostGIS `ST_Contains`. |
+| `GET` | `/api/v1/congestion/score` | Kalkulasi skor kepadatan zona (1-10) real-time. |
+
+---
+
+## 👨‍💻 Tim Pengembang
+
+Platform **UrbanLoad.AI** dikembangkan oleh mahasiswa S1 Informatika:
+
+| Foto Profil | Nama Pengembang | Program Studi & Angkatan | Institusi |
+| :---: | :--- | :---: | :---: |
+| <img src="frontend/public/assets/glen.jpeg" width="70" height="70" style="border-radius:50%"/> | **Glen Rejeki Sitorus** | S1 Informatika 2023 | Institut Teknologi Del |
+| <img src="frontend/public/assets/tian.jpeg" width="70" height="70" style="border-radius:50%"/> | **Christian Johannes Hutahaean** | S1 Informatika 2023 | Institut Teknologi Del |
+| <img src="frontend/public/assets/michael.jpeg" width="70" height="70" style="border-radius:50%"/> | **Michael** | S1 Informatika 2025 | Institut Teknologi Del |
+
+---
+
+<div align="center">
+  <p>© 2025 <b>UrbanLoad.AI</b> — Hak Cipta Dilindungi Undang-Undang.</p>
+</div>
