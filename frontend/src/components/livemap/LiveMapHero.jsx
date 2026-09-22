@@ -254,15 +254,17 @@ export function LiveMapHero() {
     );
   };
 
-  // Render or Update User Live Marker on Map
+  // Render or Update User Live Marker on Map (Location Pin Badge)
   const updateUserMarker = (map, lng, lat, accuracy) => {
     if (userMarkerRef.current) userMarkerRef.current.remove();
 
     const el = document.createElement('div');
-    el.className = 'relative flex items-center justify-center cursor-pointer group';
+    el.className = 'relative flex items-center justify-center cursor-pointer group shadow-2xl';
     el.innerHTML = `
-      <div className="h-8 w-8 rounded-full bg-teal-500/30 border-2 border-teal-400 flex items-center justify-center animate-ping absolute"></div>
-      <div className="h-4 w-4 rounded-full bg-teal-500 border-2 border-white shadow-2xl relative"></div>
+      <div className="flex items-center gap-1.5 bg-teal-600 text-white px-2.5 py-1 rounded-full border-2 border-white shadow-2xl transition-transform duration-200 group-hover:scale-110">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span className="text-[10px] font-black tracking-wide">Lokasi Saya</span>
+      </div>
     `;
 
     el.addEventListener('click', () => {
