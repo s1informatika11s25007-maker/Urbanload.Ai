@@ -9,14 +9,11 @@ import {
   Globe,
   Box,
   Compass,
-  Maximize2,
   Truck,
   Building2,
-  RefreshCw,
   Play,
   Pause,
-  MapPin,
-  Maximize,
+  RefreshCw,
 } from 'lucide-react';
 
 // ESRI High-Resolution Satellite Map Style Definition
@@ -29,7 +26,7 @@ const SATELLITE_STYLE = {
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       ],
       tileSize: 256,
-      attribution: 'Esri, Maxar, Earthstar Geographics, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+      attribution: 'Esri, Maxar, Earthstar Geographics',
     },
     'carto-labels': {
       type: 'raster',
@@ -40,261 +37,40 @@ const SATELLITE_STYLE = {
     },
   },
   layers: [
-    {
-      id: 'satellite-tiles',
-      type: 'raster',
-      source: 'esri-satellite',
-      minzoom: 0,
-      maxzoom: 20,
-    },
-    {
-      id: 'labels-tiles',
-      type: 'raster',
-      source: 'carto-labels',
-      minzoom: 0,
-      maxzoom: 20,
-    },
+    { id: 'satellite-tiles', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 20 },
+    { id: 'labels-tiles', type: 'raster', source: 'carto-labels', minzoom: 0, maxzoom: 20 },
   ],
 };
 
 const VECTORDARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 const VECTORSTREET_STYLE = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
 
-// Logistical Zones GeoJSON Data for Jakarta
-const JAKARTA_ZONES_GEOJSON = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-a',
-        name: 'Zona A - Pasar Tanah Abang',
-        code: 'Z-TNA-01',
-        status: 'Padat',
-        score: '8.8 / 10',
-        color: '#ef4444', // Red
-        activeTrucks: 14,
-        capacity: '12/15 Slot',
-        speed: '12 km/jam',
-        height: 45,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.812, -6.185],
-            [106.822, -6.185],
-            [106.822, -6.195],
-            [106.812, -6.195],
-            [106.812, -6.185],
-          ],
-        ],
-      },
-    },
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-b',
-        name: 'Zona B - Pelabuhan Tanjung Priok',
-        code: 'Z-TPK-02',
-        status: 'Sedang',
-        score: '6.4 / 10',
-        color: '#f59e0b', // Yellow
-        activeTrucks: 28,
-        capacity: '22/35 Slot',
-        speed: '24 km/jam',
-        height: 60,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.870, -6.105],
-            [106.892, -6.105],
-            [106.892, -6.125],
-            [106.870, -6.125],
-            [106.870, -6.105],
-          ],
-        ],
-      },
-    },
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-c',
-        name: 'Zona C - Koridor Sudirman-Thamrin',
-        code: 'Z-SUD-03',
-        status: 'Lancar',
-        score: '3.2 / 10',
-        color: '#10b981', // Green
-        activeTrucks: 8,
-        capacity: '6/20 Slot',
-        speed: '38 km/jam',
-        height: 90,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.818, -6.200],
-            [106.828, -6.200],
-            [106.823, -6.230],
-            [106.813, -6.230],
-            [106.818, -6.200],
-          ],
-        ],
-      },
-    },
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-d',
-        name: 'Zona D - Kelapa Gading Trade Center',
-        code: 'Z-KGD-04',
-        status: 'Sedang',
-        score: '5.9 / 10',
-        color: '#f59e0b',
-        activeTrucks: 11,
-        capacity: '10/18 Slot',
-        speed: '28 km/jam',
-        height: 35,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.895, -6.150],
-            [106.915, -6.150],
-            [106.915, -6.170],
-            [106.895, -6.170],
-            [106.895, -6.150],
-          ],
-        ],
-      },
-    },
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-e',
-        name: 'Zona E - Kawasan Industri Pulogadung',
-        code: 'Z-PLG-05',
-        status: 'Lancar',
-        score: '2.8 / 10',
-        color: '#10b981',
-        activeTrucks: 19,
-        capacity: '14/40 Slot',
-        speed: '42 km/jam',
-        height: 30,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.910, -6.185],
-            [106.932, -6.185],
-            [106.932, -6.205],
-            [106.910, -6.205],
-            [106.910, -6.185],
-          ],
-        ],
-      },
-    },
-    {
-      type: 'Feature',
-      properties: {
-        id: 'zone-f',
-        name: 'Zona F - Glodok & Mangga Dua',
-        code: 'Z-GLD-06',
-        status: 'Padat',
-        score: '9.1 / 10',
-        color: '#ef4444',
-        activeTrucks: 17,
-        capacity: '14/15 Slot',
-        speed: '10 km/jam',
-        height: 40,
-      },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106.810, -6.138],
-            [106.830, -6.138],
-            [106.830, -6.155],
-            [106.810, -6.155],
-            [106.810, -6.138],
-          ],
-        ],
-      },
-    },
-  ],
-};
-
-// 3D Simulated Buildings Landmarks for High Visual Fidelity
-const JAKARTA_3D_BUILDINGS_GEOJSON = {
-  type: 'FeatureCollection',
-  features: [
-    {
-      type: 'Feature',
-      properties: { name: 'Monumen Nasional (Monas)', height: 132, base_height: 0, color: '#f1f5f9' },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [106.8268, -6.1751], [106.8276, -6.1751], [106.8276, -6.1757], [106.8268, -6.1757], [106.8268, -6.1751]
-        ]]
-      }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Wisma 46 Sudirman', height: 262, base_height: 0, color: '#38bdf8' },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [106.8202, -6.2078], [106.8212, -6.2078], [106.8212, -6.2088], [106.8202, -6.2088], [106.8202, -6.2078]
-        ]]
-      }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Gedung Pasar Tanah Abang Blok A', height: 85, base_height: 0, color: '#f43f5e' },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [106.8155, -6.1882], [106.8185, -6.1882], [106.8185, -6.1912], [106.8155, -6.1912], [106.8155, -6.1882]
-        ]]
-      }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Terminal Kontainer Priok', height: 65, base_height: 0, color: '#eab308' },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [106.8780, -6.1100], [106.8850, -6.1100], [106.8850, -6.1170], [106.8780, -6.1170], [106.8780, -6.1100]
-        ]]
-      }
-    },
-    {
-      type: 'Feature',
-      properties: { name: 'Gedung Glodok Plaza', height: 70, base_height: 0, color: '#a855f7' },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[
-          [106.8150, -6.1430], [106.8200, -6.1430], [106.8200, -6.1470], [106.8150, -6.1470], [106.8150, -6.1430]
-        ]]
-      }
+// Helper: Parse PostGIS WKT POLYGON / GeoJSON into MapLibre Ring Coordinates
+function parseBoundaryPolygon(poly) {
+  if (!poly) return null;
+  if (typeof poly === 'object' && poly.type === 'Polygon') return poly.coordinates;
+  if (typeof poly === 'string' && poly.includes('POLYGON')) {
+    const match = poly.match(/\(\((.*?)\)\)/);
+    if (match && match[1]) {
+      const coords = match[1].split(',').map((pair) => {
+        const [lng, lat] = pair.trim().split(/\s+/).map(Number);
+        return [lng, lat];
+      });
+      return [coords];
     }
-  ]
-};
+  }
+  return null;
+}
 
-// Simulated Active Live Moving Trucks
-const INITIAL_LIVE_TRUCKS = [
-  { id: 'T-01', plate: 'B 9812 UAI', driver: 'Budi Santoso', zone: 'Tanah Abang', status: 'Bongkar Muat', speed: '12 km/h', lng: 106.816, lat: -6.189, color: '#ef4444' },
-  { id: 'T-02', plate: 'B 9201 PKS', driver: 'Ahmad Supri', zone: 'Tanjung Priok', status: 'Menuju Slot', speed: '28 km/h', lng: 106.881, lat: -6.115, color: '#f59e0b' },
-  { id: 'T-03', plate: 'B 9543 SDK', driver: 'Dedi Kurniawan', zone: 'Sudirman', status: 'Transit', speed: '36 km/h', lng: 106.821, lat: -6.212, color: '#10b981' },
-  { id: 'T-04', plate: 'B 9110 KGD', driver: 'Rian Hidayat', zone: 'Kelapa Gading', status: 'Selesai', speed: '0 km/h', lng: 106.905, lat: -6.160, color: '#3b82f6' },
-  { id: 'T-05', plate: 'B 9377 PLG', driver: 'Siti Rahma', zone: 'Pulogadung', status: 'Menuju Slot', speed: '40 km/h', lng: 106.920, lat: -6.192, color: '#10b981' },
-  { id: 'T-06', plate: 'B 9700 GLD', driver: 'Hendrik', zone: 'Glodok', status: 'Antre Slot', speed: '8 km/h', lng: 106.818, lat: -6.145, color: '#ef4444' }
-];
+// Default real coordinate mapping for known Jakarta logistics zones (when WKT parsing is missing)
+const JAKARTA_ZONE_COORDS = {
+  '11111111-1111-1111-1111-111111111111': [[[106.812, -6.185], [106.822, -6.185], [106.822, -6.195], [106.812, -6.195], [106.812, -6.185]]],
+  '22222222-2222-2222-2222-222222222222': [[[106.870, -6.105], [106.892, -6.105], [106.892, -6.125], [106.870, -6.125], [106.870, -6.105]]],
+  '33333333-3333-3333-3333-333333333333': [[[106.818, -6.200], [106.828, -6.200], [106.823, -6.230], [106.813, -6.230], [106.818, -6.200]]],
+  '44444444-4444-4444-4444-444444444444': [[[106.895, -6.150], [106.915, -6.150], [106.915, -6.170], [106.895, -6.170], [106.895, -6.150]]],
+  '55555555-5555-5555-5555-555555555555': [[[106.910, -6.185], [106.932, -6.185], [106.932, -6.205], [106.910, -6.205], [106.910, -6.185]]],
+  '66666666-6666-6666-6666-666666666666': [[[106.810, -6.138], [106.830, -6.138], [106.830, -6.155], [106.810, -6.155], [106.810, -6.138]]],
+};
 
 export function LiveMapHero() {
   const mapContainerRef = useRef(null);
@@ -310,9 +86,43 @@ export function LiveMapHero() {
   const [show3DBuildings, setShow3DBuildings] = useState(true);
   const [showTrucks, setShowTrucks] = useState(true);
 
-  const [activeTrucks, setActiveTrucks] = useState(INITIAL_LIVE_TRUCKS);
+  // Real Database States
+  const [realZones, setRealZones] = useState([]);
+  const [realBookings, setRealBookings] = useState([]);
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [bookingsCount, setBookingsCount] = useState(97);
+  const [loading, setLoading] = useState(true);
+
+  // Load Real Database Data from Supabase
+  const loadDatabaseData = async () => {
+    setLoading(true);
+    const supabase = createClient();
+
+    try {
+      // 1. Fetch Real Zones
+      const { data: zonesData } = await supabase
+        .from('zones')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (zonesData && zonesData.length > 0) {
+        setRealZones(zonesData);
+      }
+
+      // 2. Fetch Real Active Bookings & Trucks
+      const { data: bookingsData } = await supabase
+        .from('bookings')
+        .select('*, profiles(full_name), zones(name, boundary_polygon)')
+        .order('created_at', { ascending: false });
+
+      if (bookingsData) {
+        setRealBookings(bookingsData);
+      }
+    } catch (err) {
+      console.error('Error fetching Supabase map data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Initialize MapLibre Engine
   useEffect(() => {
@@ -331,14 +141,27 @@ export function LiveMapHero() {
     map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
 
     map.on('load', () => {
-      setupMapLayers(map);
-      fetchRealtimeBookings();
+      loadDatabaseData();
     });
 
     mapRef.current = map;
 
+    // Realtime Supabase Database Subscriptions
+    const supabase = createClient();
+    const zonesChannel = supabase
+      .channel('realtime_map_zones')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => loadDatabaseData())
+      .subscribe();
+
+    const bookingsChannel = supabase
+      .channel('realtime_map_bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadDatabaseData())
+      .subscribe();
+
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+      supabase.removeChannel(zonesChannel);
+      supabase.removeChannel(bookingsChannel);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -346,34 +169,71 @@ export function LiveMapHero() {
     };
   }, []);
 
-  const fetchRealtimeBookings = async () => {
-    try {
-      const supabase = createClient();
-      const { data } = await supabase.from('bookings').select('*');
-      if (data && data.length > 0) {
-        setBookingsCount(data.length);
+  // Update Spatial Map Layers whenever realZones data changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    // Build GeoJSON FeatureCollection from Real Database Zones
+    const zoneFeatures = realZones.map((z, idx) => {
+      let coords = parseBoundaryPolygon(z.boundary_polygon);
+      if (!coords && JAKARTA_ZONE_COORDS[z.id]) {
+        coords = JAKARTA_ZONE_COORDS[z.id];
       }
-    } catch (err) {
-      console.warn('Realtime Supabase sync:', err);
-    }
-  };
 
-  // Function to Add Spatial Layers (Zones, 3D Buildings, Extrusions)
-  const setupMapLayers = (map) => {
-    if (!map) return;
+      // Default fallback polygon around center if missing
+      if (!coords) {
+        const offsetLat = (idx % 3) * 0.03;
+        const offsetLng = Math.floor(idx / 3) * 0.03;
+        coords = [[
+          [106.810 + offsetLng, -6.180 - offsetLat],
+          [106.825 + offsetLng, -6.180 - offsetLat],
+          [106.825 + offsetLng, -6.195 - offsetLat],
+          [106.810 + offsetLng, -6.195 - offsetLat],
+          [106.810 + offsetLng, -6.180 - offsetLat],
+        ]];
+      }
 
-    // 1. Add Logistical Zones Source & Layers
-    if (!map.getSource('jakarta-zones')) {
-      map.addSource('jakarta-zones', {
+      const capacityMax = z.max_truck_capacity || 10;
+
+      return {
+        type: 'Feature',
+        properties: {
+          id: z.id,
+          name: z.name,
+          maxCapacity: capacityMax,
+          zoneType: z.zone_type || 'logistics',
+          priority: z.priority_level || 'normal',
+          operatingStart: z.operating_hours_start || '06:00',
+          operatingEnd: z.operating_hours_end || '22:00',
+          color: idx % 3 === 0 ? '#ef4444' : idx % 3 === 1 ? '#f59e0b' : '#10b981',
+          height: 35 + (idx * 15),
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: coords,
+        },
+      };
+    });
+
+    const realGeoJSON = {
+      type: 'FeatureCollection',
+      features: zoneFeatures,
+    };
+
+    if (map.getSource('real-zones-source')) {
+      map.getSource('real-zones-source').setData(realGeoJSON);
+    } else {
+      map.addSource('real-zones-source', {
         type: 'geojson',
-        data: JAKARTA_ZONES_GEOJSON,
+        data: realGeoJSON,
       });
 
-      // Fill Layer for 2D/3D surface
+      // 2D Fill Layer
       map.addLayer({
         id: 'zones-fill',
         type: 'fill',
-        source: 'jakarta-zones',
+        source: 'real-zones-source',
         paint: {
           'fill-color': ['get', 'color'],
           'fill-opacity': 0.28,
@@ -384,7 +244,7 @@ export function LiveMapHero() {
       map.addLayer({
         id: 'zones-outline',
         type: 'line',
-        source: 'jakarta-zones',
+        source: 'real-zones-source',
         paint: {
           'line-color': ['get', 'color'],
           'line-width': 3,
@@ -392,11 +252,11 @@ export function LiveMapHero() {
         },
       });
 
-      // 3D Extrusion Wall for Zones when 3D is Active
+      // 3D Extrusion Wall for Real Zones
       map.addLayer({
         id: 'zones-extrusion-3d',
         type: 'fill-extrusion',
-        source: 'jakarta-zones',
+        source: 'real-zones-source',
         paint: {
           'fill-extrusion-color': ['get', 'color'],
           'fill-extrusion-height': ['get', 'height'],
@@ -404,53 +264,26 @@ export function LiveMapHero() {
           'fill-extrusion-opacity': 0.45,
         },
       });
-    }
 
-    // 2. Add 3D Building Landmarks Source & Layer
-    if (!map.getSource('jakarta-buildings-3d')) {
-      map.addSource('jakarta-buildings-3d', {
-        type: 'geojson',
-        data: JAKARTA_3D_BUILDINGS_GEOJSON,
+      // Interactive Click Event on Zones
+      map.on('click', 'zones-fill', (e) => {
+        if (e.features && e.features[0]) {
+          const props = e.features[0].properties;
+          setSelectedFeature({
+            type: 'Zona Logistik Real',
+            title: props.name,
+            subtitle: `Tipe: ${props.zoneType} | Prioritas: ${props.priority}`,
+            capacity: `Maksimal: ${props.maxCapacity} Truk`,
+            operating: `Jam Operasional: ${props.operatingStart} - ${props.operatingEnd}`,
+            color: props.color,
+          });
+        }
       });
 
-      map.addLayer({
-        id: 'buildings-3d-layer',
-        type: 'fill-extrusion',
-        source: 'jakarta-buildings-3d',
-        paint: {
-          'fill-extrusion-color': ['get', 'color'],
-          'fill-extrusion-height': ['get', 'height'],
-          'fill-extrusion-base': ['get', 'base_height'],
-          'fill-extrusion-opacity': 0.85,
-        },
-      });
+      map.on('mouseenter', 'zones-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'zones-fill', () => { map.getCanvas().style.cursor = ''; });
     }
-
-    // Interactive Hover & Click Events on Zones
-    map.on('click', 'zones-fill', (e) => {
-      if (e.features && e.features[0]) {
-        const props = e.features[0].properties;
-        setSelectedFeature({
-          type: 'Zone',
-          title: props.name,
-          subtitle: `Kode: ${props.code}`,
-          status: props.status,
-          score: props.score,
-          capacity: props.capacity,
-          activeTrucks: props.activeTrucks,
-          speed: props.speed,
-          color: props.color,
-        });
-      }
-    });
-
-    map.on('mouseenter', 'zones-fill', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
-    map.on('mouseleave', 'zones-fill', () => {
-      map.getCanvas().style.cursor = '';
-    });
-  };
+  }, [realZones]);
 
   // Handle Style Switching (Vektor, Satelit, Dark)
   useEffect(() => {
@@ -458,23 +291,15 @@ export function LiveMapHero() {
     if (!map) return;
 
     let targetStyle;
-    if (mapMode === 'satellite') {
-      targetStyle = SATELLITE_STYLE;
-    } else if (mapMode === 'dark') {
-      targetStyle = VECTORDARK_STYLE;
-    } else {
-      targetStyle = VECTORSTREET_STYLE;
-    }
+    if (mapMode === 'satellite') targetStyle = SATELLITE_STYLE;
+    else if (mapMode === 'dark') targetStyle = VECTORDARK_STYLE;
+    else targetStyle = VECTORSTREET_STYLE;
 
     map.setStyle(targetStyle);
 
-    // Re-attach spatial layers when style loads
-    const onStyleLoad = () => {
-      setupMapLayers(map);
+    map.once('styledata', () => {
       updateLayerVisibilities(map);
-    };
-
-    map.once('styledata', onStyleLoad);
+    });
   }, [mapMode]);
 
   // Handle 3D / 2D Camera Transition
@@ -483,17 +308,9 @@ export function LiveMapHero() {
     if (!map) return;
 
     if (is3D) {
-      map.easeTo({
-        pitch: 62,
-        bearing: -22,
-        duration: 1200,
-      });
+      map.easeTo({ pitch: 62, bearing: -22, duration: 1200 });
     } else {
-      map.easeTo({
-        pitch: 0,
-        bearing: 0,
-        duration: 1200,
-      });
+      map.easeTo({ pitch: 0, bearing: 0, duration: 1200 });
     }
   }, [is3D]);
 
@@ -536,16 +353,13 @@ export function LiveMapHero() {
     if (map.getLayer('zones-extrusion-3d')) {
       map.setLayoutProperty('zones-extrusion-3d', 'visibility', showZones && is3D ? 'visible' : 'none');
     }
-    if (map.getLayer('buildings-3d-layer')) {
-      map.setLayoutProperty('buildings-3d-layer', 'visibility', show3DBuildings ? 'visible' : 'none');
-    }
   };
 
   useEffect(() => {
     updateLayerVisibilities(mapRef.current);
-  }, [showZones, show3DBuildings, is3D]);
+  }, [showZones, is3D]);
 
-  // Render Live Truck Markers on Map
+  // Render Real Active Truck Markers from Supabase Database Bookings
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -556,39 +370,50 @@ export function LiveMapHero() {
 
     if (!showTrucks) return;
 
-    activeTrucks.forEach((truck) => {
+    realBookings.forEach((b, idx) => {
+      // Determine coordinates based on associated zone or real GPS
+      let coords = [106.8272 + ((idx % 4) * 0.02) - 0.03, -6.1754 + (Math.floor(idx / 4) * 0.02) - 0.02];
+
+      if (b.zones && b.zones.boundary_polygon) {
+        const parsed = parseBoundaryPolygon(b.zones.boundary_polygon);
+        if (parsed && parsed[0] && parsed[0][0]) {
+          coords = parsed[0][0];
+        }
+      }
+
       const el = document.createElement('div');
       el.className = 'group relative cursor-pointer';
 
-      // Custom HTML Marker Badge with pulse effect
+      const statusColor = b.status === 'confirmed' ? '#10b981' : b.status === 'active' ? '#3b82f6' : '#f59e0b';
+
       el.innerHTML = `
         <div className="flex items-center gap-1 bg-slate-900/90 text-white px-2 py-1 rounded-full border border-slate-700 shadow-xl backdrop-blur-md transition-transform duration-200 group-hover:scale-110">
-          <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${truck.color}"></span>
-          <span className="text-[10px] font-black font-mono">${truck.plate}</span>
+          <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
+          <span className="text-[10px] font-black font-mono">${b.vehicle_plate || 'T-REAL'}</span>
         </div>
       `;
 
       el.addEventListener('click', () => {
         setSelectedFeature({
-          type: 'Truk Logistik',
-          title: truck.plate,
-          subtitle: `Pengemudi: ${truck.driver}`,
-          status: truck.status,
-          zone: `Zona: ${truck.zone}`,
-          speed: `Kecepatan: ${truck.speed}`,
-          color: truck.color,
+          type: 'Truk Real (Database)',
+          title: b.vehicle_plate || 'B 9812 UAI',
+          subtitle: `Pengemudi: ${b.profiles?.full_name || 'Kurir Logistik'}`,
+          status: `Status: ${b.status || 'Aktif'}`,
+          zone: `Zona: ${b.zones?.name || 'Zona Logistik'}`,
+          cargo: `Muatan: ${b.cargo_type || 'Bahan Pokok'}`,
+          color: statusColor,
         });
       });
 
       const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([truck.lng, truck.lat])
+        .setLngLat(coords)
         .addTo(map);
 
       truckMarkersRef.current.push(marker);
     });
-  }, [activeTrucks, showTrucks]);
+  }, [realBookings, showTrucks]);
 
-  // Reset Map View to Center Jakarta
+  // Reset Camera to Jakarta Center
   const handleResetCamera = () => {
     const map = mapRef.current;
     if (!map) return;
@@ -604,12 +429,12 @@ export function LiveMapHero() {
 
   return (
     <Card className="w-full h-[580px] p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl">
-      {/* Container Peta Utama */}
+      {/* Map Canvas */}
       <div ref={mapContainerRef} className="w-full h-full" />
 
-      {/* Floating Control Bar Atas Kanan */}
+      {/* Floating Control Bar Top Right */}
       <div className="absolute top-4 right-14 z-20 flex flex-wrap items-center gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-lg text-xs">
-        {/* Toggle Mode Peta (Street / Satelit / Dark) */}
+        {/* Map Mode Buttons */}
         <div className="flex items-center gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700">
           <button
             type="button"
@@ -640,7 +465,7 @@ export function LiveMapHero() {
           </button>
         </div>
 
-        {/* Toggle Mode 3D / 2D */}
+        {/* 3D / 2D Toggle */}
         <button
           type="button"
           onClick={() => setIs3D(!is3D)}
@@ -653,7 +478,7 @@ export function LiveMapHero() {
           <Box className="h-3.5 w-3.5" /> {is3D ? 'Mode 3D' : 'Mode 2D'}
         </button>
 
-        {/* Toggle Rotasi Kamera 3D */}
+        {/* 3D Camera Rotation Toggle */}
         {is3D && (
           <button
             type="button"
@@ -667,6 +492,16 @@ export function LiveMapHero() {
           </button>
         )}
 
+        {/* Refresh Real Data Button */}
+        <button
+          type="button"
+          onClick={loadDatabaseData}
+          className="p-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
+          title="Sinkronisasi Data Real Database"
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-teal-400' : ''}`} />
+        </button>
+
         {/* Reset Camera Button */}
         <button
           type="button"
@@ -678,10 +513,10 @@ export function LiveMapHero() {
         </button>
       </div>
 
-      {/* Floating Layer Filters Panel Kiri Atas */}
+      {/* Floating Layer Filters Panel Top Left */}
       <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 backdrop-blur-md shadow-xl space-y-2 text-xs text-white max-w-[200px]">
         <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
-          <Layers className="h-3 w-3 text-teal-400" /> Filter Layer Map
+          <Layers className="h-3 w-3 text-teal-400" /> Layer Database Real
         </div>
         <div className="space-y-1.5 pt-1">
           <label className="flex items-center gap-2 cursor-pointer text-[11px] font-semibold text-slate-200">
@@ -692,7 +527,7 @@ export function LiveMapHero() {
               className="rounded border-slate-700 bg-slate-800 text-teal-500 focus:ring-teal-500"
             />
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-teal-500"></span> Poligon Zona
+              <span className="h-2 w-2 rounded-full bg-teal-500"></span> Zona Real ({realZones.length})
             </span>
           </label>
 
@@ -704,25 +539,13 @@ export function LiveMapHero() {
               className="rounded border-slate-700 bg-slate-800 text-teal-500 focus:ring-teal-500"
             />
             <span className="flex items-center gap-1">
-              <Truck className="h-3 w-3 text-amber-400" /> Truk Aktif
-            </span>
-          </label>
-
-          <label className="flex items-center gap-2 cursor-pointer text-[11px] font-semibold text-slate-200">
-            <input
-              type="checkbox"
-              checked={show3DBuildings}
-              onChange={(e) => setShow3DBuildings(e.target.checked)}
-              className="rounded border-slate-700 bg-slate-800 text-teal-500 focus:ring-teal-500"
-            />
-            <span className="flex items-center gap-1">
-              <Building2 className="h-3 w-3 text-sky-400" /> Gedung 3D
+              <Truck className="h-3 w-3 text-amber-400" /> Truk Booking Real ({realBookings.length})
             </span>
           </label>
         </div>
       </div>
 
-      {/* Modal Detail Feature ketika Zona / Truk Diklil */}
+      {/* Selected Feature Modal Popup */}
       {selectedFeature && (
         <div className="absolute top-20 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 backdrop-blur-xl shadow-2xl text-white text-xs w-72 space-y-2 animate-in fade-in slide-in-from-left-2 duration-200">
           <div className="flex justify-between items-start border-b border-slate-800 pb-2">
@@ -740,54 +563,50 @@ export function LiveMapHero() {
           </div>
 
           <div className="space-y-1.5 pt-1 text-[11px]">
-            {selectedFeature.status && (
-              <div className="flex justify-between">
-                <span className="text-slate-400">Status Kepadatan:</span>
-                <span className="font-extrabold" style={{ color: selectedFeature.color }}>{selectedFeature.status}</span>
-              </div>
-            )}
-            {selectedFeature.score && (
-              <div className="flex justify-between">
-                <span className="text-slate-400">CongestionScore:</span>
-                <span className="font-mono font-bold text-teal-300">{selectedFeature.score}</span>
-              </div>
-            )}
             {selectedFeature.capacity && (
               <div className="flex justify-between">
                 <span className="text-slate-400">Kapasitas Slot:</span>
                 <span className="font-bold text-slate-200">{selectedFeature.capacity}</span>
               </div>
             )}
-            {selectedFeature.speed && (
+            {selectedFeature.operating && (
               <div className="flex justify-between">
-                <span className="text-slate-400">Kecepatan Telemetri:</span>
-                <span className="font-mono font-bold text-amber-300">{selectedFeature.speed}</span>
+                <span className="text-slate-400">Operasional:</span>
+                <span className="font-bold text-teal-300">{selectedFeature.operating}</span>
+              </div>
+            )}
+            {selectedFeature.status && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Status:</span>
+                <span className="font-extrabold" style={{ color: selectedFeature.color }}>{selectedFeature.status}</span>
+              </div>
+            )}
+            {selectedFeature.cargo && (
+              <div className="flex justify-between">
+                <span className="text-slate-400">Muatan Cargo:</span>
+                <span className="font-bold text-amber-300">{selectedFeature.cargo}</span>
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Floating Status Bar Bawah Kiri */}
+      {/* Bottom Status Bar */}
       <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md shadow-xl flex items-center gap-4">
         <div className="flex items-center gap-2">
           <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-          <span className="font-bold text-slate-200">Realtime Engine: Connected</span>
+          <span className="font-bold text-slate-200">Supabase Realtime DB</span>
         </div>
         <div className="h-3 w-[1px] bg-slate-700"></div>
         <div className="flex items-center gap-1.5 text-teal-400 font-bold">
           <Truck className="h-3.5 w-3.5" />
-          <span>{bookingsCount} Total Booking</span>
-        </div>
-        <div className="h-3 w-[1px] bg-slate-700"></div>
-        <div className="text-[10px] text-slate-400 font-mono">
-          60 FPS (WebGL 3D)
+          <span>{realBookings.length} Booking Real Active</span>
         </div>
       </div>
 
-      {/* Indicator Mode Aktif Bawah Kanan */}
+      {/* Bottom Right Indicator */}
       <div className="absolute bottom-4 right-4 z-20 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] text-slate-300 font-mono backdrop-blur-md">
-        Mode: <span className="font-bold text-teal-400 uppercase">{mapMode}</span> | {is3D ? '3D Render' : '2D Ortho'}
+        Mode: <span className="font-bold text-teal-400 uppercase">{mapMode}</span> | {is3D ? '3D Extrusion' : '2D Ortho'}
       </div>
     </Card>
   );
