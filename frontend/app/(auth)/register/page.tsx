@@ -21,6 +21,7 @@ import {
   MessageSquare,
   AlertCircle,
   Loader2,
+  AtSign,
 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -28,22 +29,39 @@ export default function RegisterPage() {
   const [role, setRole] = useState<'rider' | 'city' | 'dishub'>('rider');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [emailInput, setEmailInput] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Smart Email Normalizer: Auto-appends @gmail.com if no custom domain is entered
+  const normalizeEmail = (val: string): string => {
+    const trimmed = val.trim();
+    if (!trimmed) return '';
+    if (trimmed.includes('@')) return trimmed; // Custom domain entered by user
+    return `${trimmed}@gmail.com`; // Default easy domain
+  };
+
   const handleSelectRole = (selectedRole: 'rider' | 'city' | 'dishub') => {
     setRole(selectedRole);
     setErrorMessage(null);
-    if (selectedRole === 'city' && !email) {
-      setEmail('admin@jakarta.go.id');
-    } else if (selectedRole === 'dishub' && !email) {
-      setEmail('petugas@dishub.go.id');
-    } else if (selectedRole === 'rider' && (email === 'admin@jakarta.go.id' || email === 'petugas@dishub.go.id')) {
-      setEmail('');
+    if (selectedRole === 'city' && !emailInput) {
+      setEmailInput('admin@jakarta.go.id');
+    } else if (selectedRole === 'dishub' && !emailInput) {
+      setEmailInput('petugas@dishub.go.id');
+    } else if (selectedRole === 'rider' && (emailInput === 'admin@jakarta.go.id' || emailInput === 'petugas@dishub.go.id')) {
+      setEmailInput('');
+    }
+  };
+
+  const handleApplyDomain = (domain: string) => {
+    const username = emailInput.split('@')[0].trim();
+    if (username) {
+      setEmailInput(`${username}${domain}`);
+    } else {
+      setEmailInput(`pengguna${domain}`);
     }
   };
 
@@ -56,7 +74,7 @@ export default function RegisterPage() {
       return;
     }
 
-    const finalEmail = email || `${phone.replace(/\D/g, '')}@rider.urbanload.ai`;
+    const finalEmail = emailInput ? normalizeEmail(emailInput) : `${phone.replace(/\D/g, '')}@rider.urbanload.ai`;
     const targetRole = role === 'city' ? 'city_admin' : role === 'dishub' ? 'dishub_officer' : 'rider';
 
     setLoading(true);
@@ -105,7 +123,7 @@ export default function RegisterPage() {
     }
   };
 
-  const isFormValid = fullName && phone && password && (role === 'rider' || email);
+  const isFormValid = fullName && phone && password && (role === 'rider' || emailInput);
 
   return (
     <div className="w-full max-w-md mx-auto py-8">
@@ -218,20 +236,55 @@ export default function RegisterPage() {
             <label className="text-xs font-semibold text-slate-700 flex items-center justify-between mb-1">
               <span className="flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5 text-slate-400" />
-                {role === 'rider' ? 'Email (Opsional)' : role === 'city' ? 'Email Resmi Admin Kota' : 'Email Resmi Petugas Dishub'}
+                {role === 'rider' ? 'Email atau Username (Opsional)' : role === 'city' ? 'Email Resmi Admin Kota' : 'Email Resmi Petugas Dishub'}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${role === 'rider' ? 'bg-slate-100 text-slate-600' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
                 {role === 'rider' ? 'Opsional' : 'Wajib'}
               </span>
             </label>
             <input
-              type="email"
+              type="text"
               required={role !== 'rider'}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={role === 'rider' ? 'kurir@gmail.com (Boleh dikosongkan)' : role === 'city' ? 'admin@jakarta.go.id' : 'petugas@dishub.go.id'}
+              value={emailInput}
+              onChange={(e) => setEmailInput(e.target.value)}
+              placeholder={role === 'rider' ? 'kurir atau kurir@gmail.com' : role === 'city' ? 'admin@jakarta.go.id' : 'petugas@dishub.go.id'}
               className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs text-slate-900 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
             />
+
+            {/* Smart Domain Shortcut Chips */}
+            <div className="flex items-center gap-1.5 pt-2 flex-wrap">
+              <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5">
+                <AtSign className="h-3 w-3" /> Pilih Domain:
+              </span>
+              <button
+                type="button"
+                onClick={() => handleApplyDomain('@gmail.com')}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 transition"
+              >
+                + @gmail.com
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyDomain('@urbanload.ai')}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 transition"
+              >
+                + @urbanload.ai
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyDomain('@jakarta.go.id')}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200 hover:bg-blue-100 transition"
+              >
+                + @jakarta.go.id
+              </button>
+              <button
+                type="button"
+                onClick={() => handleApplyDomain('@dishub.go.id')}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 hover:bg-purple-100 transition"
+              >
+                + @dishub.go.id
+              </button>
+            </div>
           </div>
 
           {/* Wajib 3: Kata Sandi Baru */}
