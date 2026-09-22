@@ -9,6 +9,7 @@
 ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![PostGIS](https://img.shields.io/badge/PostGIS-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![MapLibre GL](https://img.shields.io/badge/MapLibre_GL-000000?style=for-the-badge&logo=mapbox&logoColor=white)
+![Deck.gl](https://img.shields.io/badge/Deck.gl_WebGL3D-000000?style=for-the-badge&logo=uber&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Vercel_Serverless-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 <p align="center">
@@ -38,7 +39,7 @@ Antrean truk logistik di bahu jalan kawasan perkotaan yang padat (seperti Pasar 
 | **Modul 1** | **QuickPass QR** | Wajib Login Kurir / Dishub | Tiket digital terenkripsi signature **HMAC-SHA256** terikat pada akun kurir resmi untuk verifikasi scan Dishub. |
 | **Modul 2** | **CongestionScore** | Publik (Read-Only) | Skor kepadatan zona (1-10) berbasis algoritma *rule-based* transparan untuk rekomendasi slot alternatif. |
 | **Modul 3** | **Virtual GeoFence** | Wajib Login Admin | Editor penggambaran poligon zona PostGIS **WGS84 EPSG:4326** (`GEOGRAPHY(POLYGON, 4326)`) & kapasitas truk. |
-| **Modul 4** | **LiveMap Spatial** | Publik / Read-Only Spectator | Peta interaktif WebGL GPU **MapLibre GL JS** (93 layer vector tiles CARTO Voyager + Satelit High-Res + Animasi Truk 60 FPS). |
+| **Modul 4** | **LiveMap Spatial** | Publik / Read-Only Spectator | Peta interaktif WebGL GPU **MapLibre GL JS + Deck.gl (Uber Stack)** (3D Flow Arc Corridors, Scatterplot Clusters, CARTO Voyager Vector Tiles, Satelit High-Res, & Animasi Truk 60 FPS). |
 
 ---
 
@@ -103,7 +104,7 @@ UrbanLoadAi/
 ## 🔧 Teknologi & Spesifikasi Teknis
 
 - **Spatial Database Engine:** PostgreSQL + **PostGIS Extension** (`ST_SetSRID`, `ST_Contains`, `ST_DWithin`, `ST_GeomFromText`).
-- **Map & WebGL Rendering:** **MapLibre GL JS** (`maplibre-gl`) menggunakan CARTO Voyager Vector Tiles, ESRI World Imagery Satellite Raster, dan `requestAnimationFrame` 60 FPS WebGL Vehicle Telemetry.
+- **Map & WebGL Rendering:** Kombinasi **MapLibre GL JS** + **Deck.gl (Uber Stack)** untuk visualisasi 3D WebGL Spasial 100% gratis tanpa biaya API, dilengkapi *3D Curved Flow Arcs*, *Scatterplot Telemetry Clusters*, CARTO Voyager Vector Tiles, ESRI World Imagery Satellite, dan `requestAnimationFrame` 60 FPS WebGL Vehicle Telemetry.
 - **Backend & Real-time:** Vercel Serverless Functions Node.js + **Supabase Realtime WebSockets** (`postgres_changes`).
 - **Enkripsi Tiket:** HMAC-SHA256 Token Signature Verification.
 - **Penguat Performa:** Instant Route Prefetching & Suspense Boundaries Next.js 14 App Router (<5ms Navigation).
