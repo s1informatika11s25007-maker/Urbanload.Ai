@@ -89,12 +89,12 @@ export default function TentangPage() {
           </div>
         </Card>
 
-        {/* Michael */}
+        {/* Michael Handreak Siburian */}
         <Card className="p-6 border-slate-200 shadow-md bg-white hover:shadow-lg transition duration-200 text-center space-y-4">
           <div className="relative h-32 w-32 rounded-full overflow-hidden bg-slate-100 mx-auto border-4 border-teal-500 shadow-md flex items-center justify-center text-teal-700 font-black text-3xl">
             <img
               src={mikeSrc}
-              alt="Michael"
+              alt="Michael Handreak Siburian"
               onError={handleMikeError}
               className="h-full w-full object-cover"
             />
@@ -102,7 +102,7 @@ export default function TentangPage() {
 
           <div className="space-y-1.5">
             <h2 className="text-lg font-black text-slate-900">
-              Michael
+              Michael Handreak Siburian
             </h2>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
               <GraduationCap className="h-3.5 w-3.5 text-teal-600" /> S1 Informatika 2025

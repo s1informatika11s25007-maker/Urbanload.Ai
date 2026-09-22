@@ -175,7 +175,7 @@ Platform **UrbanLoad.AI** dikembangkan oleh mahasiswa S1 Informatika:
 | :---: | :--- | :---: | :---: |
 | <img src="frontend/public/assets/glen.jpeg" width="70" height="70" style="border-radius:50%"/> | **Glen Rejeki Sitorus** | S1 Informatika 2023 | Institut Teknologi Del |
 | <img src="frontend/public/assets/tian.jpeg" width="70" height="70" style="border-radius:50%"/> | **Christian Johannes Hutahaean** | S1 Informatika 2023 | Institut Teknologi Del |
-| <img src="frontend/public/assets/michael.jpeg" width="70" height="70" style="border-radius:50%"/> | **Michael** | S1 Informatika 2025 | Institut Teknologi Del |
+| <img src="frontend/public/assets/michael.jpeg" width="70" height="70" style="border-radius:50%"/> | **Michael Handreak Siburian** | S1 Informatika 2025 | Institut Teknologi Del |
 
 ---
 

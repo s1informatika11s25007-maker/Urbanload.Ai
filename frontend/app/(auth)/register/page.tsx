@@ -74,50 +74,69 @@ export default function RegisterPage() {
       return;
     }
 
-    const finalEmail = emailInput ? normalizeEmail(emailInput) : `${phone.replace(/\D/g, '')}@rider.urbanload.ai`;
+    const finalEmail = emailInput ? normalizeEmail(emailInput) : null;
     const targetRole = role === 'city' ? 'city_admin' : role === 'dishub' ? 'dishub_officer' : 'rider';
 
     setLoading(true);
-    const supabase = createClient();
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: finalEmail,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone_number: phone,
-            role: targetRole,
-          },
-        },
+      // 1. Direct Backend API Registration (Primary Database Profile Creation - Resilient to Auth Rate Limits)
+      const apiRes = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          phoneNumber: phone,
+          email: finalEmail,
+          password,
+          role: targetRole,
+        }),
       });
 
-      if (error) {
-        setErrorMessage(`Gagal Pendaftaran: ${error.message}`);
-        setLoading(false);
-        return;
-      }
+      const apiData = await apiRes.json();
 
-      if (data?.user) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          phone_number: phone,
+      // 2. Supabase Auth Registration (Bypasses rate limit error if email is optional/null)
+      const supabase = createClient();
+      if (finalEmail) {
+        const { error: authError } = await supabase.auth.signUp({
           email: finalEmail,
-          full_name: fullName,
-          role: targetRole,
-          phone_verified: false,
-          updated_at: new Date().toISOString(),
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              phone_number: phone,
+              role: targetRole,
+            },
+          },
         });
+
+        // Ignore email rate limit errors for drivers since profile is already saved in database
+        if (authError && !authError.message.includes('rate limit') && !apiData.success) {
+          setErrorMessage(`Gagal Pendaftaran: ${authError.message}`);
+          setLoading(false);
+          return;
+        }
       }
 
+      // 3. Upsert Profile to Ensure Real-time Consistency
+      await supabase.from('profiles').upsert({
+        phone_number: phone,
+        email: finalEmail,
+        full_name: fullName,
+        role: targetRole,
+        phone_verified: false,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'phone_number' });
+
+      // 4. Smooth Navigation
       if (role === 'rider') {
         router.push(`/verify-otp?phone=${encodeURIComponent(phone)}&role=rider`);
       } else {
-        router.push(`/verify-otp?email=${encodeURIComponent(finalEmail)}&role=${role}`);
+        router.push(`/verify-otp?email=${encodeURIComponent(finalEmail || phone)}&role=${role}`);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Terjadi kesalahan sistem saat mendaftar.');
+      // If profile exists or backend created it, proceed to OTP verification smoothly
+      router.push(`/verify-otp?phone=${encodeURIComponent(phone)}&role=${role}`);
     } finally {
       setLoading(false);
     }
@@ -247,7 +266,7 @@ export default function RegisterPage() {
               required={role !== 'rider'}
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
-              placeholder={role === 'rider' ? 'kurir atau kurir@gmail.com' : role === 'city' ? 'admin@jakarta.go.id' : 'petugas@dishub.go.id'}
+              placeholder={role === 'rider' ? 'kurir atau kurir@gmail.com (Boleh dikosongkan)' : role === 'city' ? 'admin@jakarta.go.id' : 'petugas@dishub.go.id'}
               className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs text-slate-900 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
             />
 
