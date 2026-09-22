@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
 import {
   Truck,
   Lock,
@@ -14,18 +16,22 @@ import {
   EyeOff,
   Building2,
   Shield,
-  CheckCircle2,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [role, setRole] = useState<'rider' | 'city' | 'dishub'>('rider');
-  const [email, setEmail] = useState('kurir@urbanload.ai');
-  const [password, setPassword] = useState('••••••••');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Quick fill preset per role
   const handleRoleSelect = (selectedRole: 'rider' | 'city' | 'dishub') => {
     setRole(selectedRole);
+    setErrorMessage(null);
     if (selectedRole === 'rider') {
       setEmail('kurir@urbanload.ai');
     } else if (selectedRole === 'city') {
@@ -35,10 +41,69 @@ export default function LoginPage() {
     }
   };
 
-  const getDashboardLink = () => {
-    if (role === 'city') return '/city/dashboard';
-    if (role === 'dishub') return '/dishub/dashboard';
-    return '/rider/dashboard';
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!email || !password) {
+      setErrorMessage('Email dan Kata Sandi wajib diisi.');
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createClient();
+
+    try {
+      // 1. Try Supabase Auth Sign In
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        // Check if user exists in public.profiles as fallback validation
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, email, role')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (!profile) {
+          setErrorMessage('Gagal Masuk: Akun tidak ditemukan dalam database Supabase. Silakan Daftar Akun Baru terlebih dahulu.');
+          setLoading(false);
+          return;
+        }
+
+        setErrorMessage('Gagal Masuk: Kata sandi yang Anda masukkan salah. Silakan coba lagi.');
+        setLoading(false);
+        return;
+      }
+
+      // 2. Fetch authenticated user profile role
+      if (data?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        const userRole = profile?.role || role;
+
+        if (userRole === 'city_admin' || userRole === 'admin') {
+          router.push('/city/dashboard');
+        } else if (userRole === 'dishub_officer') {
+          router.push('/dishub/dashboard');
+        } else {
+          router.push('/rider/dashboard');
+        }
+      } else {
+        router.push(role === 'city' ? '/city/dashboard' : role === 'dishub' ? '/dishub/dashboard' : '/rider/dashboard');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kesalahan sistem saat mencoba masuk.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,7 +118,7 @@ export default function LoginPage() {
             Masuk ke UrbanLoad<span className="text-teal-600">.AI</span>
           </h1>
           <p className="text-xs text-slate-500">
-            Akses dashboard operasional logistik perkotaan & PostGIS spatial
+            Akses real-time dashboard logistik perkotaan & Supabase Auth
           </p>
         </div>
 
@@ -121,14 +186,23 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Input Form */}
-        <div className="space-y-4">
+        {/* Error Alert Box */}
+        {errorMessage && (
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-start gap-2.5 animate-in fade-in">
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="leading-relaxed font-semibold">{errorMessage}</div>
+          </div>
+        )}
+
+        {/* Realtime Login Form */}
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1">
               <Mail className="h-3.5 w-3.5 text-slate-400" /> Email Akun
             </label>
             <input
               type="email"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@urbanload.ai"
@@ -148,6 +222,7 @@ export default function LoginPage() {
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -162,15 +237,25 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Submit CTA */}
-        <Link href={getDashboardLink()} className="block pt-1">
-          <Button className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md">
-            Masuk ke Dashboard {role === 'city' ? 'Admin Kota' : role === 'dishub' ? 'Petugas Dishub' : 'Kurir'}
-            <ArrowRight className="h-4 w-4" />
+          {/* Submit CTA */}
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md pt-1"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Memverifikasi Akun Realtime...
+              </>
+            ) : (
+              <>
+                Masuk ke Dashboard {role === 'city' ? 'Admin Kota' : role === 'dishub' ? 'Petugas Dishub' : 'Kurir'}
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </Button>
-        </Link>
+        </form>
 
         {/* Footer Link */}
         <div className="text-center text-xs text-slate-500 border-t border-slate-100 pt-4">

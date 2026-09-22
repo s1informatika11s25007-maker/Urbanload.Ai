@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/lib/supabase/client';
 import {
   User,
   Mail,
@@ -18,6 +19,8 @@ import {
   EyeOff,
   Phone,
   MessageSquare,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -29,10 +32,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Direct Role Selector with Immediate High-Contrast Visual Feedback
   const handleSelectRole = (selectedRole: 'rider' | 'city' | 'dishub') => {
     setRole(selectedRole);
+    setErrorMessage(null);
     if (selectedRole === 'city' && !email) {
       setEmail('admin@jakarta.go.id');
     } else if (selectedRole === 'dishub' && !email) {
@@ -42,16 +47,64 @@ export default function RegisterPage() {
     }
   };
 
-  // Form submit handler with conditional verification flow
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !phone || !password) return;
+    setErrorMessage(null);
 
-    if (role === 'rider') {
-      router.push(`/verify-otp?phone=${encodeURIComponent(phone)}&role=rider`);
-    } else {
-      if (!email) return;
-      router.push(`/verify-otp?email=${encodeURIComponent(email)}&role=${role}`);
+    if (!fullName || !phone || !password) {
+      setErrorMessage('Nama Lengkap, Nomor Telepon, dan Kata Sandi wajib diisi.');
+      return;
+    }
+
+    const finalEmail = email || `${phone.replace(/\D/g, '')}@rider.urbanload.ai`;
+    const targetRole = role === 'city' ? 'city_admin' : role === 'dishub' ? 'dishub_officer' : 'rider';
+
+    setLoading(true);
+    const supabase = createClient();
+
+    try {
+      // 1. Register with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
+        email: finalEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone_number: phone,
+            role: targetRole,
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage(`Gagal Pendaftaran: ${error.message}`);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Insert or Upsert into public.profiles real-time
+      if (data?.user) {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          phone_number: phone,
+          email: finalEmail,
+          full_name: fullName,
+          role: targetRole,
+          phone_verified: false,
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      // 3. Redirect to Verify OTP
+      if (role === 'rider') {
+        router.push(`/verify-otp?phone=${encodeURIComponent(phone)}&role=rider`);
+      } else {
+        router.push(`/verify-otp?email=${encodeURIComponent(finalEmail)}&role=${role}`);
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Terjadi kesalahan sistem saat mendaftar.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,11 +122,11 @@ export default function RegisterPage() {
             Daftar Akun Baru
           </h1>
           <p className="text-xs text-slate-500">
-            Registrasi akun logistik berbasis Nomor Telepon (Primary Identifier)
+            Registrasi real-time akun logistik ke database Supabase
           </p>
         </div>
 
-        {/* Role Selection Tabs - High-Contrast Visual Toggle */}
+        {/* Role Selection Tabs */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
@@ -123,30 +176,13 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        {/* Big Prominent Role Dynamic Notification Card */}
-        <div className={`p-3.5 rounded-2xl border text-xs space-y-1 transition-all duration-200 ${
-          role === 'rider'
-            ? 'bg-teal-50 border-teal-200 text-teal-900'
-            : role === 'city'
-            ? 'bg-blue-50 border-blue-200 text-blue-900'
-            : 'bg-purple-50 border-purple-200 text-purple-900'
-        }`}>
-          <div className="font-extrabold flex items-center gap-2">
-            {role === 'rider' && <Truck className="h-4 w-4 text-teal-600" />}
-            {role === 'city' && <Building2 className="h-4 w-4 text-blue-600" />}
-            {role === 'dishub' && <Shield className="h-4 w-4 text-purple-600" />}
-            <span>
-              Peran Terpilih: {role === 'rider' ? 'Kurir Logistik / Rider' : role === 'city' ? 'Pengelola / Admin Kota' : 'Petugas Dishub Lapangan'}
-            </span>
+        {/* Error Alert Box */}
+        {errorMessage && (
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 flex items-start gap-2.5 animate-in fade-in">
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+            <div className="leading-relaxed font-semibold">{errorMessage}</div>
           </div>
-          <div className="text-[11px] leading-relaxed opacity-90">
-            {role === 'rider'
-              ? 'Verifikasi via WhatsApp/SMS ke Nomor Telepon. Email bersifat opsional.'
-              : role === 'city'
-              ? 'Membutuhkan Email Resmi Admin Kota untuk laporan & verifikasi instansi.'
-              : 'Membutuhkan Email Resmi Petugas Dishub untuk verifikasi akun pengawasan.'}
-          </div>
-        </div>
+        )}
 
         {/* Form Container */}
         <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -165,7 +201,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Wajib 2: Nomor Telepon / WhatsApp (PRIMARY IDENTIFIER) */}
+          {/* Wajib 2: Nomor Telepon / WhatsApp */}
           <div>
             <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5 mb-1">
               <Phone className="h-3.5 w-3.5 text-teal-600" /> Nomor Telepon / WhatsApp (Primary ID) <span className="text-rose-600">*</span>
@@ -180,7 +216,7 @@ export default function RegisterPage() {
             />
           </div>
 
-          {/* Conditional Field: Email (Opsional untuk Kurir, Wajib untuk Admin/Dishub) */}
+          {/* Conditional Field: Email */}
           <div>
             <label className="text-xs font-semibold text-slate-700 flex items-center justify-between mb-1">
               <span className="flex items-center gap-1.5">
@@ -242,10 +278,14 @@ export default function RegisterPage() {
           {/* Submit CTA */}
           <Button
             type="submit"
-            disabled={!agreed || !isFormValid}
+            disabled={!agreed || !isFormValid || loading}
             className="w-full py-3 text-xs font-bold flex items-center justify-center gap-2 shadow-md mt-2"
           >
-            {role === 'rider' ? (
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Mendaftarkan Akun ke Supabase...
+              </>
+            ) : role === 'rider' ? (
               <>
                 <MessageSquare className="h-4 w-4" /> Lanjut Verifikasi OTP WhatsApp
               </>
