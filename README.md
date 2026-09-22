@@ -181,5 +181,5 @@ Platform **UrbanLoad.AI** dikembangkan oleh mahasiswa S1 Informatika:
 ---
 
 <div align="center">
-  <p>© 2025 <b>UrbanLoad.AI</b> — Hak Cipta Dilindungi Undang-Undang.</p>
+  <p>©  <b>UrbanLoad.AI</b> — Hak Cipta Dilindungi Undang-Undang.</p>
 </div>
