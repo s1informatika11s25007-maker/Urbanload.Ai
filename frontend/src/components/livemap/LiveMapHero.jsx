@@ -21,6 +21,8 @@ import {
   ArrowUp,
   ArrowDown,
   Activity,
+  Navigation,
+  Crosshair,
 } from 'lucide-react';
 
 // 1. Street / Vektor Mode (100% Free OpenStreetMap - No API Key, Complete Cities)
@@ -127,6 +129,8 @@ export function LiveMapHero() {
   const mapRef = useRef(null);
   const animationFrameRef = useRef(null);
   const truckMarkersRef = useRef([]);
+  const userMarkerRef = useRef(null);
+  const watchPositionIdRef = useRef(null);
 
   // Control States
   const [mapMode, setMapMode] = useState('street'); // 'street' | 'satellite' | 'dark'
@@ -135,11 +139,15 @@ export function LiveMapHero() {
   const [showZones, setShowZones] = useState(true);
   const [showTrucks, setShowTrucks] = useState(true);
 
-  // Pure Real Database States (No Hardcoded Dummy Data)
+  // Real Database States
   const [realZones, setRealZones] = useState([]);
   const [realBookings, setRealBookings] = useState([]);
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // User Live GNSS Location State (Zero Cache)
+  const [userLocation, setUserLocation] = useState(null);
+  const [isLocating, setIsLocating] = useState(false);
 
   // Load Real Database Data from Supabase
   const loadDatabaseData = async () => {
@@ -194,6 +202,7 @@ export function LiveMapHero() {
 
     map.on('load', () => {
       loadDatabaseData();
+      startAutoLocateUser(map);
     });
 
     mapRef.current = map;
@@ -211,6 +220,7 @@ export function LiveMapHero() {
       .subscribe();
 
     return () => {
+      if (watchPositionIdRef.current) navigator.geolocation.clearWatch(watchPositionIdRef.current);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       supabase.removeChannel(zonesChannel);
       supabase.removeChannel(bookingsChannel);
@@ -220,6 +230,96 @@ export function LiveMapHero() {
       }
     };
   }, []);
+
+  // REALTIME ZERO-CACHE USER LOCATION TRACKING (watchPosition with maximumAge: 0)
+  const startAutoLocateUser = (map) => {
+    if (!navigator.geolocation) return;
+
+    watchPositionIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+        const coords = { lat, lng, accuracy };
+        setUserLocation(coords);
+
+        if (mapRef.current) {
+          updateUserMarker(mapRef.current, lng, lat, accuracy);
+        }
+      },
+      (err) => console.warn('Auto locate warning:', err),
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0, // FORCE FRESH REALTIME GNSS - ZERO CACHE
+      }
+    );
+  };
+
+  // Render or Update User Live Marker on Map
+  const updateUserMarker = (map, lng, lat, accuracy) => {
+    if (userMarkerRef.current) userMarkerRef.current.remove();
+
+    const el = document.createElement('div');
+    el.className = 'relative flex items-center justify-center cursor-pointer group';
+    el.innerHTML = `
+      <div className="h-8 w-8 rounded-full bg-teal-500/30 border-2 border-teal-400 flex items-center justify-center animate-ping absolute"></div>
+      <div className="h-4 w-4 rounded-full bg-teal-500 border-2 border-white shadow-2xl relative"></div>
+    `;
+
+    el.addEventListener('click', () => {
+      setSelectedFeature({
+        type: 'Lokasi Saya (Presisi GNSS)',
+        title: 'Posisi Perangkat Anda (Realtime)',
+        subtitle: `Akurasi GPS: ±${accuracy?.toFixed(1) || 5} meter`,
+        capacity: `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`,
+        operating: 'Pembaruan otomatis tanpa cache (Fresh GNSS)',
+        color: '#14b8a6',
+      });
+    });
+
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([lng, lat])
+      .addTo(map);
+
+    userMarkerRef.current = marker;
+  };
+
+  // Manual Trigger Button: Locate Me & Center Camera
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      alert('Browser tidak mendukung Geolocation.');
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+        setUserLocation({ lat, lng, accuracy });
+        setIsLocating(false);
+
+        const map = mapRef.current;
+        if (map) {
+          updateUserMarker(map, lng, lat, accuracy);
+          map.flyTo({
+            center: [lng, lat],
+            zoom: 15.5,
+            pitch: is3D ? 55 : 0,
+            duration: 1200,
+          });
+        }
+      },
+      (err) => {
+        console.warn('Manual locate error:', err);
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0, // ZERO CACHE
+      }
+    );
+  };
 
   // Update Spatial Map Layers whenever realZones data changes
   useEffect(() => {
@@ -334,6 +434,9 @@ export function LiveMapHero() {
 
     map.once('styledata', () => {
       updateLayerVisibilities(map);
+      if (userLocation) {
+        updateUserMarker(map, userLocation.lng, userLocation.lat, userLocation.accuracy);
+      }
     });
   }, [mapMode]);
 
@@ -548,6 +651,21 @@ export function LiveMapHero() {
             <Layers className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-300" /> Gelap
           </button>
         </div>
+
+        {/* FEATURE 1: LOKASI SAYA BUTTON (FRESH ZERO CACHE GNSS) */}
+        <button
+          type="button"
+          onClick={handleLocateMe}
+          className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl font-bold flex items-center gap-1 border transition shadow-sm ${
+            userLocation
+              ? 'bg-teal-600 text-white border-teal-500 shadow-teal-600/30'
+              : 'bg-slate-800 text-teal-300 border-slate-700 hover:bg-slate-700'
+          }`}
+          title="Fokuskan Ke Lokasi Saya Saat Ini (Akurat & Fresh GNSS)"
+        >
+          <Crosshair className={`h-3.5 w-3.5 ${isLocating ? 'animate-spin text-teal-300' : 'text-teal-400'}`} />
+          <span>{isLocating ? 'Mencari...' : 'Lokasi Saya'}</span>
+        </button>
 
         {/* 3D / 2D Toggle */}
         <button
@@ -790,6 +908,15 @@ export function LiveMapHero() {
           <Truck className="h-3 w-3" />
           <span>{realBookings.length} Booking Real</span>
         </div>
+        {userLocation && (
+          <>
+            <div className="h-3 w-[1px] bg-slate-700 shrink-0"></div>
+            <div className="flex items-center gap-1 text-emerald-400 font-mono font-bold shrink-0">
+              <Crosshair className="h-3 w-3" />
+              <span>GPS ±{userLocation.accuracy?.toFixed(1)}m</span>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   );
