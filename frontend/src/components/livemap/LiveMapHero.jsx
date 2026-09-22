@@ -20,37 +20,89 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowDown,
-  Eye,
 } from 'lucide-react';
 
-// ESRI High-Resolution Satellite Map Style Definition
-const SATELLITE_STYLE = {
+// 1. Street / Vektor Mode (100% Free OpenStreetMap - No API Key, Complete Cities)
+const VECTORSTREET_STYLE = {
   version: 8,
   sources: {
-    'esri-satellite': {
+    'osm-street-tiles': {
       type: 'raster',
       tiles: [
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
       ],
       tileSize: 256,
-      attribution: 'Esri, Maxar, Earthstar Geographics',
-    },
-    'carto-labels': {
-      type: 'raster',
-      tiles: [
-        'https://basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
-      ],
-      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+      maxzoom: 19,
     },
   },
   layers: [
-    { id: 'satellite-tiles', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 20 },
-    { id: 'labels-tiles', type: 'raster', source: 'carto-labels', minzoom: 0, maxzoom: 20 },
+    { id: 'bg-street', type: 'background', paint: { 'background-color': '#e2e8f0' } },
+    { id: 'osm-street-layer', type: 'raster', source: 'osm-street-tiles', minzoom: 0, maxzoom: 19 },
   ],
 };
 
-const VECTORDARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
-const VECTORSTREET_STYLE = 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+// 2. High-Res Satellite Mode (100% Free Esri World Imagery - No API Key)
+const SATELLITE_STYLE = {
+  version: 8,
+  sources: {
+    'esri-satellite-tiles': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      ],
+      tileSize: 256,
+      attribution: 'Esri, Maxar, Earthstar Geographics',
+      maxzoom: 19,
+    },
+    'esri-transportation-labels': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    { id: 'bg-sat', type: 'background', paint: { 'background-color': '#020617' } },
+    { id: 'satellite-layer', type: 'raster', source: 'esri-satellite-tiles', minzoom: 0, maxzoom: 19 },
+    { id: 'labels-layer', type: 'raster', source: 'esri-transportation-labels', minzoom: 0, maxzoom: 19 },
+  ],
+};
+
+// 3. Dark Mode (100% Free Dark Basemap - No API Key)
+const VECTORDARK_STYLE = {
+  version: 8,
+  sources: {
+    'esri-dark-tiles': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      ],
+      tileSize: 256,
+      attribution: 'Esri, HERE, Garmin, © OpenStreetMap contributors',
+      maxzoom: 19,
+    },
+    'esri-dark-labels': {
+      type: 'raster',
+      tiles: [
+        'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+      ],
+      tileSize: 256,
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    { id: 'bg-dark', type: 'background', paint: { 'background-color': '#090d16' } },
+    { id: 'dark-layer', type: 'raster', source: 'esri-dark-tiles', minzoom: 0, maxzoom: 19 },
+    { id: 'dark-labels-layer', type: 'raster', source: 'esri-dark-labels', minzoom: 0, maxzoom: 19 },
+  ],
+};
 
 // Helper: Parse PostGIS WKT POLYGON / GeoJSON into MapLibre Ring Coordinates
 function parseBoundaryPolygon(poly) {
@@ -69,16 +121,6 @@ function parseBoundaryPolygon(poly) {
   return null;
 }
 
-// Default real coordinate mapping for known Jakarta logistics zones (when WKT parsing is missing)
-const JAKARTA_ZONE_COORDS = {
-  '11111111-1111-1111-1111-111111111111': [[[106.812, -6.185], [106.822, -6.185], [106.822, -6.195], [106.812, -6.195], [106.812, -6.185]]],
-  '22222222-2222-2222-2222-222222222222': [[[106.870, -6.105], [106.892, -6.105], [106.892, -6.125], [106.870, -6.125], [106.870, -6.105]]],
-  '33333333-3333-3333-3333-333333333333': [[[106.818, -6.200], [106.828, -6.200], [106.823, -6.230], [106.813, -6.230], [106.818, -6.200]]],
-  '44444444-4444-4444-4444-444444444444': [[[106.895, -6.150], [106.915, -6.150], [106.915, -6.170], [106.895, -6.170], [106.895, -6.150]]],
-  '55555555-5555-5555-5555-555555555555': [[[106.910, -6.185], [106.932, -6.185], [106.932, -6.205], [106.910, -6.205], [106.910, -6.185]]],
-  '66666666-6666-6666-6666-666666666666': [[[106.810, -6.138], [106.830, -6.138], [106.830, -6.155], [106.810, -6.155], [106.810, -6.138]]],
-};
-
 export function LiveMapHero() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -92,7 +134,7 @@ export function LiveMapHero() {
   const [showZones, setShowZones] = useState(true);
   const [showTrucks, setShowTrucks] = useState(true);
 
-  // Real Database States
+  // Pure Real Database States (No Hardcoded Dummy Data)
   const [realZones, setRealZones] = useState([]);
   const [realBookings, setRealBookings] = useState([]);
   const [selectedFeature, setSelectedFeature] = useState(null);
@@ -109,7 +151,7 @@ export function LiveMapHero() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (zonesData && zonesData.length > 0) {
+      if (zonesData) {
         setRealZones(zonesData);
       }
 
@@ -144,6 +186,7 @@ export function LiveMapHero() {
       pitchWithRotate: true,
       touchPitch: true,
       touchZoomRotate: true,
+      maxParallelImageRequests: 16,
     });
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'top-right');
@@ -157,12 +200,12 @@ export function LiveMapHero() {
     // Realtime Supabase Database Subscriptions
     const supabase = createClient();
     const zonesChannel = supabase
-      .channel('realtime_map_zones')
+      .channel('realtime_map_zones_ch')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => loadDatabaseData())
       .subscribe();
 
     const bookingsChannel = supabase
-      .channel('realtime_map_bookings')
+      .channel('realtime_map_bookings_ch')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadDatabaseData())
       .subscribe();
 
@@ -182,45 +225,34 @@ export function LiveMapHero() {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
 
-    const zoneFeatures = realZones.map((z, idx) => {
-      let coords = parseBoundaryPolygon(z.boundary_polygon);
-      if (!coords && JAKARTA_ZONE_COORDS[z.id]) {
-        coords = JAKARTA_ZONE_COORDS[z.id];
-      }
+    // Parse polygons purely from database rows
+    const zoneFeatures = realZones
+      .map((z, idx) => {
+        const coords = parseBoundaryPolygon(z.boundary_polygon);
+        if (!coords) return null;
 
-      if (!coords) {
-        const offsetLat = (idx % 3) * 0.03;
-        const offsetLng = Math.floor(idx / 3) * 0.03;
-        coords = [[
-          [106.810 + offsetLng, -6.180 - offsetLat],
-          [106.825 + offsetLng, -6.180 - offsetLat],
-          [106.825 + offsetLng, -6.195 - offsetLat],
-          [106.810 + offsetLng, -6.195 - offsetLat],
-          [106.810 + offsetLng, -6.180 - offsetLat],
-        ]];
-      }
+        const capacityMax = z.max_truck_capacity || 10;
 
-      const capacityMax = z.max_truck_capacity || 10;
-
-      return {
-        type: 'Feature',
-        properties: {
-          id: z.id,
-          name: z.name,
-          maxCapacity: capacityMax,
-          zoneType: z.zone_type || 'logistics',
-          priority: z.priority_level || 'normal',
-          operatingStart: z.operating_hours_start || '06:00',
-          operatingEnd: z.operating_hours_end || '22:00',
-          color: idx % 3 === 0 ? '#ef4444' : idx % 3 === 1 ? '#f59e0b' : '#10b981',
-          height: 35 + (idx * 15),
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: coords,
-        },
-      };
-    });
+        return {
+          type: 'Feature',
+          properties: {
+            id: z.id,
+            name: z.name,
+            maxCapacity: capacityMax,
+            zoneType: z.zone_type || 'logistics',
+            priority: z.priority_level || 'normal',
+            operatingStart: z.operating_hours_start || '06:00',
+            operatingEnd: z.operating_hours_end || '22:00',
+            color: idx % 3 === 0 ? '#ef4444' : idx % 3 === 1 ? '#f59e0b' : '#10b981',
+            height: 35 + (idx * 15),
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: coords,
+          },
+        };
+      })
+      .filter(Boolean);
 
     const realGeoJSON = {
       type: 'FeatureCollection',
@@ -272,7 +304,7 @@ export function LiveMapHero() {
         if (e.features && e.features[0]) {
           const props = e.features[0].properties;
           setSelectedFeature({
-            type: 'Zona Logistik Real',
+            type: 'Zona Logistik Real (Database)',
             title: props.name,
             subtitle: `Tipe: ${props.zoneType} | Prioritas: ${props.priority}`,
             capacity: `Maksimal: ${props.maxCapacity} Truk`,
@@ -371,8 +403,8 @@ export function LiveMapHero() {
 
     if (!showTrucks) return;
 
-    realBookings.forEach((b, idx) => {
-      let coords = [106.8272 + ((idx % 4) * 0.02) - 0.03, -6.1754 + (Math.floor(idx / 4) * 0.02) - 0.02];
+    realBookings.forEach((b) => {
+      let coords = null;
 
       if (b.zones && b.zones.boundary_polygon) {
         const parsed = parseBoundaryPolygon(b.zones.boundary_polygon);
@@ -380,6 +412,8 @@ export function LiveMapHero() {
           coords = parsed[0][0];
         }
       }
+
+      if (!coords) return; // Only render real bookings with valid zone location
 
       const el = document.createElement('div');
       el.className = 'group relative cursor-pointer';
@@ -389,14 +423,14 @@ export function LiveMapHero() {
       el.innerHTML = `
         <div className="flex items-center gap-1 bg-slate-900/90 text-white px-2 py-1 rounded-full border border-slate-700 shadow-xl backdrop-blur-md transition-transform duration-200 group-hover:scale-110">
           <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
-          <span className="text-[10px] font-black font-mono">${b.vehicle_plate || 'T-REAL'}</span>
+          <span className="text-[10px] font-black font-mono">${b.vehicle_plate || 'TRUK REAL'}</span>
         </div>
       `;
 
       el.addEventListener('click', () => {
         setSelectedFeature({
           type: 'Truk Real (Database)',
-          title: b.vehicle_plate || 'B 9812 UAI',
+          title: b.vehicle_plate || 'Truk Logistik',
           subtitle: `Pengemudi: ${b.profiles?.full_name || 'Kurir Logistik'}`,
           status: `Status: ${b.status || 'Aktif'}`,
           zone: `Zona: ${b.zones?.name || 'Zona Logistik'}`,
@@ -477,40 +511,40 @@ export function LiveMapHero() {
   };
 
   return (
-    <Card className="w-full h-[580px] p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl">
+    <Card className="w-full h-[450px] sm:h-[580px] p-0 overflow-hidden relative bg-slate-950 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl">
       {/* Map Canvas */}
-      <div ref={mapContainerRef} className="w-full h-full" />
+      <div ref={mapContainerRef} className="w-full h-full bg-slate-950" />
 
-      {/* Floating Control Bar Top Right */}
-      <div className="absolute top-4 right-14 z-20 flex flex-wrap items-center gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-lg text-xs">
+      {/* Floating Control Bar Top Right - Mobile Responsive */}
+      <div className="absolute top-3 right-12 sm:top-4 sm:right-14 z-20 flex flex-wrap items-center gap-1.5 sm:gap-2 bg-slate-900/90 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-lg text-[10px] sm:text-xs max-w-[85vw] sm:max-w-none">
         {/* Map Mode Buttons */}
-        <div className="flex items-center gap-1 bg-slate-800/90 p-1 rounded-xl border border-slate-700">
+        <div className="flex items-center gap-1 bg-slate-800/90 p-0.5 sm:p-1 rounded-lg sm:rounded-xl border border-slate-700">
           <button
             type="button"
             onClick={() => setMapMode('street')}
-            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition ${
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg font-bold flex items-center gap-1 transition ${
               mapMode === 'street' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Layers className="h-3.5 w-3.5" /> Vektor
+            <Layers className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Vektor
           </button>
           <button
             type="button"
             onClick={() => setMapMode('satellite')}
-            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition ${
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg font-bold flex items-center gap-1 transition ${
               mapMode === 'satellite' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Globe className="h-3.5 w-3.5" /> Satelit
+            <Globe className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Satelit
           </button>
           <button
             type="button"
             onClick={() => setMapMode('dark')}
-            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition ${
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg font-bold flex items-center gap-1 transition ${
               mapMode === 'dark' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Layers className="h-3.5 w-3.5 text-slate-300" /> Gelap
+            <Layers className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-300" /> Gelap
           </button>
         </div>
 
@@ -518,13 +552,13 @@ export function LiveMapHero() {
         <button
           type="button"
           onClick={() => setIs3D(!is3D)}
-          className={`px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5 border transition ${
+          className={`px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl font-bold flex items-center gap-1 border transition ${
             is3D
               ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
               : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
           }`}
         >
-          <Box className="h-3.5 w-3.5" /> {is3D ? 'Mode 3D' : 'Mode 2D'}
+          <Box className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {is3D ? '3D' : '2D'}
         </button>
 
         {/* 3D Camera Rotation Toggle */}
@@ -532,12 +566,12 @@ export function LiveMapHero() {
           <button
             type="button"
             onClick={() => setAutoRotate(!autoRotate)}
-            className={`p-1.5 rounded-xl border transition ${
+            className={`p-1 sm:p-1.5 rounded-lg sm:rounded-xl border transition ${
               autoRotate ? 'bg-teal-500/20 text-teal-300 border-teal-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'
             }`}
             title="Auto-Rotate Camera 3D"
           >
-            {autoRotate ? <Pause className="h-4 w-4 animate-spin text-teal-400" /> : <Play className="h-4 w-4" />}
+            {autoRotate ? <Pause className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-teal-400" /> : <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
         )}
 
@@ -545,92 +579,92 @@ export function LiveMapHero() {
         <button
           type="button"
           onClick={loadDatabaseData}
-          className="p-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
+          className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
           title="Sinkronisasi Data Real Database"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-teal-400' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${loading ? 'animate-spin text-teal-400' : ''}`} />
         </button>
       </div>
 
-      {/* MANUAL CAMERA NAVIGATION & ROTATION CONTROL PANEL (Bawah Kanan) */}
-      <div className="absolute bottom-16 right-4 z-20 bg-slate-900/90 p-2.5 rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-2xl flex flex-col items-center gap-2 text-white text-xs">
-        <div className="text-[10px] font-black uppercase text-teal-400 tracking-wider flex items-center gap-1">
-          <Compass className="h-3 w-3" /> Kontrol Manual Kamera
+      {/* MANUAL CAMERA NAVIGATION & ROTATION CONTROL PANEL - Mobile Responsive (Bawah Kanan) */}
+      <div className="absolute bottom-12 right-3 sm:bottom-16 sm:right-4 z-20 bg-slate-900/90 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-2xl flex flex-col items-center gap-1.5 sm:gap-2 text-white text-[10px] sm:text-xs">
+        <div className="text-[9px] sm:text-[10px] font-black uppercase text-teal-400 tracking-wider flex items-center gap-1">
+          <Compass className="h-3 w-3" /> Kontrol Kamera
         </div>
 
         {/* Rotasi Kiri & Kanan */}
-        <div className="flex items-center gap-1.5 w-full justify-center">
+        <div className="flex items-center gap-1 sm:gap-1.5 w-full justify-center">
           <button
             type="button"
             onClick={handleRotateLeft}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
             title="Putar Kamera Ke Kiri 35°"
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Putar Kiri
+            <RotateCcw className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Putar Kiri
           </button>
           <button
             type="button"
             onClick={handleResetNorth}
-            className="p-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-amber-400 font-bold transition shadow-md"
+            className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-amber-400 font-bold transition shadow-md"
             title="Reset Arah Utara (North)"
           >
-            <Compass className="h-4 w-4" />
+            <Compass className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
           <button
             type="button"
             onClick={handleRotateRight}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-teal-600 hover:border-teal-500 text-white font-bold flex items-center gap-1 transition shadow-md active:scale-95"
             title="Putar Kamera Ke Kanan 35°"
           >
-            Putar Kanan <RotateCw className="h-3.5 w-3.5" />
+            Putar Kanan <RotateCw className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </button>
         </div>
 
         {/* D-Pad Pan & Tilt Direction Controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           <button
             type="button"
             onClick={handlePanLeft}
-            className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
             title="Geser Peta Ke Kiri"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
 
           <div className="flex flex-col gap-1">
             <button
               type="button"
               onClick={handlePanUp}
-              className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
               title="Geser Peta Ke Atas"
             >
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
             <button
               type="button"
               onClick={handlePanDown}
-              className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
               title="Geser Peta Ke Bawah"
             >
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           </div>
 
           <button
             type="button"
             onClick={handlePanRight}
-            className="p-2 rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
+            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-800 border border-slate-700 hover:bg-slate-700 text-white transition active:scale-95"
             title="Geser Peta Ke Kanan"
           >
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </button>
 
           {/* Kemiringan Tilt 3D */}
-          <div className="flex flex-col gap-1 border-l border-slate-700 pl-1.5">
+          <div className="flex flex-col gap-1 border-l border-slate-700 pl-1">
             <button
               type="button"
               onClick={handleTiltUp}
-              className="px-2 py-1 rounded-xl bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[10px] font-bold transition active:scale-95"
+              className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[9px] sm:text-[10px] font-bold transition active:scale-95"
               title="Miringkan Ke Atas (3D Tilt)"
             >
               Tilt +
@@ -638,7 +672,7 @@ export function LiveMapHero() {
             <button
               type="button"
               onClick={handleTiltDown}
-              className="px-2 py-1 rounded-xl bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[10px] font-bold transition active:scale-95"
+              className="px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg bg-slate-800 border border-slate-700 hover:bg-amber-600 text-amber-300 text-[9px] sm:text-[10px] font-bold transition active:scale-95"
               title="Miringkan Ke Bawah (Flat)"
             >
               Tilt -
@@ -647,46 +681,46 @@ export function LiveMapHero() {
         </div>
       </div>
 
-      {/* Floating Layer Filters Panel Top Left */}
-      <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 backdrop-blur-md shadow-xl space-y-2 text-xs text-white max-w-[200px]">
-        <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
+      {/* Floating Layer Filters Panel Top Left - Mobile Responsive */}
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 bg-slate-900/90 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-slate-800 backdrop-blur-md shadow-xl space-y-1.5 sm:space-y-2 text-xs text-white max-w-[170px] sm:max-w-[200px]">
+        <div className="text-[9px] sm:text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
           <Layers className="h-3 w-3 text-teal-400" /> Layer Database Real
         </div>
-        <div className="space-y-1.5 pt-1">
-          <label className="flex items-center gap-2 cursor-pointer text-[11px] font-semibold text-slate-200">
+        <div className="space-y-1 pt-0.5 sm:pt-1">
+          <label className="flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] font-semibold text-slate-200">
             <input
               type="checkbox"
               checked={showZones}
               onChange={(e) => setShowZones(e.target.checked)}
               className="rounded border-slate-700 bg-slate-800 text-teal-500 focus:ring-teal-500"
             />
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-teal-500"></span> Zona Real ({realZones.length})
+            <span className="flex items-center gap-1 truncate">
+              <span className="h-2 w-2 rounded-full bg-teal-500 shrink-0"></span> Zona Real ({realZones.length})
             </span>
           </label>
 
-          <label className="flex items-center gap-2 cursor-pointer text-[11px] font-semibold text-slate-200">
+          <label className="flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] font-semibold text-slate-200">
             <input
               type="checkbox"
               checked={showTrucks}
               onChange={(e) => setShowTrucks(e.target.checked)}
               className="rounded border-slate-700 bg-slate-800 text-teal-500 focus:ring-teal-500"
             />
-            <span className="flex items-center gap-1">
-              <Truck className="h-3 w-3 text-amber-400" /> Truk Booking Real ({realBookings.length})
+            <span className="flex items-center gap-1 truncate">
+              <Truck className="h-3 w-3 text-amber-400 shrink-0" /> Truk Booking Real ({realBookings.length})
             </span>
           </label>
         </div>
       </div>
 
-      {/* Selected Feature Modal Popup */}
+      {/* Selected Feature Modal Popup - Mobile Responsive */}
       {selectedFeature && (
-        <div className="absolute top-20 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 backdrop-blur-xl shadow-2xl text-white text-xs w-72 space-y-2 animate-in fade-in slide-in-from-left-2 duration-200">
+        <div className="absolute top-16 left-3 sm:top-20 sm:left-4 z-30 bg-slate-900/95 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-teal-500/40 backdrop-blur-xl shadow-2xl text-white text-xs w-64 sm:w-72 space-y-2 animate-in fade-in duration-200">
           <div className="flex justify-between items-start border-b border-slate-800 pb-2">
             <div>
-              <span className="text-[10px] font-mono uppercase text-teal-400 font-bold block">{selectedFeature.type}</span>
-              <h3 className="font-black text-sm text-white">{selectedFeature.title}</h3>
-              <p className="text-[11px] text-slate-400">{selectedFeature.subtitle}</p>
+              <span className="text-[9px] font-mono uppercase text-teal-400 font-bold block">{selectedFeature.type}</span>
+              <h3 className="font-black text-xs sm:text-sm text-white">{selectedFeature.title}</h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">{selectedFeature.subtitle}</p>
             </div>
             <button
               onClick={() => setSelectedFeature(null)}
@@ -696,7 +730,7 @@ export function LiveMapHero() {
             </button>
           </div>
 
-          <div className="space-y-1.5 pt-1 text-[11px]">
+          <div className="space-y-1.5 pt-1 text-[10px] sm:text-[11px]">
             {selectedFeature.capacity && (
               <div className="flex justify-between">
                 <span className="text-slate-400">Kapasitas Slot:</span>
@@ -725,22 +759,17 @@ export function LiveMapHero() {
         </div>
       )}
 
-      {/* Bottom Status Bar */}
-      <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 px-3.5 py-2 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md shadow-xl flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Radio className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-          <span className="font-bold text-slate-200">Supabase Realtime DB</span>
+      {/* Bottom Status Bar - Mobile Responsive */}
+      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-slate-900/90 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl border border-slate-800 text-white text-[10px] sm:text-xs backdrop-blur-md shadow-xl flex items-center gap-2 sm:gap-4 max-w-[80vw] sm:max-w-none overflow-x-auto">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Radio className="h-3 w-3 text-emerald-400 animate-pulse" />
+          <span className="font-bold text-slate-200">Supabase DB</span>
         </div>
-        <div className="h-3 w-[1px] bg-slate-700"></div>
-        <div className="flex items-center gap-1.5 text-teal-400 font-bold">
-          <Truck className="h-3.5 w-3.5" />
-          <span>{realBookings.length} Booking Real Active</span>
+        <div className="h-3 w-[1px] bg-slate-700 shrink-0"></div>
+        <div className="flex items-center gap-1 text-teal-400 font-bold shrink-0">
+          <Truck className="h-3 w-3" />
+          <span>{realBookings.length} Booking Real</span>
         </div>
-      </div>
-
-      {/* Bottom Right Indicator */}
-      <div className="absolute bottom-4 right-4 z-20 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-[10px] text-slate-300 font-mono backdrop-blur-md">
-        Mode: <span className="font-bold text-teal-400 uppercase">{mapMode}</span> | {is3D ? '3D Extrusion' : '2D Ortho'}
       </div>
     </Card>
   );

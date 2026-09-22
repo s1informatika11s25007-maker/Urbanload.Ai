@@ -17,7 +17,7 @@ export function BookingForm({ onCheckSlot }) {
   };
 
   return (
-    <Card className="p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4">
+    <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4">
       <h3 className="text-base font-black text-slate-900 border-b pb-2 flex items-center gap-2">
         <Truck className="h-5 w-5 text-teal-600" /> Informasi Booking Slot Realtime
       </h3>
