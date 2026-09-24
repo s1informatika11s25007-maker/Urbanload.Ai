@@ -68,14 +68,6 @@ export default function Home() {
         </p>
 
         <div className="pt-3 space-y-4">
-          <Link to="/rider/bookings/new" className="inline-block w-full sm:w-auto">
-            <Button className="w-full sm:w-auto px-8 py-4 text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl font-black bg-teal-600 hover:bg-teal-700 text-white rounded-2xl transform hover:scale-[1.02] transition">
-              <ShieldCheck className="h-5 w-5 text-teal-200" />
-              <span>Pesan Slot Booking Baru</span>
-              <ArrowRight className="h-5 w-5" />
-            </Button>
-          </Link>
-
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-extrabold text-slate-800 pt-1">
             <Link to="/city/livemap?preview=public" className="hover:text-teal-700 underline underline-offset-4 flex items-center gap-1.5 text-teal-800">
               <Eye className="h-4 w-4 text-teal-600" /> Lihat LiveMap Pemantauan Kota
