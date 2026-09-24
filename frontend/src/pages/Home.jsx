@@ -17,6 +17,7 @@ import {
   MapPin,
   QrCode,
   Radar,
+  Scan,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -88,7 +89,7 @@ export default function Home() {
             <Globe className="h-3.5 w-3.5 text-teal-600" /> MapLibre GL
           </span>
           <span className="px-3 py-1 rounded-xl bg-white border border-slate-300 shadow-sm flex items-center gap-1.5 text-slate-800">
-            <ShieldCheck className="h-3.5 w-3.5 text-teal-600" /> Tiket Terenkripsi
+            <QrCode className="h-3.5 w-3.5 text-teal-600" /> QuickPass QR
           </span>
         </div>
       </div>
@@ -149,40 +150,47 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              n: 1,
-              title: 'Pilih Slot Waktu (SmartSlot)',
-              desc: 'Kurir memilih zona & jam kedatangan. Sistem otomatis mencocokkan kapasitas bay dengan dimensi truk agar tidak terjadi antrean.',
-            },
-            {
-              n: 2,
-              title: 'Scan Pas Digital (QuickPass QR)',
-              desc: 'Setiap booking langsung mendapat tiket QR anti-pemalsuan yang ditunjukkan ke petugas saat tiba di lokasi.',
-            },
-            {
-              n: 3,
-              title: 'Terverifikasi Otomatis (GeoFence)',
-              desc: 'Saat truk memasuki radius zona, lokasi GPS tervalidasi otomatis dan status slot berubah jadi terisi.',
-            },
-          ].map((s) => (
-            <Card
-              key={s.n}
-              className="p-6 space-y-4 border-slate-200 bg-white rounded-3xl shadow-sm hover:border-teal-500 transition"
-            >
-              <div className="h-12 w-12 rounded-2xl bg-teal-600 text-white font-black text-lg flex items-center justify-center shadow-md">
-                {s.n}
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="font-black text-base sm:text-lg text-slate-900">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">{s.desc}</p>
-              </div>
-            </Card>
-          ))}
+          <Card className="p-6 space-y-4 border-slate-200 bg-white rounded-3xl shadow-sm hover:border-teal-500 transition">
+            <div className="h-12 w-12 rounded-2xl bg-teal-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+              1
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Pilih Slot Waktu (SmartSlot)</h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Kurir memilih zona & jam kedatangan. Sistem otomatis mencocokkan kapasitas bay dengan dimensi truk agar tidak terjadi antrean.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-6 space-y-4 border-slate-200 bg-white rounded-3xl shadow-sm hover:border-teal-500 transition">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+              <QrCode className="h-6 w-6" />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-black text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                Scan Pas Digital (QuickPass QR)
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Setiap booking langsung mendapat pas digital Barcode QuickPass QR terenkripsi yang ditunjukkan ke petugas saat tiba di lokasi.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="p-6 space-y-4 border-slate-200 bg-white rounded-3xl shadow-sm hover:border-teal-500 transition">
+            <div className="h-12 w-12 rounded-2xl bg-teal-600 text-white font-black text-lg flex items-center justify-center shadow-md">
+              3
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Terverifikasi Otomatis (GeoFence)</h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Saat truk memasuki radius zona, lokasi GPS tervalidasi otomatis dan status slot berubah jadi terisi.
+              </p>
+            </div>
+          </Card>
         </div>
       </section>
 
-      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI — KONSISTENSI KARTU LATAR PUTIH BERSAMAKAN TEKS GELAP KONTRAS */}
+      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI WITH QUICKPASS QR BARCODE LOGO SHOWCASE */}
       <section id="showcase" className="space-y-8 scroll-mt-20">
         <div className="text-center space-y-2">
           <span className="text-xs font-extrabold text-teal-900 uppercase tracking-wider bg-teal-100 px-3.5 py-1.5 rounded-full border border-teal-300">
@@ -197,83 +205,96 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              tag: 'LiveMap Spasial',
-              tagColor: 'text-teal-900 bg-teal-100 border-teal-300',
-              title: 'Pemantauan Zona & Kepadatan',
-              desc: 'Peta interaktif dengan warna skor kepadatan per zona dan posisi truk real-time.',
-              icon: <Globe className="h-5 w-5 text-teal-600" />,
-              href: '/city/livemap?preview=public',
-              btn: 'Buka LiveMap',
-              btnColor: 'bg-teal-600 hover:bg-teal-700 text-white',
-              mockup: (
-                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 grid grid-cols-3 gap-1.5 p-2.5 shadow-inner">
-                  <div className="rounded-xl bg-emerald-500/40 border border-emerald-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona A</div>
-                  <div className="rounded-xl bg-amber-500/40 border border-amber-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona B</div>
-                  <div className="rounded-xl bg-rose-500/40 border border-rose-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona C</div>
-                </div>
-              ),
-            },
-            {
-              tag: 'QuickPass QR',
-              tagColor: 'text-emerald-900 bg-emerald-100 border-emerald-300',
-              title: 'Tiket Digital & Panic Button',
-              desc: 'Tiket QR untuk petugas Dishub, plus tombol reschedule darurat saat macet.',
-              icon: <ShieldCheck className="h-5 w-5 text-emerald-600" />,
-              href: '/rider/dashboard?demo=true',
-              btn: 'Coba QuickPass',
-              btnColor: 'bg-emerald-600 hover:bg-emerald-700 text-white',
-              mockup: (
-                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 flex items-center justify-center p-2 shadow-inner">
-                  <div className="h-22 w-22 rounded-xl bg-white grid grid-cols-4 grid-rows-4 gap-0.5 p-2 shadow-lg">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div key={i} className={i % 3 === 0 ? 'bg-slate-900 rounded-sm' : 'bg-white'} />
-                    ))}
+          {/* Showcase 1: LiveMap */}
+          <Card className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-teal-500 transition">
+            <div className="space-y-3">
+              <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 grid grid-cols-3 gap-1.5 p-2.5 shadow-inner">
+                <div className="rounded-xl bg-emerald-500/40 border border-emerald-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona A</div>
+                <div className="rounded-xl bg-amber-500/40 border border-amber-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona B</div>
+                <div className="rounded-xl bg-rose-500/40 border border-rose-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona C</div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full border text-teal-900 bg-teal-100 border-teal-300">
+                  LiveMap Spasial
+                </span>
+                <Globe className="h-5 w-5 text-teal-600" />
+              </div>
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Pemantauan Zona & Kepadatan</h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Peta interaktif dengan warna skor kepadatan per zona dan posisi truk real-time.
+              </p>
+            </div>
+            <Link to="/city/livemap?preview=public" className="block pt-2">
+              <Button className="w-full text-xs font-black py-3 rounded-xl shadow-sm bg-teal-600 hover:bg-teal-700 text-white">
+                Buka LiveMap <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Card>
+
+          {/* Showcase 2: QuickPass QR Barcode Logo Card */}
+          <Card className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-emerald-500 transition ring-2 ring-emerald-500/20">
+            <div className="space-y-3">
+              {/* QR Code Barcode Digital Ticket Mockup */}
+              <div className="h-32 rounded-2xl bg-slate-950 border border-emerald-500/40 flex items-center justify-between p-3.5 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-white rounded-xl shadow-lg border border-slate-200 shrink-0">
+                    <QrCode className="h-10 w-10 text-slate-900" />
+                  </div>
+                  <div className="space-y-1 text-left">
+                    <span className="text-[9px] font-mono font-extrabold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30 inline-block">
+                      HMAC-SHA256 VERIFIED
+                    </span>
+                    <span className="text-xs font-black text-white block">PAS DIGITAL QUICKPASS</span>
+                    <span className="text-[10px] text-slate-400 font-mono block">ID: UL-2025-QR891</span>
                   </div>
                 </div>
-              ),
-            },
-            {
-              tag: 'BayUtilization',
-              tagColor: 'text-amber-900 bg-amber-100 border-amber-300',
-              title: 'Grafik Okupansi Zona',
-              desc: 'Tren pemakaian slot per jam untuk bantu kurir pilih waktu paling lengang.',
-              icon: <BarChart3 className="h-5 w-5 text-amber-600" />,
-              href: '/rider/congestion',
-              btn: 'Lihat Tren',
-              btnColor: 'bg-amber-600 hover:bg-amber-700 text-white',
-              mockup: (
-                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 flex items-end gap-2 p-3 shadow-inner">
-                  {[40, 65, 30, 85, 55, 95, 45].map((h, i) => (
-                    <div key={i} className="flex-1 bg-amber-500/90 rounded-t-lg shadow" style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-              ),
-            },
-          ].map((c) => (
-            <Card
-              key={c.tag}
-              className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-teal-500 transition"
-            >
-              <div className="space-y-3">
-                {c.mockup}
-                <div className="flex items-center justify-between pt-1">
-                  <span className={`text-xs font-extrabold px-3 py-1 rounded-full border ${c.tagColor}`}>
-                    {c.tag}
-                  </span>
-                  {c.icon}
-                </div>
-                <h3 className="font-black text-base sm:text-lg text-slate-900">{c.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">{c.desc}</p>
               </div>
-              <Link to={c.href} className="block pt-2">
-                <Button className={`w-full text-xs font-black py-3 rounded-xl shadow-sm ${c.btnColor}`}>
-                  {c.btn} <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </Card>
-          ))}
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full border text-emerald-900 bg-emerald-100 border-emerald-300 flex items-center gap-1.5">
+                  <Scan className="h-3.5 w-3.5 text-emerald-700" /> Barcode QuickPass QR
+                </span>
+                <QrCode className="h-5 w-5 text-emerald-600" />
+              </div>
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Tiket Digital & Panic Button</h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Pas digital Barcode QuickPass QR untuk verifikasi petugas Dishub, plus tombol Panic Reschedule darurat saat macet.
+              </p>
+            </div>
+            <Link to="/rider/dashboard?demo=true" className="block pt-2">
+              <Button className="w-full text-xs font-black py-3 rounded-xl shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white">
+                Coba QuickPass QR <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Card>
+
+          {/* Showcase 3: BayUtilization */}
+          <Card className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-amber-500 transition">
+            <div className="space-y-3">
+              <div className="h-32 rounded-2xl bg-slate-950 border border-slate-300 flex items-end gap-2 p-3 shadow-inner">
+                {[40, 65, 30, 85, 55, 95, 45].map((h, i) => (
+                  <div key={i} className="flex-1 bg-amber-500/90 rounded-t-lg shadow" style={{ height: `${h}%` }} />
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs font-extrabold px-3 py-1 rounded-full border text-amber-900 bg-amber-100 border-amber-300">
+                  BayUtilization
+                </span>
+                <BarChart3 className="h-5 w-5 text-amber-600" />
+              </div>
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Grafik Okupansi Zona</h3>
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
+                Tren pemakaian slot per jam untuk bantu kurir pilih waktu paling lengang.
+              </p>
+            </div>
+            <Link to="/rider/congestion" className="block pt-2">
+              <Button className="w-full text-xs font-black py-3 rounded-xl shadow-sm bg-amber-600 hover:bg-amber-700 text-white">
+                Lihat Tren <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </Card>
         </div>
       </section>
 
