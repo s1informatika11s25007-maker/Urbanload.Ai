@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { QRCodeSVG } from 'qrcode.react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { useToast } from '../components/ui/ToastNotification.jsx';
@@ -32,6 +31,12 @@ import {
   BarChart3,
   RefreshCw,
   Navigation,
+  Scan,
+  Cpu,
+  Clock,
+  Phone,
+  Activity,
+  Layers3,
 } from 'lucide-react';
 
 // Isolated Mock Data for Jury Review (100% Safe - No Database Mutation)
@@ -45,14 +50,14 @@ const DEMO_ZONES = [
 ];
 
 const INITIAL_DEMO_VEHICLES = [
-  { id: 'v1', plate: 'B 9812 UAI', type: 'Truk Box CDE', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', lng: 106.817, lat: -6.190 },
-  { id: 'v2', plate: 'B 9102 TPK', type: 'Truk Tronton Fuso', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', lng: 106.880, lat: -6.115 },
-  { id: 'v3', plate: 'B 9482 CDE', type: 'Truk CDD Box', zone: 'Zona C - Koridor Sudirman', status: 'confirmed', lng: 106.822, lat: -6.215 },
-  { id: 'v4', plate: 'B 9011 BUS', type: 'Bus Logistik Pemprov', zone: 'Zona D - Kelapa Gading', status: 'active', lng: 106.905, lat: -6.160 },
-  { id: 'v5', plate: 'B 8821 TRK', type: 'Truk Kontainer 40ft', zone: 'Zona E - Pulogadung', status: 'confirmed', lng: 106.920, lat: -6.195 },
-  { id: 'v6', plate: 'B 7712 FUSO', type: 'Truk Wingbox', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', lng: 106.885, lat: -6.110 },
-  { id: 'v7', plate: 'B 9511 UAI', type: 'Truk Semen & Material', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', lng: 106.815, lat: -6.188 },
-  { id: 'v8', plate: 'B 8122 JKT', type: 'Bus Cargo Komersial', zone: 'Zona F - Glodok Center', status: 'completed', lng: 106.820, lat: -6.145 },
+  { id: 'v1', plate: 'B 9812 UAI', type: 'Truk Box CDE', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', baseLng: 106.817, baseLat: -6.190, dx: 0.0002, dy: 0.0001 },
+  { id: 'v2', plate: 'B 9102 TPK', type: 'Truk Tronton Fuso', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', baseLng: 106.880, baseLat: -6.115, dx: -0.0001, dy: 0.0002 },
+  { id: 'v3', plate: 'B 9482 CDE', type: 'Truk CDD Box', zone: 'Zona C - Koridor Sudirman', status: 'confirmed', baseLng: 106.822, baseLat: -6.215, dx: 0.0002, dy: -0.0001 },
+  { id: 'v4', plate: 'B 9011 BUS', type: 'Bus Logistik Pemprov', zone: 'Zona D - Kelapa Gading', status: 'active', baseLng: 106.905, baseLat: -6.160, dx: -0.0002, dy: -0.0001 },
+  { id: 'v5', plate: 'B 8821 TRK', type: 'Truk Kontainer 40ft', zone: 'Zona E - Pulogadung', status: 'confirmed', baseLng: 106.920, baseLat: -6.195, dx: 0.0001, dy: 0.0002 },
+  { id: 'v6', plate: 'B 7712 FUSO', type: 'Truk Wingbox', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', baseLng: 106.885, baseLat: -6.110, dx: 0.0002, dy: 0.0001 },
+  { id: 'v7', plate: 'B 9511 UAI', type: 'Truk Semen & Material', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', baseLng: 106.815, baseLat: -6.188, dx: -0.0002, dy: 0.0001 },
+  { id: 'v8', plate: 'B 8122 JKT', type: 'Bus Cargo Komersial', zone: 'Zona F - Glodok Center', status: 'completed', baseLng: 106.820, baseLat: -6.145, dx: 0.0001, dy: -0.0002 },
 ];
 
 const DEMO_CHART_DATA = [
@@ -70,13 +75,21 @@ export default function JuriDemoPage() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const vehicleMarkersRef = useRef([]);
+  const animFrameRef = useRef(null);
 
+  const [activeTab, setActiveTab] = useState('map'); // 'map' | 'qr' | 'booking' | 'dashboard' | 'analytics' | 'geofence'
   const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
   const [vehicles, setVehicles] = useState(INITIAL_DEMO_VEHICLES);
-  const [geofenceChecked, setGeofenceChecked] = useState(false);
+
+  // Form State for Demo SmartSlot Booking
+  const [demoPlate, setDemoPlate] = useState('B 1234 DEMO');
+  const [demoZone, setDemoZone] = useState('demo-z1');
+  const [demoTime, setDemoTime] = useState('10.00');
+  const [demoCategory, setDemoCategory] = useState('CDD');
+  const [bookingResult, setBookingResult] = useState(null);
 
   // Initialize Map
   useEffect(() => {
@@ -178,41 +191,73 @@ export default function JuriDemoPage() {
     };
   }, []);
 
-  // Render Vehicles Markers
+  // ANIMATED MOVING VEHICLES ON MAP (requestAnimationFrame)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    vehicleMarkersRef.current.forEach((m) => m.remove());
-    vehicleMarkersRef.current = [];
+    let step = 0;
 
-    vehicles.forEach((v) => {
-      const el = document.createElement('div');
-      el.className = 'group cursor-pointer';
+    const animateVehicles = () => {
+      step += 0.02;
 
-      const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
+      // Update vehicle positions smoothly along sinusoidal paths
+      const updated = INITIAL_DEMO_VEHICLES.map((v, idx) => {
+        const offsetLng = Math.sin(step + idx) * 0.003;
+        const offsetLat = Math.cos(step + idx) * 0.003;
 
-      el.innerHTML = `
-        <div className="flex items-center gap-1.5 bg-slate-900/95 text-white px-2.5 py-1 rounded-full border border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
-          <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
-          <span className="text-[10px] font-mono font-black">${v.plate}</span>
-        </div>
-      `;
-
-      el.addEventListener('click', () => {
-        setSelectedItem({
-          title: `Kendaraan: ${v.plate}`,
-          subtitle: `Tipe: ${v.type} | Status: ${v.status}`,
-          details: `Lokasi: ${v.zone}`,
-          type: 'Armada Logistik Aktif',
-          color: statusColor,
-        });
+        return {
+          ...v,
+          lng: v.baseLng + offsetLng,
+          lat: v.baseLat + offsetLat,
+        };
       });
 
-      const marker = new maplibregl.Marker({ element: el }).setLngLat([v.lng, v.lat]).addTo(map);
-      vehicleMarkersRef.current.push(marker);
-    });
-  }, [vehicles]);
+      // Update markers
+      if (vehicleMarkersRef.current.length === 0) {
+        updated.forEach((v) => {
+          const el = document.createElement('div');
+          el.className = 'group cursor-pointer';
+
+          const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
+
+          el.innerHTML = `
+            <div className="flex items-center gap-1.5 bg-slate-900/95 text-white px-2.5 py-1 rounded-full border border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
+              <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
+              <span className="text-[10px] font-mono font-black">${v.plate}</span>
+            </div>
+          `;
+
+          el.addEventListener('click', () => {
+            setSelectedItem({
+              title: `Kendaraan: ${v.plate}`,
+              subtitle: `Tipe: ${v.type} | Status: ${v.status}`,
+              details: `Lokasi: ${v.zone}`,
+              type: 'Armada Logistik Aktif',
+              color: statusColor,
+            });
+          });
+
+          const marker = new maplibregl.Marker({ element: el }).setLngLat([v.lng, v.lat]).addTo(map);
+          vehicleMarkersRef.current.push(marker);
+        });
+      } else {
+        updated.forEach((v, idx) => {
+          if (vehicleMarkersRef.current[idx]) {
+            vehicleMarkersRef.current[idx].setLngLat([v.lng, v.lat]);
+          }
+        });
+      }
+
+      animFrameRef.current = requestAnimationFrame(animateVehicles);
+    };
+
+    animFrameRef.current = requestAnimationFrame(animateVehicles);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
 
   // Action 1: Panic Reschedule Test
   const handlePanicRescheduleDemo = (v) => {
@@ -228,7 +273,6 @@ export default function JuriDemoPage() {
 
   // Action 2: Geofence Check Test
   const handleTestGeofence = () => {
-    setGeofenceChecked(true);
     showToast({
       title: 'TrustGuard GeoCheck-In Valid',
       message: 'Truk B 9812 UAI terverifikasi presisi di dalam radius 20m Zona A Tanah Abang.',
@@ -236,185 +280,420 @@ export default function JuriDemoPage() {
     });
   };
 
+  // Action 3: SmartSlot Booking Test
+  const handleRunDemoBooking = (e) => {
+    e.preventDefault();
+    const selectedZoneObj = DEMO_ZONES.find((z) => z.id === demoZone);
+
+    setBookingResult({
+      zoneName: selectedZoneObj?.name || 'Zona A - Pasar Tanah Abang',
+      plate: demoPlate,
+      requestedTime: demoTime,
+      recommendedSlotTime: demoTime === '10.00' ? '10.30 WIB (Disarankan Rebalance)' : `${demoTime} WIB`,
+      congestionScore: selectedZoneObj?.score || 8.8,
+      status: 'confirmed',
+    });
+
+    showToast({
+      title: 'SmartSlot AI Berhasil Dikonfirmasi!',
+      message: `Slot booking ${demoPlate} di ${selectedZoneObj?.name} telah diterbitkan.`,
+      type: 'success',
+    });
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4 font-sans text-slate-900">
       {/* Banner Sesi Demo Juri Lomba */}
-      <div className="p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-teal-500/10 border-2 border-amber-400/60 text-slate-900 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-teal-500/10 border-2 border-amber-400/60 text-slate-900 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md">
-            <Award className="h-6 w-6" />
+          <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md">
+            <Award className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-              Mode Evaluasi Juri Lomba — Sandbox Demo Terisolasi
+            <h1 className="text-base sm:text-xl font-black text-slate-900 flex items-center gap-2">
+              Mode Evaluasi Juri Lomba — Interactive Sandbox Demo
             </h1>
-            <p className="text-xs text-slate-600 font-semibold">
-              Simulasi lengkap fitur tanpa mengubah data asli di database Supabase produksi.
+            <p className="text-xs sm:text-sm text-slate-600 font-semibold">
+              Uji coba seluruh fitur aplikasi secara langsung tanpa registrasi & tanpa mengubah database produksi.
             </p>
           </div>
         </div>
 
-        <span className="bg-amber-100 text-amber-900 border border-amber-300 px-3 py-1 rounded-full text-xs font-mono font-bold shrink-0">
-          reviewer@urbanload.ai
+        <span className="bg-amber-100 text-amber-900 border border-amber-300 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold shrink-0">
+          Sesi Evaluator: reviewer@urbanload.ai
         </span>
       </div>
 
-      {/* 3D Map Showcase Panel */}
-      <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[480px]">
-        <div ref={mapContainerRef} className="w-full h-full" />
+      {/* FEATURE NAVIGATION TABS FOR JURY */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
+        <button
+          onClick={() => setActiveTab('map')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'map' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <Globe className="h-4 w-4" /> 1. Peta Live 3D & Animasi
+        </button>
 
-        {/* Floating Top Left Layer Info */}
-        <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md space-y-1">
-          <div className="font-extrabold text-teal-400 flex items-center gap-1.5">
-            <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Simulasi Juri)
-          </div>
-          <p className="text-[10px] text-slate-300">
-            6 Zona PostGIS & 8+ Armada Truk/Bus Terhubung
-          </p>
-        </div>
+        <button
+          onClick={() => setActiveTab('qr')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'qr' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <QrCode className="h-4 w-4" /> 2. Barcode QuickPass QR
+        </button>
 
-        {/* Selected Popup Modal */}
-        {selectedItem && (
-          <div className="absolute top-16 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 text-white text-xs w-72 space-y-2 backdrop-blur-xl shadow-2xl animate-in fade-in">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <span className="text-[10px] font-mono text-teal-400 font-bold uppercase">{selectedItem.type}</span>
-              <button onClick={() => setSelectedItem(null)} className="text-slate-400 font-bold">×</button>
-            </div>
-            <h3 className="font-black text-sm text-white">{selectedItem.title}</h3>
-            <p className="text-xs text-slate-300 font-semibold">{selectedItem.subtitle}</p>
-            <p className="text-[11px] text-teal-300 font-mono">{selectedItem.details}</p>
-          </div>
-        )}
-      </Card>
+        <button
+          onClick={() => setActiveTab('booking')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'booking' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <Cpu className="h-4 w-4" /> 3. SmartSlot Booking AI
+        </button>
 
-      {/* Interactive Feature Testing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: QuickPass QR Scanner Test */}
-        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
-                <QrCode className="h-5 w-5 text-emerald-600" /> Uji QuickPass QR Digital
-              </h3>
-              <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded border border-emerald-300">
-                HMAC-SHA256
-              </span>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed font-medium">
-              Uji pembentukan tiket digital QR terenkripsi yang digunakan petugas Dishub saat memeriksa truk di lokasi.
-            </p>
-          </div>
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'dashboard' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <Truck className="h-4 w-4" /> 4. Dashboard & Panic Button
+        </button>
 
-          <Button
-            onClick={() =>
-              setActiveQRBooking({
-                id: 'UL-DEMO-2025-QR',
-                plate: 'B 9812 UAI',
-                zone: 'Zona A - Pasar Tanah Abang',
-                time: '10:00 WIB',
-              })
-            }
-            className="w-full py-2.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-md"
-          >
-            Buka Simulasi QuickPass QR
-          </Button>
-        </Card>
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'analytics' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <BarChart3 className="h-4 w-4" /> 5. Grafik BayUtilization
+        </button>
 
-        {/* Card 2: Panic Reschedule Test */}
-        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600" /> Uji Panic Reschedule
-              </h3>
-              <span className="text-[10px] font-mono font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-300">
-                Emergency Shift
-              </span>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed font-medium">
-              Simulasi pergeseran jadwal otomatis (+1 Jam) ketika armada kurir terjebak kemacetan parah di jalan.
-            </p>
-          </div>
-
-          <Button
-            onClick={() => handlePanicRescheduleDemo(vehicles[0])}
-            variant="outline"
-            className="w-full py-2.5 text-xs font-bold border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 rounded-xl"
-          >
-            Simulasi Panic Reschedule (+1 Jam)
-          </Button>
-        </Card>
-
-        {/* Card 3: GeoFence Verification Test */}
-        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-sm space-y-4 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-teal-600" /> Uji GeoFence Check-In
-              </h3>
-              <span className="text-[10px] font-mono font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded border border-teal-300">
-                Radius &lt;20m
-              </span>
-            </div>
-            <p className="text-xs text-slate-700 leading-relaxed font-medium">
-              Simulasi validasi lokasi GPS presisi PostGIS untuk mengunci tombol check-in jika truk berada di luar radius.
-            </p>
-          </div>
-
-          <Button
-            onClick={handleTestGeofence}
-            className="w-full py-2.5 text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-md"
-          >
-            Uji GeoCheck-In Presisi
-          </Button>
-        </Card>
+        <button
+          onClick={() => setActiveTab('geofence')}
+          className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
+            activeTab === 'geofence' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <ShieldCheck className="h-4 w-4" /> 6. GeoFence Telemetri
+        </button>
       </div>
 
-      {/* BayUtilization Analytics Chart Showcase */}
-      <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-sm space-y-4">
-        <div className="flex justify-between items-center border-b pb-3">
-          <div>
-            <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-teal-600" /> BayUtilization Tracker (Simulasi Realtime)
-            </h3>
-            <p className="text-xs text-slate-500 font-semibold">
-              Persentase penggunaan slot bongkar muat (% okupansi) sepanjang hari
+      {/* TAB 1: PETA SPASIAL LIVE 3D WITH ANIMATED MOVING VEHICLES */}
+      {activeTab === 'map' && (
+        <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[520px]">
+          <div ref={mapContainerRef} className="w-full h-full" />
+
+          {/* Floating Top Left Layer Info */}
+          <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md space-y-1">
+            <div className="font-extrabold text-teal-400 flex items-center gap-1.5">
+              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Animasi Pergerakan)
+            </div>
+            <p className="text-[10px] text-slate-300 font-semibold">
+              6 Zona PostGIS & 8+ Armada Truk/Bus Bergerak Aktif
             </p>
           </div>
-          <span className="text-xs font-mono font-bold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-200">
-            Peak: 94% (Jam 10.00)
-          </span>
-        </div>
 
-        <div className="h-56 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={DEMO_CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="demoAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0d9488" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#0d9488" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="jam" tick={{ fontSize: 10, fill: '#475569' }} />
-              <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#475569' }} unit="%" />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="p-2.5 bg-slate-900 text-white text-xs rounded-xl shadow-xl font-mono">
-                        <p className="font-bold">Jam {label} WIB</p>
-                        <p className="text-teal-300">Okupansi Bay: {payload[0]?.value}%</p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area type="monotone" dataKey="okupansi" stroke="#0d9488" strokeWidth={3} fillOpacity={1} fill="url(#demoAreaGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
+          {/* Selected Popup Modal */}
+          {selectedItem && (
+            <div className="absolute top-16 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 text-white text-xs w-72 space-y-2 backdrop-blur-xl shadow-2xl animate-in fade-in">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <span className="text-[10px] font-mono text-teal-400 font-bold uppercase">{selectedItem.type}</span>
+                <button onClick={() => setSelectedItem(null)} className="text-slate-400 font-bold">×</button>
+              </div>
+              <h3 className="font-black text-sm text-white">{selectedItem.title}</h3>
+              <p className="text-xs text-slate-300 font-semibold">{selectedItem.subtitle}</p>
+              <p className="text-[11px] text-teal-300 font-mono">{selectedItem.details}</p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* TAB 2: QUICKPASS QR SCANNER & BARCODE TICKET */}
+      {activeTab === 'qr' && (
+        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-md space-y-6">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                <QrCode className="h-5 w-5 text-emerald-600" /> Simulasi QuickPass QR & Verifikasi Barcode Digital
+              </h3>
+              <p className="text-xs text-slate-500 font-semibold">
+                Setiap pemesanan slot menerbitkan tiket QR terenkripsi yang langsung diverifikasi oleh petugas Dishub.
+              </p>
+            </div>
+            <span className="text-xs font-mono font-bold text-emerald-900 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300">
+              HMAC-SHA256 Verified
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            {/* Left QR Ticket Preview */}
+            <div className="p-6 bg-slate-950 text-white rounded-3xl border border-emerald-500/40 text-center space-y-4 shadow-xl">
+              <span className="text-[10px] font-black uppercase text-teal-300 bg-teal-500/20 px-3 py-1 rounded-full border border-teal-500/30 inline-block">
+                Tiket Digital QuickPass QR
+              </span>
+
+              <div className="p-4 bg-white rounded-2xl inline-block mx-auto shadow-xl">
+                <QRCodeSVG value="URBANLOAD-QR|UL-DEMO-2025|B 9812 UAI|HMAC-SHA256-VALID" size={180} level="H" includeMargin={true} />
+              </div>
+
+              <div className="text-xs font-mono space-y-1 text-slate-300 border-t border-slate-800 pt-3">
+                <div className="flex justify-between"><span className="text-slate-400">ID Tiket:</span><strong className="text-white">UL-DEMO-2025-QR</strong></div>
+                <div className="flex justify-between"><span className="text-slate-400">Kendaraan:</span><strong className="text-teal-300">B 9812 UAI (CDE Box)</strong></div>
+                <div className="flex justify-between"><span className="text-slate-400">Zona Tujuan:</span><strong className="text-white">Zona A - Pasar Tanah Abang</strong></div>
+              </div>
+            </div>
+
+            {/* Right Interactive Scanner Simulation */}
+            <div className="space-y-4 p-5 bg-slate-50 border border-slate-200 rounded-3xl">
+              <div className="font-extrabold text-sm text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-2">
+                <Scan className="h-5 w-5 text-teal-600" /> Hasil Verifikasi Scanner Petugas Dishub
+              </div>
+
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2 text-xs">
+                <div className="flex items-center gap-2 font-black text-emerald-900">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" /> TIKET DIGITAL VALID & TERAUTENTIKASI
+                </div>
+                <p className="text-slate-700 leading-relaxed font-medium">
+                  Tanda tangan digital HMAC-SHA256 cocok dengan akun kurir B 9812 UAI. Slot bongkar muat di Zona A disetujui.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => showToast({ title: 'Koneksi Dishub Valid', message: 'Tiket QR B 9812 UAI disetujui oleh scanner petugas.', type: 'success' })}
+                className="w-full py-3 text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-2xl shadow-md"
+              >
+                Uji Scan Tiket QR Lagi
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* TAB 3: SMARTSLOT BOOKING AI FORM */}
+      {activeTab === 'booking' && (
+        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-md space-y-6">
+          <div className="border-b pb-3">
+            <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+              <Cpu className="h-5 w-5 text-teal-600" /> Uji Pemesanan SmartSlot AI & Dimensi Truk
+            </h3>
+            <p className="text-xs text-slate-500 font-semibold">
+              Simulasi LoadBalancer AI GroqLogix untuk menentukan slot waktu paling bebas hambatan
+            </p>
+          </div>
+
+          <form onSubmit={handleRunDemoBooking} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Pilih Zona Tujuan</label>
+                <select
+                  value={demoZone}
+                  onChange={(e) => setDemoZone(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
+                >
+                  {DEMO_ZONES.map((z) => (
+                    <option key={z.id} value={z.id}>{z.name} (Kapasitas: {z.cap} Slot)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Plat Kendaraan</label>
+                <input
+                  type="text"
+                  required
+                  value={demoPlate}
+                  onChange={(e) => setDemoPlate(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:border-teal-600"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Jendela Waktu Kedatangan</label>
+                <select
+                  value={demoTime}
+                  onChange={(e) => setDemoTime(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
+                >
+                  <option value="08.00">08.00 WIB</option>
+                  <option value="10.00">10.00 WIB (Jam Kerja Padat)</option>
+                  <option value="13.00">13.00 WIB</option>
+                  <option value="15.00">15.00 WIB</option>
+                </select>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full py-3 text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-2xl shadow-md">
+              Jalankan Simulasi Optimalisasi SmartSlot AI
+            </Button>
+          </form>
+
+          {bookingResult && (
+            <div className="p-4 bg-teal-50 border border-teal-200 rounded-2xl space-y-2 text-xs animate-in fade-in">
+              <div className="font-extrabold text-teal-900 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-teal-600" /> Rekomendasi LoadBalancer AI GroqLogix
+              </div>
+              <p className="text-slate-800 font-semibold leading-relaxed">
+                Zona <strong>{bookingResult.zoneName}</strong> untuk <strong>{bookingResult.plate}</strong> direkomendasikan pada slot <strong>{bookingResult.recommendedSlotTime}</strong>. Skor Kepadatan Zona: {bookingResult.congestionScore}/10.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* TAB 4: RIDER DASHBOARD & PANIC BUTTON SIMULATOR */}
+      {activeTab === 'dashboard' && (
+        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-md space-y-4">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-teal-600" /> Simulasi Dashboard Kurir & Panic Reschedule
+              </h3>
+              <p className="text-xs text-slate-500 font-semibold">
+                Riwayat transaksi booking aktif dan tombol Panic Button untuk pergeseran jadwal darurat saat macet.
+              </p>
+            </div>
+            <span className="text-xs font-bold bg-teal-100 text-teal-900 px-3 py-1 rounded-full border border-teal-200">
+              8 Transaksi Demo
+            </span>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-200">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b bg-slate-50 text-slate-700 font-bold">
+                  <th className="p-3">Plat Nomor</th>
+                  <th className="p-3">Tipe Kendaraan</th>
+                  <th className="p-3">Zona Tujuan</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 text-right">Aksi Darurat</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {vehicles.map((v) => (
+                  <tr key={v.id} className="hover:bg-slate-50">
+                    <td className="p-3 font-mono font-bold text-teal-800">{v.plate}</td>
+                    <td className="p-3 text-slate-800">{v.type}</td>
+                    <td className="p-3 text-slate-800">{v.zone}</td>
+                    <td className="p-3">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
+                        v.status === 'confirmed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                        v.status === 'rescheduled' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-blue-50 text-blue-800 border-blue-200'
+                      }`}>
+                        {v.status}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <Button
+                        onClick={() => handlePanicRescheduleDemo(v)}
+                        variant="outline"
+                        className="text-[10px] py-1 h-7 px-2.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 font-bold"
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Panic Reschedule (+1 Jam)
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {/* TAB 5: BAYUTILIZATION ANALYTICS CHARTS */}
+      {activeTab === 'analytics' && (
+        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-md space-y-4">
+          <div className="flex justify-between items-center border-b pb-3">
+            <div>
+              <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-teal-600" /> BayUtilization Tracker (Simulasi Analytics)
+              </h3>
+              <p className="text-xs text-slate-500 font-semibold">
+                Persentase penggunaan slot bongkar muat (% okupansi) sepanjang hari
+              </p>
+            </div>
+            <span className="text-xs font-mono font-bold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-200">
+              Peak: 94% (Jam 10.00)
+            </span>
+          </div>
+
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={DEMO_CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="demoAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0d9488" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#0d9488" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="jam" tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#475569' }} unit="%" />
+                <Tooltip
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="p-2.5 bg-slate-900 text-white text-xs rounded-xl shadow-xl font-mono">
+                          <p className="font-bold">Jam {label} WIB</p>
+                          <p className="text-teal-300">Okupansi Bay: {payload[0]?.value}%</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Area type="monotone" dataKey="okupansi" stroke="#0d9488" strokeWidth={3} fillOpacity={1} fill="url(#demoAreaGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {/* TAB 6: GEOFENCE TELEMETRY & GPS CHECK-IN */}
+      {activeTab === 'geofence' && (
+        <Card className="p-6 border-slate-200 bg-white rounded-3xl shadow-md space-y-4">
+          <div className="border-b pb-3">
+            <h3 className="font-black text-base text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-teal-600" /> Uji Validasi Telemetri Virtual GeoFence PostGIS
+            </h3>
+            <p className="text-xs text-slate-500 font-semibold">
+              Uji coba kuncian tombol GeoCheck-In berdasarkan radius lokasi GPS (&lt;20m)
+            </p>
+          </div>
+
+          <div className="p-5 bg-slate-900 text-white rounded-3xl space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+              <div className="p-3 bg-slate-800 rounded-2xl">
+                <span className="text-slate-400 block text-[10px]">Sinyal GPS</span>
+                <strong className="text-emerald-400 text-base">± 8.5 m</strong>
+              </div>
+
+              <div className="p-3 bg-slate-800 rounded-2xl">
+                <span className="text-slate-400 block text-[10px]">Latitude</span>
+                <strong className="text-white text-xs">-6.185201</strong>
+              </div>
+
+              <div className="p-3 bg-slate-800 rounded-2xl">
+                <span className="text-slate-400 block text-[10px]">Longitude</span>
+                <strong className="text-white text-xs">106.815302</strong>
+              </div>
+
+              <div className="p-3 bg-slate-800 rounded-2xl">
+                <span className="text-slate-400 block text-[10px]">Kecepatan</span>
+                <strong className="text-amber-400 text-base">0 km/h</strong>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleTestGeofence}
+              className="w-full py-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl shadow-md"
+            >
+              <Play className="h-4 w-4" /> Jalankan Simulasi GeoCheck-In (&lt;20m Radius Valid)
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* QUICKPASS QR MODAL DISPLAY FOR JURY */}
       {activeQRBooking && (
