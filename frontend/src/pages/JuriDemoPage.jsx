@@ -45,89 +45,94 @@ const DEMO_ZONES = [
   { id: 'demo-z6', name: 'Zona F - Glodok Commercial Center', cap: 15, active: 4, score: 2.8, color: '#10b981', poly: [[[106.810, -6.138], [106.830, -6.138], [106.830, -6.155], [106.810, -6.155], [106.810, -6.138]]] },
 ];
 
-// Linear Road Polyline Waypoints for Realistic Straight Movement Along Streets
+// Linear Road Polyline Waypoints for Realistic Straight Movement Along Real Streets
 const ROUTED_DEMO_VEHICLES = [
   {
     id: 'v1',
     plate: 'B 9812 UAI',
     type: 'Truk Box CDE',
     origin: 'Stasiun Tanah Abang (106.8115, -6.1865)',
-    destination: 'Bay 3 - Pasar Tanah Abang (106.8220, -6.1940)',
-    condition: '🛑 Lampu Merah (Kebon Jati)',
+    destination: 'Bay 3 - Pasar Tanah Abang (106.8218, -6.1928)',
+    condition: '🛑 Lampu Merah Kebon Jati (Berhenti 45dtk)',
+    isStopped: true,
     distanceRemaining: '0.6 km',
     eta: '2 min',
     status: 'confirmed',
     waypoints: [
-      [106.8120, -6.1850],
-      [106.8160, -6.1880],
-      [106.8190, -6.1910],
-      [106.8220, -6.1940],
+      [106.8122, -6.1855],
+      [106.8155, -6.1882],
+      [106.8188, -6.1905],
+      [106.8218, -6.1928],
     ],
   },
   {
     id: 'v2',
     plate: 'B 9102 TPK',
     type: 'Truk Tronton Fuso',
-    origin: 'Gerbang Tol Ancol (106.8500, -6.1200)',
-    destination: 'Dermaga 3 Tanjung Priok (106.8920, -6.1050)',
-    condition: '⛽ SPBU Rest Stop (Isi Bensin)',
+    origin: 'Gerbang Tol Yos Sudarso (106.8710, -6.1100)',
+    destination: 'Dermaga 3 Tanjung Priok (106.8915, -6.1220)',
+    condition: '⛽ SPBU Pertamina (Berhenti Isi Bensin)',
+    isStopped: true,
     distanceRemaining: '1.2 km',
     eta: '4 min',
     status: 'active',
     waypoints: [
-      [106.8700, -6.1050],
-      [106.8780, -6.1120],
-      [106.8850, -6.1180],
-      [106.8920, -6.1250],
+      [106.8710, -6.1100],
+      [106.8790, -6.1140],
+      [106.8860, -6.1180],
+      [106.8915, -6.1220],
     ],
   },
   {
     id: 'v3',
     plate: 'B 9482 CDE',
     type: 'Truk CDD Box',
-    origin: 'Semanggi (106.8180, -6.2000)',
-    destination: 'Koridor Sudirman (106.8280, -6.2300)',
-    condition: '⚠️ Padat Macet Jam Kerja',
+    origin: 'Semanggi Flyover (106.8185, -6.2180)',
+    destination: 'Monas South Hub (106.8270, -6.1820)',
+    condition: '⚠️ Padat Macet Jam Kerja (Slow 15 km/h)',
+    isStopped: false,
     distanceRemaining: '1.8 km',
     eta: '7 min',
     status: 'confirmed',
     waypoints: [
-      [106.8180, -6.2000],
-      [106.8210, -6.2100],
-      [106.8250, -6.2200],
-      [106.8280, -6.2300],
+      [106.8185, -6.2180],
+      [106.8215, -6.2100],
+      [106.8235, -6.1980],
+      [106.8270, -6.1820],
     ],
   },
   {
     id: 'v4',
     plate: 'B 9011 BUS',
     type: 'Bus Logistik Pemprov',
-    origin: 'Balai Kota DKI (106.8290, -6.1810)',
-    destination: 'Sentra Kelapa Gading (106.9150, -6.1700)',
-    condition: '🟢 Lancar Moving',
+    origin: 'Sunter Bypass (106.8910, -6.1520)',
+    destination: 'Kelapa Gading Trade Center (106.9110, -6.1660)',
+    condition: '🟢 Moving Smoothly di Jalur Utama',
+    isStopped: false,
     distanceRemaining: '2.5 km',
     eta: '8 min',
     status: 'active',
     waypoints: [
-      [106.8950, -6.1500],
-      [106.9020, -6.1580],
-      [106.9150, -6.1700],
+      [106.8910, -6.1520],
+      [106.9010, -6.1590],
+      [106.9110, -6.1660],
     ],
   },
   {
     id: 'v5',
     plate: 'B 8821 TRK',
     type: 'Truk Kontainer 40ft',
-    origin: 'Cakung (106.9100, -6.1850)',
-    destination: 'Kawasan Pulogadung (106.9320, -6.2050)',
-    condition: '🛑 Lampu Merah Interseksi',
+    origin: 'Gerbang Tol Pulogadung (106.9120, -6.1860)',
+    destination: 'Kawasan Industri Pulogadung (106.9310, -6.2020)',
+    condition: '🟢 Moving to Target Bay',
+    isStopped: false,
     distanceRemaining: '1.1 km',
     eta: '5 min',
     status: 'confirmed',
     waypoints: [
-      [106.9100, -6.1850],
-      [106.9200, -6.1950],
-      [106.9320, -6.2050],
+      [106.9120, -6.1860],
+      [106.9210, -6.1940],
+      [106.9310, -6.2020],
     ],
   },
 ];
@@ -255,6 +260,32 @@ export default function JuriDemoPage() {
         },
       });
 
+      // Add Subtle Dashed Polyline Route Lines on Map
+      const routeGeoJSON = {
+        type: 'FeatureCollection',
+        features: ROUTED_DEMO_VEHICLES.map((v) => ({
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: v.waypoints,
+          },
+        })),
+      };
+
+      map.addSource('demo-routes-src', { type: 'geojson', data: routeGeoJSON });
+
+      map.addLayer({
+        id: 'demo-routes-line',
+        type: 'line',
+        source: 'demo-routes-src',
+        paint: {
+          'line-color': '#14b8a6',
+          'line-width': 2.5,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.65,
+        },
+      });
+
       map.on('click', 'demo-zones-fill', (e) => {
         if (e.features && e.features[0]) {
           const p = e.features[0].properties;
@@ -279,7 +310,7 @@ export default function JuriDemoPage() {
     };
   }, []);
 
-  // ANIMATED MOVING VEHICLES ALONG REAL LINEAR ROAD POLYLINES (NO CIRCULAR SPINNING)
+  // ANIMATED MOVING VEHICLES ALONG REAL LINEAR ROAD POLYLINES (STATIONARY AT SPBU & LAMPU MERAH)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -288,7 +319,8 @@ export default function JuriDemoPage() {
     let direction = 1;
 
     const animateVehiclesAlongRoads = () => {
-      progress += 0.003 * direction;
+      // Slow, realistic live tracking speed
+      progress += 0.0006 * direction;
       if (progress >= 1) {
         progress = 1;
         direction = -1;
@@ -299,11 +331,23 @@ export default function JuriDemoPage() {
 
       // Compute exact position along polylines for each vehicle
       const currentPosList = ROUTED_DEMO_VEHICLES.map((v) => {
-        const point = getPointAlongPolyline(v.waypoints, progress);
+        let lng, lat;
+
+        if (v.isStopped) {
+          // Stationary at SPBU or Lampu Merah waypoint stop
+          lng = v.waypoints[1][0];
+          lat = v.waypoints[1][1];
+        } else {
+          // Moving slowly along polyline
+          const point = getPointAlongPolyline(v.waypoints, progress);
+          lng = point[0];
+          lat = point[1];
+        }
+
         return {
           ...v,
-          lng: point[0],
-          lat: point[1],
+          lng,
+          lat,
         };
       });
 
@@ -316,7 +360,7 @@ export default function JuriDemoPage() {
           const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
 
           el.innerHTML = `
-            <div className="bg-slate-900/95 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap">
+            <div className="bg-slate-900/95 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap flex items-center gap-1">
               ${v.condition}
             </div>
             <div className="flex items-center gap-1.5 bg-slate-950 text-white px-2.5 py-1 rounded-full border-2 border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
