@@ -20,24 +20,19 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowDown,
-  Layers,
   Globe,
-  Box,
   Radio,
   MapPin,
   CheckCircle2,
   X,
   Zap,
   BarChart3,
-  RefreshCw,
-  Navigation,
   Scan,
   Cpu,
   Clock,
   Activity,
   Fuel,
   StopCircle,
-  AlertCircle,
 } from 'lucide-react';
 
 // Isolated Mock Data for Jury Review (100% Safe - No Database Mutation)
@@ -50,84 +45,90 @@ const DEMO_ZONES = [
   { id: 'demo-z6', name: 'Zona F - Glodok Commercial Center', cap: 15, active: 4, score: 2.8, color: '#10b981', poly: [[[106.810, -6.138], [106.830, -6.138], [106.830, -6.155], [106.810, -6.155], [106.810, -6.138]]] },
 ];
 
-const INITIAL_DEMO_VEHICLES = [
+// Linear Road Polyline Waypoints for Realistic Straight Movement Along Streets
+const ROUTED_DEMO_VEHICLES = [
   {
     id: 'v1',
     plate: 'B 9812 UAI',
     type: 'Truk Box CDE',
-    origin: 'Stasiun Tanah Abang',
-    destination: 'Bay 3 - Pasar Tanah Abang',
+    origin: 'Stasiun Tanah Abang (106.8115, -6.1865)',
+    destination: 'Bay 3 - Pasar Tanah Abang (106.8220, -6.1940)',
     condition: '🛑 Lampu Merah (Kebon Jati)',
     distanceRemaining: '0.6 km',
     eta: '2 min',
     status: 'confirmed',
-    baseLng: 106.817,
-    baseLat: -6.190,
+    waypoints: [
+      [106.8120, -6.1850],
+      [106.8160, -6.1880],
+      [106.8190, -6.1910],
+      [106.8220, -6.1940],
+    ],
   },
   {
     id: 'v2',
     plate: 'B 9102 TPK',
     type: 'Truk Tronton Fuso',
-    origin: 'Gerbang Tol Ancol',
-    destination: 'Dermaga 3 Tanjung Priok',
+    origin: 'Gerbang Tol Ancol (106.8500, -6.1200)',
+    destination: 'Dermaga 3 Tanjung Priok (106.8920, -6.1050)',
     condition: '⛽ SPBU Rest Stop (Isi Bensin)',
     distanceRemaining: '1.2 km',
     eta: '4 min',
     status: 'active',
-    baseLng: 106.880,
-    baseLat: -6.115,
+    waypoints: [
+      [106.8700, -6.1050],
+      [106.8780, -6.1120],
+      [106.8850, -6.1180],
+      [106.8920, -6.1250],
+    ],
   },
   {
     id: 'v3',
     plate: 'B 9482 CDE',
     type: 'Truk CDD Box',
-    origin: 'Semanggi',
-    destination: 'Koridor Sudirman',
+    origin: 'Semanggi (106.8180, -6.2000)',
+    destination: 'Koridor Sudirman (106.8280, -6.2300)',
     condition: '⚠️ Padat Macet Jam Kerja',
     distanceRemaining: '1.8 km',
     eta: '7 min',
     status: 'confirmed',
-    baseLng: 106.822,
-    baseLat: -6.215,
+    waypoints: [
+      [106.8180, -6.2000],
+      [106.8210, -6.2100],
+      [106.8250, -6.2200],
+      [106.8280, -6.2300],
+    ],
   },
   {
     id: 'v4',
     plate: 'B 9011 BUS',
     type: 'Bus Logistik Pemprov',
-    origin: 'Balai Kota DKI',
-    destination: 'Sentra Kelapa Gading',
+    origin: 'Balai Kota DKI (106.8290, -6.1810)',
+    destination: 'Sentra Kelapa Gading (106.9150, -6.1700)',
     condition: '🟢 Lancar Moving',
     distanceRemaining: '2.5 km',
     eta: '8 min',
     status: 'active',
-    baseLng: 106.905,
-    baseLat: -6.160,
+    waypoints: [
+      [106.8950, -6.1500],
+      [106.9020, -6.1580],
+      [106.9150, -6.1700],
+    ],
   },
   {
     id: 'v5',
     plate: 'B 8821 TRK',
     type: 'Truk Kontainer 40ft',
-    origin: 'Cakung',
-    destination: 'Kawasan Pulogadung',
+    origin: 'Cakung (106.9100, -6.1850)',
+    destination: 'Kawasan Pulogadung (106.9320, -6.2050)',
     condition: '🛑 Lampu Merah Interseksi',
     distanceRemaining: '1.1 km',
     eta: '5 min',
     status: 'confirmed',
-    baseLng: 106.920,
-    baseLat: -6.195,
-  },
-  {
-    id: 'v6',
-    plate: 'B 7712 FUSO',
-    type: 'Truk Wingbox',
-    origin: 'Sunter',
-    destination: 'Port Priok Terminal',
-    condition: '🟢 Moving to Target',
-    distanceRemaining: '0.9 km',
-    eta: '3 min',
-    status: 'active',
-    baseLng: 106.885,
-    baseLat: -6.110,
+    waypoints: [
+      [106.9100, -6.1850],
+      [106.9200, -6.1950],
+      [106.9320, -6.2050],
+    ],
   },
 ];
 
@@ -141,6 +142,25 @@ const DEMO_CHART_DATA = [
   { jam: '18.00', okupansi: 42 },
 ];
 
+function lerp(start, end, t) {
+  return start + (end - start) * t;
+}
+
+function getPointAlongPolyline(waypoints, progress) {
+  const numSegments = waypoints.length - 1;
+  const totalProgress = progress * numSegments;
+  const segmentIndex = Math.min(Math.floor(totalProgress), numSegments - 1);
+  const segmentT = totalProgress - segmentIndex;
+
+  const p1 = waypoints[segmentIndex];
+  const p2 = waypoints[segmentIndex + 1];
+
+  return [
+    lerp(p1[0], p2[0], segmentT),
+    lerp(p1[1], p2[1], segmentT),
+  ];
+}
+
 export default function JuriDemoPage() {
   const { showToast } = useToast();
   const mapContainerRef = useRef(null);
@@ -151,7 +171,7 @@ export default function JuriDemoPage() {
   const [activeTab, setActiveTab] = useState('map'); // 'map' | 'qr' | 'booking' | 'dashboard' | 'analytics' | 'geofence'
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
-  const [vehicles, setVehicles] = useState(INITIAL_DEMO_VEHICLES);
+  const [vehicles, setVehicles] = useState(ROUTED_DEMO_VEHICLES);
 
   // Form State for Demo SmartSlot Booking
   const [demoPlate, setDemoPlate] = useState('B 1234 DEMO');
@@ -259,51 +279,63 @@ export default function JuriDemoPage() {
     };
   }, []);
 
-  // ANIMATED MOVING VEHICLES WITH REAL ROAD ROUTES (requestAnimationFrame)
+  // ANIMATED MOVING VEHICLES ALONG REAL LINEAR ROAD POLYLINES (NO CIRCULAR SPINNING)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    let step = 0;
+    let progress = 0;
+    let direction = 1;
 
-    const animateVehicles = () => {
-      step += 0.02;
+    const animateVehiclesAlongRoads = () => {
+      progress += 0.003 * direction;
+      if (progress >= 1) {
+        progress = 1;
+        direction = -1;
+      } else if (progress <= 0) {
+        progress = 0;
+        direction = 1;
+      }
 
-      // Update vehicle positions smoothly along road coordinates
-      const updated = INITIAL_DEMO_VEHICLES.map((v, idx) => {
-        const offsetLng = Math.sin(step + idx) * 0.0035;
-        const offsetLat = Math.cos(step + idx) * 0.0035;
-
+      // Compute exact position along polylines for each vehicle
+      const currentPosList = ROUTED_DEMO_VEHICLES.map((v) => {
+        const point = getPointAlongPolyline(v.waypoints, progress);
         return {
           ...v,
-          lng: v.baseLng + offsetLng,
-          lat: v.baseLat + offsetLat,
+          lng: point[0],
+          lat: point[1],
         };
       });
 
       // Update markers
       if (vehicleMarkersRef.current.length === 0) {
-        updated.forEach((v) => {
+        currentPosList.forEach((v) => {
           const el = document.createElement('div');
           el.className = 'group cursor-pointer flex flex-col items-center';
 
           const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
 
           el.innerHTML = `
-            <div className="bg-slate-900/90 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap">
+            <div className="bg-slate-900/95 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap">
               ${v.condition}
             </div>
             <div className="flex items-center gap-1.5 bg-slate-950 text-white px-2.5 py-1 rounded-full border-2 border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
-              <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
+              <svg class="h-3.5 w-3.5 text-teal-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                <path d="M15 18H9"/>
+                <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-2.85-3.54A1 1 0 0 0 18.15 8H14"/>
+                <circle cx="6.5" cy="17.5" r="2.5"/>
+                <circle cx="16.5" cy="17.5" r="2.5"/>
+              </svg>
               <span className="text-[10px] font-mono font-black">${v.plate}</span>
             </div>
           `;
 
           el.addEventListener('click', () => {
             setSelectedItem({
-              title: `Armada Realtime: ${v.plate}`,
+              title: `Armada Real: ${v.plate}`,
               subtitle: `Tipe: ${v.type} | Rute: ${v.origin} ➔ ${v.destination}`,
-              details: `Kondisi Rute: ${v.condition} | Sisa Jarak: ${v.distanceRemaining} (ETA ${v.eta})`,
+              details: `Kondisi Rute: ${v.condition} | Posisi: ${v.lng.toFixed(6)}, ${v.lat.toFixed(6)} | Sisa Jarak: ${v.distanceRemaining}`,
               type: 'Armada Logistik Aktif',
               color: statusColor,
             });
@@ -313,17 +345,17 @@ export default function JuriDemoPage() {
           vehicleMarkersRef.current.push(marker);
         });
       } else {
-        updated.forEach((v, idx) => {
+        currentPosList.forEach((v, idx) => {
           if (vehicleMarkersRef.current[idx]) {
             vehicleMarkersRef.current[idx].setLngLat([v.lng, v.lat]);
           }
         });
       }
 
-      animFrameRef.current = requestAnimationFrame(animateVehicles);
+      animFrameRef.current = requestAnimationFrame(animateVehiclesAlongRoads);
     };
 
-    animFrameRef.current = requestAnimationFrame(animateVehicles);
+    animFrameRef.current = requestAnimationFrame(animateVehiclesAlongRoads);
 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
@@ -460,10 +492,10 @@ export default function JuriDemoPage() {
           {/* Floating Top Left Layer Info */}
           <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md space-y-1">
             <div className="font-extrabold text-teal-400 flex items-center gap-1.5">
-              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Animasi Rute Realtime)
+              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Pergerakan Lurus Jalur Jalan)
             </div>
             <p className="text-[10px] text-slate-300 font-semibold">
-              Simulasi Rute: 🛑 Lampu Merah | ⚠️ Macet | ⛽ SPBU Bensin
+              Simulasi Kejadian Rute: 🛑 Lampu Merah | ⚠️ Macet | ⛽ SPBU Bensin
             </p>
           </div>
 
@@ -476,7 +508,7 @@ export default function JuriDemoPage() {
               </div>
               <h3 className="font-black text-sm text-white">{selectedItem.title}</h3>
               <p className="text-xs text-slate-300 font-semibold">{selectedItem.subtitle}</p>
-              <p className="text-[11px] text-amber-300 font-mono">{selectedItem.details}</p>
+              <p className="text-[11px] text-amber-300 font-mono leading-relaxed">{selectedItem.details}</p>
             </div>
           )}
         </Card>
@@ -627,7 +659,7 @@ export default function JuriDemoPage() {
               </p>
             </div>
             <span className="text-xs font-bold bg-teal-100 text-teal-900 px-3 py-1 rounded-full border border-teal-200">
-              6 Transaksi Rute Aktif
+              5 Transaksi Rute Aktif
             </span>
           </div>
 
