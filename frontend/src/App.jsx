@@ -12,6 +12,7 @@ import VerifyOtp from './pages/VerifyOtp.jsx';
 import Tentang from './pages/Tentang.jsx';
 import FeatureCongestion from './pages/FeatureCongestion.jsx';
 import FeatureGeofence from './pages/FeatureGeofence.jsx';
+import JuriDemoPage from './pages/JuriDemoPage.jsx';
 import { Header } from './components/layout/Header.jsx';
 import { Footer } from './components/layout/Footer.jsx';
 import { MobileTabBar } from './components/layout/MobileTabBar.jsx';
@@ -30,6 +31,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify-otp" element={<VerifyOtp />} />
+              <Route path="/demo/juri" element={<JuriDemoPage />} />
               <Route path="/rider/dashboard" element={<RiderDashboard />} />
               <Route path="/rider/bookings/new" element={<NewBooking />} />
               <Route path="/rider/congestion" element={<RiderCongestion />} />
