@@ -36,8 +36,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="space-y-16 sm:space-y-24 py-6 sm:py-10 max-w-6xl mx-auto px-4">
-      {/* 1. HERO — VALUE PROPOSITION & HIGH CONTRAST TYPOGRAPHY */}
+    <div className="space-y-16 sm:space-y-24 py-6 sm:py-10 max-w-6xl mx-auto px-4 font-sans text-slate-900">
+      {/* 1. HERO SECTION — VALUE PROPOSITION & KONSISTENSI TIPOGRAFI */}
       <div className="text-center space-y-6 max-w-3xl mx-auto pt-2 sm:pt-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-100 text-teal-900 border border-teal-300 font-extrabold text-xs shadow-sm">
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-600 animate-pulse"></span>
@@ -58,7 +58,7 @@ export default function Home() {
 
         <div className="pt-3 space-y-4">
           <Link to="/rider/dashboard?demo=true" className="inline-block w-full sm:w-auto">
-            <Button className="w-full sm:w-auto px-8 py-4 text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl font-black bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white rounded-2xl transform hover:scale-[1.02] transition">
+            <Button className="w-full sm:w-auto px-8 py-4 text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl font-black bg-teal-600 hover:bg-teal-700 text-white rounded-2xl transform hover:scale-[1.02] transition">
               <Award className="h-5 w-5 text-amber-300" />
               <span>Coba Mode Demo Juri (Tanpa Daftar)</span>
               <ArrowRight className="h-5 w-5" />
@@ -108,7 +108,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 space-y-3 border-rose-200 bg-rose-50/50 rounded-2xl shadow-sm hover:border-rose-300 transition">
+          <Card className="p-6 space-y-3 border-rose-200 bg-white rounded-2xl shadow-sm hover:border-rose-400 transition">
             <MapPin className="h-7 w-7 text-rose-600" />
             <h3 className="font-black text-base text-slate-900">Truk Parkir Liar di Bahu Jalan</h3>
             <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
@@ -116,7 +116,7 @@ export default function Home() {
             </p>
           </Card>
 
-          <Card className="p-6 space-y-3 border-amber-200 bg-amber-50/50 rounded-2xl shadow-sm hover:border-amber-300 transition">
+          <Card className="p-6 space-y-3 border-amber-200 bg-white rounded-2xl shadow-sm hover:border-amber-400 transition">
             <Radar className="h-7 w-7 text-amber-600" />
             <h3 className="font-black text-base text-slate-900">Petugas Tak Punya Alat Verifikasi</h3>
             <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
@@ -124,7 +124,7 @@ export default function Home() {
             </p>
           </Card>
 
-          <Card className="p-6 space-y-3 border-teal-200 bg-teal-50/50 rounded-2xl shadow-sm hover:border-teal-300 transition">
+          <Card className="p-6 space-y-3 border-teal-200 bg-white rounded-2xl shadow-sm hover:border-teal-400 transition">
             <QrCode className="h-7 w-7 text-teal-700" />
             <h3 className="font-black text-base text-slate-900">Tidak Ada Data Okupansi Zona</h3>
             <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
@@ -175,14 +175,14 @@ export default function Home() {
               </div>
               <div className="space-y-1.5">
                 <h3 className="font-black text-base sm:text-lg text-slate-900">{s.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">{s.desc}</p>
+                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">{s.desc}</p>
               </div>
             </Card>
           ))}
         </div>
       </section>
 
-      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI */}
+      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI — KONSISTENSI KARTU LATAR PUTIH BERSAMAKAN TEKS GELAP KONTRAS */}
       <section id="showcase" className="space-y-8 scroll-mt-20">
         <div className="text-center space-y-2">
           <span className="text-xs font-extrabold text-teal-900 uppercase tracking-wider bg-teal-100 px-3.5 py-1.5 rounded-full border border-teal-300">
@@ -200,32 +200,32 @@ export default function Home() {
           {[
             {
               tag: 'LiveMap Spasial',
-              tagColor: 'text-teal-300 bg-teal-500/30 border-teal-400',
+              tagColor: 'text-teal-900 bg-teal-100 border-teal-300',
               title: 'Pemantauan Zona & Kepadatan',
               desc: 'Peta interaktif dengan warna skor kepadatan per zona dan posisi truk real-time.',
-              icon: <Globe className="h-4 w-4 text-teal-400" />,
+              icon: <Globe className="h-5 w-5 text-teal-600" />,
               href: '/city/livemap?preview=public',
               btn: 'Buka LiveMap',
-              btnColor: 'bg-teal-600 hover:bg-teal-500 text-white',
+              btnColor: 'bg-teal-600 hover:bg-teal-700 text-white',
               mockup: (
-                <div className="h-32 rounded-2xl bg-gradient-to-br from-slate-950 to-teal-950 border border-slate-700 grid grid-cols-3 gap-1.5 p-2.5 shadow-inner">
-                  <div className="rounded-xl bg-emerald-500/40 border border-emerald-400/30 flex items-center justify-center text-[10px] font-bold text-emerald-200">Zona A</div>
-                  <div className="rounded-xl bg-amber-500/40 border border-amber-400/30 flex items-center justify-center text-[10px] font-bold text-amber-200">Zona B</div>
-                  <div className="rounded-xl bg-rose-500/40 border border-rose-400/30 flex items-center justify-center text-[10px] font-bold text-rose-200">Zona C</div>
+                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 grid grid-cols-3 gap-1.5 p-2.5 shadow-inner">
+                  <div className="rounded-xl bg-emerald-500/40 border border-emerald-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona A</div>
+                  <div className="rounded-xl bg-amber-500/40 border border-amber-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona B</div>
+                  <div className="rounded-xl bg-rose-500/40 border border-rose-400/30 flex items-center justify-center text-[10px] font-extrabold text-white">Zona C</div>
                 </div>
               ),
             },
             {
               tag: 'QuickPass QR',
-              tagColor: 'text-emerald-300 bg-emerald-500/30 border-emerald-400',
+              tagColor: 'text-emerald-900 bg-emerald-100 border-emerald-300',
               title: 'Tiket Digital & Panic Button',
               desc: 'Tiket QR untuk petugas Dishub, plus tombol reschedule darurat saat macet.',
-              icon: <ShieldCheck className="h-4 w-4 text-emerald-400" />,
+              icon: <ShieldCheck className="h-5 w-5 text-emerald-600" />,
               href: '/rider/dashboard?demo=true',
               btn: 'Coba QuickPass',
-              btnColor: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+              btnColor: 'bg-emerald-600 hover:bg-emerald-700 text-white',
               mockup: (
-                <div className="h-32 rounded-2xl bg-slate-950 border border-slate-700 flex items-center justify-center p-2 shadow-inner">
+                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 flex items-center justify-center p-2 shadow-inner">
                   <div className="h-22 w-22 rounded-xl bg-white grid grid-cols-4 grid-rows-4 gap-0.5 p-2 shadow-lg">
                     {Array.from({ length: 16 }).map((_, i) => (
                       <div key={i} className={i % 3 === 0 ? 'bg-slate-900 rounded-sm' : 'bg-white'} />
@@ -236,17 +236,17 @@ export default function Home() {
             },
             {
               tag: 'BayUtilization',
-              tagColor: 'text-amber-300 bg-amber-500/30 border-amber-400',
+              tagColor: 'text-amber-900 bg-amber-100 border-amber-300',
               title: 'Grafik Okupansi Zona',
               desc: 'Tren pemakaian slot per jam untuk bantu kurir pilih waktu paling lengang.',
-              icon: <BarChart3 className="h-4 w-4 text-amber-400" />,
+              icon: <BarChart3 className="h-5 w-5 text-amber-600" />,
               href: '/rider/congestion',
               btn: 'Lihat Tren',
-              btnColor: 'bg-amber-600 hover:bg-amber-500 text-white',
+              btnColor: 'bg-amber-600 hover:bg-amber-700 text-white',
               mockup: (
-                <div className="h-32 rounded-2xl bg-slate-950 border border-slate-700 flex items-end gap-2 p-3 shadow-inner">
+                <div className="h-32 rounded-2xl bg-slate-900 border border-slate-300 flex items-end gap-2 p-3 shadow-inner">
                   {[40, 65, 30, 85, 55, 95, 45].map((h, i) => (
-                    <div key={i} className="flex-1 bg-amber-500/80 rounded-t-lg shadow" style={{ height: `${h}%` }} />
+                    <div key={i} className="flex-1 bg-amber-500/90 rounded-t-lg shadow" style={{ height: `${h}%` }} />
                   ))}
                 </div>
               ),
@@ -254,21 +254,21 @@ export default function Home() {
           ].map((c) => (
             <Card
               key={c.tag}
-              className="p-6 border-slate-800 bg-slate-900 text-white rounded-3xl shadow-xl space-y-3 flex flex-col justify-between"
+              className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-teal-500 transition"
             >
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {c.mockup}
                 <div className="flex items-center justify-between pt-1">
-                  <span className={`text-[10px] font-mono font-black px-2.5 py-0.5 rounded-full border ${c.tagColor}`}>
+                  <span className={`text-xs font-extrabold px-3 py-1 rounded-full border ${c.tagColor}`}>
                     {c.tag}
                   </span>
                   {c.icon}
                 </div>
-                <h3 className="font-black text-base text-white">{c.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">{c.desc}</p>
+                <h3 className="font-black text-base sm:text-lg text-slate-900">{c.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">{c.desc}</p>
               </div>
               <Link to={c.href} className="block pt-2">
-                <Button className={`w-full text-xs font-black py-2.5 ${c.btnColor}`}>
+                <Button className={`w-full text-xs font-black py-3 rounded-xl shadow-sm ${c.btnColor}`}>
                   {c.btn} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -277,7 +277,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. DAMPAK SEBELUM VS SESUDAH — HIGH CONTRAST TEXT */}
+      {/* 5. DAMPAK SEBELUM VS SESUDAH — HIGH CONTRAST TEKS HITAM PEKAT */}
       <section
         id="dampak"
         className="p-8 sm:p-10 rounded-3xl bg-gradient-to-br from-teal-950 via-slate-900 to-emerald-950 text-white border border-teal-700/60 shadow-2xl space-y-6"
