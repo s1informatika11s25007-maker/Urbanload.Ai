@@ -45,13 +45,6 @@ export default function Register() {
   const handleSelectRole = (selectedRole) => {
     setRole(selectedRole);
     setErrorMessage(null);
-    if (selectedRole === 'city' && !emailInput) {
-      setEmailInput('admin@jakarta.go.id');
-    } else if (selectedRole === 'dishub' && !emailInput) {
-      setEmailInput('petugas@dishub.go.id');
-    } else if (selectedRole === 'rider' && (emailInput === 'admin@jakarta.go.id' || emailInput === 'petugas@dishub.go.id')) {
-      setEmailInput('');
-    }
   };
 
   const handleApplyDomain = (domain) => {
@@ -72,7 +65,9 @@ export default function Register() {
       return;
     }
 
-    const finalEmail = emailInput ? normalizeEmail(emailInput) : null;
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const finalEmail = emailInput && emailInput.trim() ? normalizeEmail(emailInput) : null;
+    const authEmail = finalEmail || `${cleanPhone}@urbanload.ai`;
     const targetRole = role === 'city' ? 'city_admin' : role === 'dishub' ? 'dishub_officer' : 'rider';
 
     setLoading(true);
@@ -95,44 +90,38 @@ export default function Register() {
 
       // 2. Supabase Auth Registration
       const supabase = createClient();
-      if (finalEmail) {
-        const { error: authError } = await supabase.auth.signUp({
-          email: finalEmail,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              phone_number: phone,
-              role: targetRole,
-            },
+      const { error: authError } = await supabase.auth.signUp({
+        email: authEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone_number: phone,
+            role: targetRole,
           },
-        });
+        },
+      });
 
-        if (authError && !authError.message.includes('rate limit') && !apiData.success) {
-          setErrorMessage(`Gagal Pendaftaran: ${authError.message}`);
-          setLoading(false);
-          return;
-        }
+      if (authError && !authError.message.includes('rate limit') && !apiData?.success) {
+        setErrorMessage(`Gagal Pendaftaran: ${authError.message}`);
+        setLoading(false);
+        return;
       }
 
-      // 3. Upsert Profile
+      // 3. Upsert Profile to public.profiles
       await supabase.from('profiles').upsert({
         phone_number: phone,
         email: finalEmail,
         full_name: fullName,
         role: targetRole,
-        phone_verified: false,
+        phone_verified: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'phone_number' });
 
-      // 4. Smooth Navigation to OTP
-      if (role === 'rider') {
-        navigate(`/verify-otp?phone=${encodeURIComponent(phone)}&role=rider`);
-      } else {
-        navigate(`/verify-otp?email=${encodeURIComponent(finalEmail || phone)}&role=${role}`);
-      }
+      // 4. Smooth Navigation directly to Login with auto-fill hint
+      navigate(`/login?registered=true&phone=${encodeURIComponent(phone)}&role=${role}`);
     } catch (err) {
-      navigate(`/verify-otp?phone=${encodeURIComponent(phone)}&role=${role}`);
+      navigate(`/login?registered=true&phone=${encodeURIComponent(phone)}&role=${role}`);
     } finally {
       setLoading(false);
     }
@@ -176,7 +165,7 @@ export default function Register() {
               <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
               <div>
                 <span className="font-bold text-slate-900 block">Registrasi Otomatis & Terverifikasi</span>
-                <span className="text-[11px] text-slate-500">Integrasi OTP WhatsApp & Email verifikasi instan</span>
+                <span className="text-[11px] text-slate-500">Aktivasi Akun Instan & Terhubung Database Supabase</span>
               </div>
             </div>
 
@@ -399,19 +388,11 @@ export default function Register() {
               {loading ? (
                 <span className="inline-flex items-center justify-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-white" />
-                  <span>Memuat...</span>
+                  <span>Memproses Pendaftaran...</span>
                 </span>
-              ) : role === 'rider' ? (
-                <>
-                  <MessageSquare className="h-4 w-4" /> Lanjut Verifikasi OTP WhatsApp
-                </>
-              ) : role === 'city' ? (
-                <>
-                  Lanjut Verifikasi Email Admin Kota <ArrowRight className="h-4 w-4" />
-                </>
               ) : (
                 <>
-                  Lanjut Verifikasi Email Petugas Dishub <ArrowRight className="h-4 w-4" />
+                  <UserPlus className="h-4 w-4" /> Daftar Akun Baru <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>

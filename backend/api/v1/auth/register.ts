@@ -20,14 +20,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const userRole = role || 'rider';
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
-  const userEmail = email ? email.trim() : `${cleanPhone || 'user'}@urbanload.ai`;
+  const authEmail = email && email.trim() ? email.trim() : `${cleanPhone || 'user'}@urbanload.ai`;
+  const profileEmail = email && email.trim() ? email.trim() : null;
 
   try {
     let authUserId: string;
 
     // 1. Create User in Supabase Auth (auth.users table)
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: userEmail,
+      email: authEmail,
       password: password,
       email_confirm: true,
       user_metadata: {
@@ -40,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (authError) {
       // If user already exists in auth.users, retrieve existing user list
       const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
-      const existingUser = usersData?.users?.find(u => u.email === userEmail || u.phone === phoneNumber);
+      const existingUser = usersData?.users?.find(u => u.email === authEmail || u.phone === phoneNumber);
 
       if (existingUser) {
         authUserId = existingUser.id;
@@ -52,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       authUserId = authData.user.id;
     }
 
-    // 2. Insert or Update profile in public.profiles table using exact authUserId
+    // 2. Insert or Update profile in public.profiles table
     const result = await queryDb(
       `
       INSERT INTO public.profiles (id, phone_number, email, full_name, role, phone_verified, updated_at)
@@ -65,11 +66,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         updated_at = now()
       RETURNING id, phone_number, email, full_name, role, phone_verified;
       `,
-      [authUserId, phoneNumber, userEmail, fullName, userRole]
+      [authUserId, phoneNumber, profileEmail, fullName, userRole]
     );
 
     return sendSuccess(res, {
-      user: result[0] || { id: authUserId, full_name: fullName, role: userRole, phone_number: phoneNumber, email: userEmail },
+      user: result[0] || { id: authUserId, full_name: fullName, role: userRole, phone_number: phoneNumber, email: profileEmail },
       verificationMethod: 'direct',
       message: 'Registrasi berhasil! Akun Anda telah aktif dan tersimpan di database Supabase.',
     }, 201);
