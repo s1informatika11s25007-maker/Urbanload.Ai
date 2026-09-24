@@ -88,9 +88,6 @@ function HeaderNavContent() {
           <Link to="/" className="hover:text-teal-600 transition">
             Beranda
           </Link>
-          <a href="/#modul" className="hover:text-teal-600 transition">
-            Fitur & Cara Kerja
-          </a>
           <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-bold">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Live Preview (View-Only)

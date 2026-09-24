@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import {
   ArrowRight,
   UserCheck,
@@ -24,15 +23,6 @@ import {
 
 export default function Home() {
   const [zonesCount, setZonesCount] = useState(null);
-
-  const liveOccupancyData = [
-    { jam: '08.00', okupansi: 42 },
-    { jam: '10.00', okupansi: 88 },
-    { jam: '12.00', okupansi: 95 },
-    { jam: '14.00', okupansi: 65 },
-    { jam: '16.00', okupansi: 82 },
-    { jam: '18.00', okupansi: 38 },
-  ];
 
   useEffect(() => {
     const supabase = createClient();
@@ -200,7 +190,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI WITH REAL INTERACTIVE RECHARTS AREA CHART FOR OKUPANSI ZONA */}
+      {/* 4. SHOWCASE TAMPILAN APLIKASI ASLI WITH QUICKPASS QR BARCODE LOGO SHOWCASE */}
       <section id="showcase" className="space-y-8 scroll-mt-20">
         <div className="text-center space-y-2">
           <span className="text-xs font-extrabold text-teal-900 uppercase tracking-wider bg-teal-100 px-3.5 py-1.5 rounded-full border border-teal-300">
@@ -279,46 +269,29 @@ export default function Home() {
             </Link>
           </Card>
 
-          {/* Showcase 3: BayUtilization Real Recharts Interactive Graph Card */}
-          <Card className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-amber-500 transition ring-2 ring-amber-500/20">
+          {/* Showcase 3: BayUtilization */}
+          <Card className="p-6 border-slate-200 bg-white text-slate-900 rounded-3xl shadow-md space-y-4 flex flex-col justify-between hover:border-amber-500 transition">
             <div className="space-y-3">
-              {/* REAL INTERACTIVE RECHARTS AREA CHART GRAPH MOCKUP */}
-              <div className="h-32 rounded-2xl bg-slate-950 border border-amber-500/40 p-2.5 shadow-xl flex flex-col justify-between">
-                <div className="flex items-center justify-between text-[10px] font-mono font-bold text-amber-300 border-b border-slate-800 pb-1">
-                  <span className="flex items-center gap-1"><BarChart3 className="h-3 w-3 text-amber-400" /> % Okupansi Bay Realtime</span>
-                  <span className="text-emerald-400 font-extrabold bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30">95% Peak</span>
-                </div>
-                <div className="h-22 w-full pt-1">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={liveOccupancyData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="amberGradHome" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.05}/>
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="jam" tick={{ fontSize: 8, fill: '#94a3b8' }} />
-                      <YAxis domain={[0, 100]} tick={{ fontSize: 8, fill: '#94a3b8' }} unit="%" />
-                      <Area type="monotone" dataKey="okupansi" stroke="#f59e0b" strokeWidth={2.5} fillOpacity={1} fill="url(#amberGradHome)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="h-32 rounded-2xl bg-slate-950 border border-slate-300 flex items-end gap-2 p-3 shadow-inner">
+                {[40, 65, 30, 85, 55, 95, 45].map((h, i) => (
+                  <div key={i} className="flex-1 bg-amber-500/90 rounded-t-lg shadow" style={{ height: `${h}%` }} />
+                ))}
               </div>
 
               <div className="flex items-center justify-between pt-1">
                 <span className="text-xs font-extrabold px-3 py-1 rounded-full border text-amber-900 bg-amber-100 border-amber-300">
-                  BayUtilization Real
+                  BayUtilization
                 </span>
                 <BarChart3 className="h-5 w-5 text-amber-600" />
               </div>
-              <h3 className="font-black text-base sm:text-lg text-slate-900">Grafik Okupansi Zona Real</h3>
+              <h3 className="font-black text-base sm:text-lg text-slate-900">Grafik Okupansi Zona</h3>
               <p className="text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
-                Grafik tren pemakaian slot per jam (% okupansi) secara real-time untuk bantu kurir memilih waktu paling bebas hambatan.
+                Tren pemakaian slot per jam untuk bantu kurir pilih waktu paling lengang.
               </p>
             </div>
             <Link to="/rider/congestion" className="block pt-2">
               <Button className="w-full text-xs font-black py-3 rounded-xl shadow-sm bg-amber-600 hover:bg-amber-700 text-white">
-                Lihat Tren Kepadatan Real <ArrowRight className="h-4 w-4" />
+                Lihat Tren <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </Card>
@@ -385,30 +358,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. KREDIBILITAS TIM */}
-      <section id="tim" className="space-y-6 scroll-mt-20 text-center">
-        <span className="text-xs font-black text-slate-800 uppercase tracking-wider bg-slate-200 px-3.5 py-1.5 rounded-full border border-slate-300">
-          Di Balik UrbanLoad.AI
-        </span>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Tim Pengembang</h2>
-        <p className="text-xs sm:text-sm font-bold text-slate-700 max-w-lg mx-auto">
-          Mahasiswa Informatika yang membangun sistem ini dari nol untuk ICONFEST 2026 — kode sumber terbuka untuk ditinjau juri.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <Link to="/tentang">
-            <Button className="px-5 py-2.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl flex items-center gap-2">
-              <UserCheck className="h-3.5 w-3.5" /> Lihat Profil Tim
-            </Button>
-          </Link>
-          <a href="https://github.com" target="_blank" rel="noreferrer">
-            <Button className="px-5 py-2.5 text-xs font-bold bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl flex items-center gap-2 shadow-sm">
-              <Github className="h-3.5 w-3.5" /> Repository Kode Sumber
-            </Button>
-          </a>
-        </div>
-      </section>
-
-      {/* 7. BANNER MODE DEMO JURI */}
+      {/* 6. BANNER MODE DEMO JURI */}
       <Card className="p-8 bg-gradient-to-r from-teal-50 via-white to-emerald-50 border-teal-200 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg rounded-3xl">
         <div className="space-y-2 text-center md:text-left">
           <div className="inline-flex items-center gap-1.5 font-extrabold text-teal-900 text-xs bg-white px-3.5 py-1 rounded-full border border-teal-300 shadow-sm">
