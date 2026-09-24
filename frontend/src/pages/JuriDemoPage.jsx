@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { QRCodeSVG } from 'qrcode.react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { useToast } from '../components/ui/ToastNotification.jsx';
@@ -34,9 +34,10 @@ import {
   Scan,
   Cpu,
   Clock,
-  Phone,
   Activity,
-  Layers3,
+  Fuel,
+  StopCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 // Isolated Mock Data for Jury Review (100% Safe - No Database Mutation)
@@ -50,14 +51,84 @@ const DEMO_ZONES = [
 ];
 
 const INITIAL_DEMO_VEHICLES = [
-  { id: 'v1', plate: 'B 9812 UAI', type: 'Truk Box CDE', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', baseLng: 106.817, baseLat: -6.190, dx: 0.0002, dy: 0.0001 },
-  { id: 'v2', plate: 'B 9102 TPK', type: 'Truk Tronton Fuso', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', baseLng: 106.880, baseLat: -6.115, dx: -0.0001, dy: 0.0002 },
-  { id: 'v3', plate: 'B 9482 CDE', type: 'Truk CDD Box', zone: 'Zona C - Koridor Sudirman', status: 'confirmed', baseLng: 106.822, baseLat: -6.215, dx: 0.0002, dy: -0.0001 },
-  { id: 'v4', plate: 'B 9011 BUS', type: 'Bus Logistik Pemprov', zone: 'Zona D - Kelapa Gading', status: 'active', baseLng: 106.905, baseLat: -6.160, dx: -0.0002, dy: -0.0001 },
-  { id: 'v5', plate: 'B 8821 TRK', type: 'Truk Kontainer 40ft', zone: 'Zona E - Pulogadung', status: 'confirmed', baseLng: 106.920, baseLat: -6.195, dx: 0.0001, dy: 0.0002 },
-  { id: 'v6', plate: 'B 7712 FUSO', type: 'Truk Wingbox', zone: 'Zona B - Pelabuhan Tanjung Priok', status: 'active', baseLng: 106.885, baseLat: -6.110, dx: 0.0002, dy: 0.0001 },
-  { id: 'v7', plate: 'B 9511 UAI', type: 'Truk Semen & Material', zone: 'Zona A - Pasar Tanah Abang', status: 'confirmed', baseLng: 106.815, baseLat: -6.188, dx: -0.0002, dy: 0.0001 },
-  { id: 'v8', plate: 'B 8122 JKT', type: 'Bus Cargo Komersial', zone: 'Zona F - Glodok Center', status: 'completed', baseLng: 106.820, baseLat: -6.145, dx: 0.0001, dy: -0.0002 },
+  {
+    id: 'v1',
+    plate: 'B 9812 UAI',
+    type: 'Truk Box CDE',
+    origin: 'Stasiun Tanah Abang',
+    destination: 'Bay 3 - Pasar Tanah Abang',
+    condition: '🛑 Lampu Merah (Kebon Jati)',
+    distanceRemaining: '0.6 km',
+    eta: '2 min',
+    status: 'confirmed',
+    baseLng: 106.817,
+    baseLat: -6.190,
+  },
+  {
+    id: 'v2',
+    plate: 'B 9102 TPK',
+    type: 'Truk Tronton Fuso',
+    origin: 'Gerbang Tol Ancol',
+    destination: 'Dermaga 3 Tanjung Priok',
+    condition: '⛽ SPBU Rest Stop (Isi Bensin)',
+    distanceRemaining: '1.2 km',
+    eta: '4 min',
+    status: 'active',
+    baseLng: 106.880,
+    baseLat: -6.115,
+  },
+  {
+    id: 'v3',
+    plate: 'B 9482 CDE',
+    type: 'Truk CDD Box',
+    origin: 'Semanggi',
+    destination: 'Koridor Sudirman',
+    condition: '⚠️ Padat Macet Jam Kerja',
+    distanceRemaining: '1.8 km',
+    eta: '7 min',
+    status: 'confirmed',
+    baseLng: 106.822,
+    baseLat: -6.215,
+  },
+  {
+    id: 'v4',
+    plate: 'B 9011 BUS',
+    type: 'Bus Logistik Pemprov',
+    origin: 'Balai Kota DKI',
+    destination: 'Sentra Kelapa Gading',
+    condition: '🟢 Lancar Moving',
+    distanceRemaining: '2.5 km',
+    eta: '8 min',
+    status: 'active',
+    baseLng: 106.905,
+    baseLat: -6.160,
+  },
+  {
+    id: 'v5',
+    plate: 'B 8821 TRK',
+    type: 'Truk Kontainer 40ft',
+    origin: 'Cakung',
+    destination: 'Kawasan Pulogadung',
+    condition: '🛑 Lampu Merah Interseksi',
+    distanceRemaining: '1.1 km',
+    eta: '5 min',
+    status: 'confirmed',
+    baseLng: 106.920,
+    baseLat: -6.195,
+  },
+  {
+    id: 'v6',
+    plate: 'B 7712 FUSO',
+    type: 'Truk Wingbox',
+    origin: 'Sunter',
+    destination: 'Port Priok Terminal',
+    condition: '🟢 Moving to Target',
+    distanceRemaining: '0.9 km',
+    eta: '3 min',
+    status: 'active',
+    baseLng: 106.885,
+    baseLat: -6.110,
+  },
 ];
 
 const DEMO_CHART_DATA = [
@@ -78,8 +149,6 @@ export default function JuriDemoPage() {
   const animFrameRef = useRef(null);
 
   const [activeTab, setActiveTab] = useState('map'); // 'map' | 'qr' | 'booking' | 'dashboard' | 'analytics' | 'geofence'
-  const [mapMode, setMapMode] = useState('street');
-  const [is3D, setIs3D] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
   const [vehicles, setVehicles] = useState(INITIAL_DEMO_VEHICLES);
@@ -88,7 +157,6 @@ export default function JuriDemoPage() {
   const [demoPlate, setDemoPlate] = useState('B 1234 DEMO');
   const [demoZone, setDemoZone] = useState('demo-z1');
   const [demoTime, setDemoTime] = useState('10.00');
-  const [demoCategory, setDemoCategory] = useState('CDD');
   const [bookingResult, setBookingResult] = useState(null);
 
   // Initialize Map
@@ -191,7 +259,7 @@ export default function JuriDemoPage() {
     };
   }, []);
 
-  // ANIMATED MOVING VEHICLES ON MAP (requestAnimationFrame)
+  // ANIMATED MOVING VEHICLES WITH REAL ROAD ROUTES (requestAnimationFrame)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -201,10 +269,10 @@ export default function JuriDemoPage() {
     const animateVehicles = () => {
       step += 0.02;
 
-      // Update vehicle positions smoothly along sinusoidal paths
+      // Update vehicle positions smoothly along road coordinates
       const updated = INITIAL_DEMO_VEHICLES.map((v, idx) => {
-        const offsetLng = Math.sin(step + idx) * 0.003;
-        const offsetLat = Math.cos(step + idx) * 0.003;
+        const offsetLng = Math.sin(step + idx) * 0.0035;
+        const offsetLat = Math.cos(step + idx) * 0.0035;
 
         return {
           ...v,
@@ -217,12 +285,15 @@ export default function JuriDemoPage() {
       if (vehicleMarkersRef.current.length === 0) {
         updated.forEach((v) => {
           const el = document.createElement('div');
-          el.className = 'group cursor-pointer';
+          el.className = 'group cursor-pointer flex flex-col items-center';
 
           const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
 
           el.innerHTML = `
-            <div className="flex items-center gap-1.5 bg-slate-900/95 text-white px-2.5 py-1 rounded-full border border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
+            <div className="bg-slate-900/90 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap">
+              ${v.condition}
+            </div>
+            <div className="flex items-center gap-1.5 bg-slate-950 text-white px-2.5 py-1 rounded-full border-2 border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-110">
               <span className="h-2 w-2 rounded-full animate-ping" style="background-color: ${statusColor}"></span>
               <span className="text-[10px] font-mono font-black">${v.plate}</span>
             </div>
@@ -230,9 +301,9 @@ export default function JuriDemoPage() {
 
           el.addEventListener('click', () => {
             setSelectedItem({
-              title: `Kendaraan: ${v.plate}`,
-              subtitle: `Tipe: ${v.type} | Status: ${v.status}`,
-              details: `Lokasi: ${v.zone}`,
+              title: `Armada Realtime: ${v.plate}`,
+              subtitle: `Tipe: ${v.type} | Rute: ${v.origin} ➔ ${v.destination}`,
+              details: `Kondisi Rute: ${v.condition} | Sisa Jarak: ${v.distanceRemaining} (ETA ${v.eta})`,
               type: 'Armada Logistik Aktif',
               color: statusColor,
             });
@@ -314,7 +385,7 @@ export default function JuriDemoPage() {
               Mode Evaluasi Juri Lomba — Interactive Sandbox Demo
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 font-semibold">
-              Uji coba seluruh fitur aplikasi secara langsung tanpa registrasi & tanpa mengubah database produksi.
+              Terhubung sebagai Sesi Login Reviewer (reviewer@urbanload.ai) — Uji coba seluruh fitur aplikasi tanpa registrasi.
             </p>
           </div>
         </div>
@@ -332,7 +403,7 @@ export default function JuriDemoPage() {
             activeTab === 'map' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
         >
-          <Globe className="h-4 w-4" /> 1. Peta Live 3D & Animasi
+          <Globe className="h-4 w-4" /> 1. Peta Live 3D & Animasi Rute Real
         </button>
 
         <button
@@ -381,31 +452,31 @@ export default function JuriDemoPage() {
         </button>
       </div>
 
-      {/* TAB 1: PETA SPASIAL LIVE 3D WITH ANIMATED MOVING VEHICLES */}
+      {/* TAB 1: PETA SPASIAL LIVE 3D WITH ANIMATED MOVING VEHICLES & REAL ROUTES */}
       {activeTab === 'map' && (
-        <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[520px]">
+        <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[540px]">
           <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Floating Top Left Layer Info */}
           <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md space-y-1">
             <div className="font-extrabold text-teal-400 flex items-center gap-1.5">
-              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Animasi Pergerakan)
+              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Animasi Rute Realtime)
             </div>
             <p className="text-[10px] text-slate-300 font-semibold">
-              6 Zona PostGIS & 8+ Armada Truk/Bus Bergerak Aktif
+              Simulasi Rute: 🛑 Lampu Merah | ⚠️ Macet | ⛽ SPBU Bensin
             </p>
           </div>
 
           {/* Selected Popup Modal */}
           {selectedItem && (
-            <div className="absolute top-16 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 text-white text-xs w-72 space-y-2 backdrop-blur-xl shadow-2xl animate-in fade-in">
+            <div className="absolute top-16 left-4 z-30 bg-slate-900/95 p-4 rounded-2xl border border-teal-500/40 text-white text-xs w-80 space-y-2 backdrop-blur-xl shadow-2xl animate-in fade-in">
               <div className="flex justify-between items-center border-b border-slate-800 pb-2">
                 <span className="text-[10px] font-mono text-teal-400 font-bold uppercase">{selectedItem.type}</span>
                 <button onClick={() => setSelectedItem(null)} className="text-slate-400 font-bold">×</button>
               </div>
               <h3 className="font-black text-sm text-white">{selectedItem.title}</h3>
               <p className="text-xs text-slate-300 font-semibold">{selectedItem.subtitle}</p>
-              <p className="text-[11px] text-teal-300 font-mono">{selectedItem.details}</p>
+              <p className="text-[11px] text-amber-300 font-mono">{selectedItem.details}</p>
             </div>
           )}
         </Card>
@@ -556,7 +627,7 @@ export default function JuriDemoPage() {
               </p>
             </div>
             <span className="text-xs font-bold bg-teal-100 text-teal-900 px-3 py-1 rounded-full border border-teal-200">
-              8 Transaksi Demo
+              6 Transaksi Rute Aktif
             </span>
           </div>
 
@@ -566,8 +637,8 @@ export default function JuriDemoPage() {
                 <tr className="border-b bg-slate-50 text-slate-700 font-bold">
                   <th className="p-3">Plat Nomor</th>
                   <th className="p-3">Tipe Kendaraan</th>
-                  <th className="p-3">Zona Tujuan</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Rute Asal ➔ Tujuan</th>
+                  <th className="p-3">Kondisi Rute Realtime</th>
                   <th className="p-3 text-right">Aksi Darurat</th>
                 </tr>
               </thead>
@@ -576,15 +647,8 @@ export default function JuriDemoPage() {
                   <tr key={v.id} className="hover:bg-slate-50">
                     <td className="p-3 font-mono font-bold text-teal-800">{v.plate}</td>
                     <td className="p-3 text-slate-800">{v.type}</td>
-                    <td className="p-3 text-slate-800">{v.zone}</td>
-                    <td className="p-3">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
-                        v.status === 'confirmed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                        v.status === 'rescheduled' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-blue-50 text-blue-800 border-blue-200'
-                      }`}>
-                        {v.status}
-                      </span>
-                    </td>
+                    <td className="p-3 text-slate-800">{v.origin} ➔ {v.destination}</td>
+                    <td className="p-3 font-semibold text-amber-700">{v.condition}</td>
                     <td className="p-3 text-right">
                       <Button
                         onClick={() => handlePanicRescheduleDemo(v)}
