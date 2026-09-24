@@ -31,111 +31,51 @@ import {
   Cpu,
   Clock,
   Activity,
-  Fuel,
-  StopCircle,
+  Printer,
+  Download,
+  Flame,
+  Check,
 } from 'lucide-react';
 
 // Isolated Mock Data for Jury Review (100% Safe - No Database Mutation)
-const DEMO_ZONES = [
-  { id: 'demo-z1', name: 'Zona A - Pasar Tanah Abang', cap: 15, active: 13, score: 8.8, color: '#ef4444', poly: [[[106.812, -6.185], [106.822, -6.185], [106.822, -6.195], [106.812, -6.195], [106.812, -6.185]]] },
-  { id: 'demo-z2', name: 'Zona B - Pelabuhan Tanjung Priok', cap: 35, active: 22, score: 6.2, color: '#f59e0b', poly: [[[106.870, -6.105], [106.892, -6.105], [106.892, -6.125], [106.870, -6.125], [106.870, -6.105]]] },
-  { id: 'demo-z3', name: 'Zona C - Koridor Sudirman-Thamrin', cap: 20, active: 7, score: 3.5, color: '#10b981', poly: [[[106.818, -6.200], [106.828, -6.200], [106.823, -6.230], [106.813, -6.230], [106.818, -6.200]]] },
-  { id: 'demo-z4', name: 'Zona D - Kelapa Gading Trade Center', cap: 18, active: 11, score: 5.8, color: '#f59e0b', poly: [[[106.895, -6.150], [106.915, -6.150], [106.915, -6.170], [106.895, -6.170], [106.895, -6.150]]] },
-  { id: 'demo-z5', name: 'Zona E - Kawasan Industri Pulogadung', cap: 40, active: 31, score: 7.9, color: '#ef4444', poly: [[[106.910, -6.185], [106.932, -6.185], [106.932, -6.205], [106.910, -6.205], [106.910, -6.185]]] },
-  { id: 'demo-z6', name: 'Zona F - Glodok Commercial Center', cap: 15, active: 4, score: 2.8, color: '#10b981', poly: [[[106.810, -6.138], [106.830, -6.138], [106.830, -6.155], [106.810, -6.155], [106.810, -6.138]]] },
+const DEMO_ZONES_AFTER = [
+  { id: 'demo-z1', name: 'Zona A - Pasar Tanah Abang', cap: 15, active: 4, score: 2.8, color: '#10b981', poly: [[[106.812, -6.185], [106.822, -6.185], [106.822, -6.195], [106.812, -6.195], [106.812, -6.185]]] },
+  { id: 'demo-z2', name: 'Zona B - Pelabuhan Tanjung Priok', cap: 35, active: 11, score: 3.2, color: '#10b981', poly: [[[106.870, -6.105], [106.892, -6.105], [106.892, -6.125], [106.870, -6.125], [106.870, -6.105]]] },
+  { id: 'demo-z3', name: 'Zona C - Koridor Sudirman-Thamrin', cap: 20, active: 6, score: 2.5, color: '#10b981', poly: [[[106.818, -6.200], [106.828, -6.200], [106.823, -6.230], [106.813, -6.230], [106.818, -6.200]]] },
+  { id: 'demo-z4', name: 'Zona D - Kelapa Gading Trade Center', cap: 18, active: 5, score: 3.0, color: '#10b981', poly: [[[106.895, -6.150], [106.915, -6.150], [106.915, -6.170], [106.895, -6.170], [106.895, -6.150]]] },
+  { id: 'demo-z5', name: 'Zona E - Kawasan Industri Pulogadung', cap: 40, active: 12, score: 3.4, color: '#10b981', poly: [[[106.910, -6.185], [106.932, -6.185], [106.932, -6.205], [106.910, -6.205], [106.910, -6.185]]] },
 ];
 
-// Linear Road Polyline Waypoints for Realistic Straight Movement Along Real Streets
-const ROUTED_DEMO_VEHICLES = [
-  {
-    id: 'v1',
-    plate: 'B 9812 UAI',
-    type: 'Truk Box CDE',
-    origin: 'Stasiun Tanah Abang (106.8115, -6.1865)',
-    destination: 'Bay 3 - Pasar Tanah Abang (106.8218, -6.1928)',
-    condition: '🛑 Lampu Merah Kebon Jati (Berhenti 45dtk)',
-    isStopped: true,
-    distanceRemaining: '0.6 km',
-    eta: '2 min',
-    status: 'confirmed',
-    waypoints: [
-      [106.8122, -6.1855],
-      [106.8155, -6.1882],
-      [106.8188, -6.1905],
-      [106.8218, -6.1928],
-    ],
-  },
-  {
-    id: 'v2',
-    plate: 'B 9102 TPK',
-    type: 'Truk Tronton Fuso',
-    origin: 'Gerbang Tol Yos Sudarso (106.8710, -6.1100)',
-    destination: 'Dermaga 3 Tanjung Priok (106.8915, -6.1220)',
-    condition: '⛽ SPBU Pertamina (Berhenti Isi Bensin)',
-    isStopped: true,
-    distanceRemaining: '1.2 km',
-    eta: '4 min',
-    status: 'active',
-    waypoints: [
-      [106.8710, -6.1100],
-      [106.8790, -6.1140],
-      [106.8860, -6.1180],
-      [106.8915, -6.1220],
-    ],
-  },
-  {
-    id: 'v3',
-    plate: 'B 9482 CDE',
-    type: 'Truk CDD Box',
-    origin: 'Semanggi Flyover (106.8185, -6.2180)',
-    destination: 'Monas South Hub (106.8270, -6.1820)',
-    condition: '⚠️ Padat Macet Jam Kerja (Slow 15 km/h)',
-    isStopped: false,
-    distanceRemaining: '1.8 km',
-    eta: '7 min',
-    status: 'confirmed',
-    waypoints: [
-      [106.8185, -6.2180],
-      [106.8215, -6.2100],
-      [106.8235, -6.1980],
-      [106.8270, -6.1820],
-    ],
-  },
-  {
-    id: 'v4',
-    plate: 'B 9011 BUS',
-    type: 'Bus Logistik Pemprov',
-    origin: 'Sunter Bypass (106.8910, -6.1520)',
-    destination: 'Kelapa Gading Trade Center (106.9110, -6.1660)',
-    condition: '🟢 Moving Smoothly di Jalur Utama',
-    isStopped: false,
-    distanceRemaining: '2.5 km',
-    eta: '8 min',
-    status: 'active',
-    waypoints: [
-      [106.8910, -6.1520],
-      [106.9010, -6.1590],
-      [106.9110, -6.1660],
-    ],
-  },
-  {
-    id: 'v5',
-    plate: 'B 8821 TRK',
-    type: 'Truk Kontainer 40ft',
-    origin: 'Gerbang Tol Pulogadung (106.9120, -6.1860)',
-    destination: 'Kawasan Industri Pulogadung (106.9310, -6.2020)',
-    condition: '🟢 Moving to Target Bay',
-    isStopped: false,
-    distanceRemaining: '1.1 km',
-    eta: '5 min',
-    status: 'confirmed',
-    waypoints: [
-      [106.9120, -6.1860],
-      [106.9210, -6.1940],
-      [106.9310, -6.2020],
-    ],
-  },
+const DEMO_ZONES_BEFORE = [
+  { id: 'demo-z1', name: 'Zona A - Pasar Tanah Abang (Penumpukan Liar)', cap: 15, active: 28, score: 9.8, color: '#dc2626', poly: [[[106.812, -6.185], [106.822, -6.185], [106.822, -6.195], [106.812, -6.195], [106.812, -6.185]]] },
+  { id: 'demo-z2', name: 'Zona B - Pelabuhan Tanjung Priok (Antrean Macet)', cap: 35, active: 48, score: 9.4, color: '#dc2626', poly: [[[106.870, -6.105], [106.892, -6.105], [106.892, -6.125], [106.870, -6.125], [106.870, -6.105]]] },
+  { id: 'demo-z3', name: 'Zona C - Koridor Sudirman-Thamrin', cap: 20, active: 18, score: 8.5, color: '#f59e0b', poly: [[[106.818, -6.200], [106.828, -6.200], [106.823, -6.230], [106.813, -6.230], [106.818, -6.200]]] },
 ];
+
+// Linear Road Polyline Waypoints for Realistic Movement
+const AFTER_SCENARIO_VEHICLES = [
+  { id: 'v1', plate: 'B 9812 UAI', type: 'Truk Box CDE', origin: 'Stasiun Tanah Abang', destination: 'Bay 3 Pasar Tanah Abang', condition: '🛑 Lampu Merah (Kebon Jati)', isStopped: true, status: 'confirmed', waypoints: [[106.8122, -6.1855], [106.8155, -6.1882], [106.8188, -6.1905], [106.8218, -6.1928]] },
+  { id: 'v2', plate: 'B 9102 TPK', type: 'Truk Tronton Fuso', origin: 'Gerbang Tol Priok', destination: 'Dermaga 3 Tanjung Priok', condition: '⛽ SPBU Pertamina (Isi Bensin)', isStopped: true, status: 'active', waypoints: [[106.8710, -6.1100], [106.8790, -6.1140], [106.8860, -6.1180], [106.8915, -6.1220]] },
+  { id: 'v3', plate: 'B 9482 CDE', type: 'Truk CDD Box', origin: 'Semanggi Flyover', destination: 'Monas South Hub', condition: '🟢 Terjadwal SmartSlot (Lancar)', isStopped: false, status: 'confirmed', waypoints: [[106.8185, -6.2180], [106.8215, -6.2100], [106.8235, -6.1980], [106.8270, -6.1820]] },
+  { id: 'v4', plate: 'B 9011 BUS', type: 'Bus Logistik Pemprov', origin: 'Sunter Bypass', destination: 'Kelapa Gading Center', condition: '🟢 Teratur 1 per 1 Entry', isStopped: false, status: 'active', waypoints: [[106.8910, -6.1520], [106.9010, -6.1590], [106.9110, -6.1660]] },
+  { id: 'v5', plate: 'B 8821 TRK', type: 'Truk Kontainer 40ft', origin: 'Tol Pulogadung', destination: 'Kawasan Pulogadung', condition: '🟢 Precision Bay Entry', isStopped: false, status: 'confirmed', waypoints: [[106.9120, -6.1860], [106.9210, -6.1940], [106.9310, -6.2020]] },
+];
+
+// Congested Before Scenario: 15+ Trucks Wild Parked / Jammed on Road Shoulders
+const BEFORE_SCENARIO_VEHICLES = Array.from({ length: 18 }).map((_, i) => ({
+  id: `jammed-${i}`,
+  plate: `B 9${100 + i} MACET`,
+  type: i % 2 === 0 ? 'Truk Kontainer 40ft' : 'Truk Tronton Fuso',
+  origin: 'Liar di Bahu Jalan',
+  destination: 'Antrean Tanpa Slot (Macet)',
+  condition: '⚠️ Parkir Liar Bahu Jalan (Antrean 4.2 Jam)',
+  isStopped: true,
+  status: 'jammed',
+  waypoints: [
+    [106.8130 + (i % 5) * 0.002, -6.1860 - Math.floor(i / 5) * 0.002],
+    [106.8130 + (i % 5) * 0.002, -6.1860 - Math.floor(i / 5) * 0.002],
+  ],
+}));
 
 const DEMO_CHART_DATA = [
   { jam: '06.00', okupansi: 35 },
@@ -173,10 +113,11 @@ export default function JuriDemoPage() {
   const vehicleMarkersRef = useRef([]);
   const animFrameRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState('map'); // 'map' | 'qr' | 'booking' | 'dashboard' | 'analytics' | 'geofence'
+  const [activeTab, setActiveTab] = useState('map');
+  const [demoScenario, setDemoScenario] = useState('after'); // 'after' (UrbanLoad.AI) | 'before' (Macet Liar)
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
-  const [vehicles, setVehicles] = useState(ROUTED_DEMO_VEHICLES);
+  const [vehicles, setVehicles] = useState(AFTER_SCENARIO_VEHICLES);
 
   // Form State for Demo SmartSlot Booking
   const [demoPlate, setDemoPlate] = useState('B 1234 DEMO');
@@ -184,7 +125,37 @@ export default function JuriDemoPage() {
   const [demoTime, setDemoTime] = useState('10.00');
   const [bookingResult, setBookingResult] = useState(null);
 
-  // Initialize Map
+  // Handle Tab Switch (Fixes White Map Canvas Unmount Bug)
+  const handleTabChange = (tabKey) => {
+    setActiveTab(tabKey);
+    if (tabKey === 'map' && mapRef.current) {
+      setTimeout(() => {
+        mapRef.current.resize();
+      }, 50);
+    }
+  };
+
+  // Toggle Scenario Before vs After
+  const handleToggleScenario = (scenario) => {
+    setDemoScenario(scenario);
+    if (scenario === 'before') {
+      setVehicles(BEFORE_SCENARIO_VEHICLES);
+      showToast({
+        title: 'Skenario Sebelum UrbanLoad.AI',
+        message: 'Simulasi 18+ truk parkir liar di bahu jalan menimbulkan kemacetan parah (CongestionScore 9.8).',
+        type: 'error',
+      });
+    } else {
+      setVehicles(AFTER_SCENARIO_VEHICLES);
+      showToast({
+        title: 'Skenario Dengan UrbanLoad.AI',
+        message: 'Jadwal slot teratur, bahu jalan bebas antrean, dan zona hijau lancar (CongestionScore 2.8).',
+        type: 'success',
+      });
+    }
+  };
+
+  // Initialize Map Once
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
@@ -221,20 +192,13 @@ export default function JuriDemoPage() {
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
 
     map.on('load', () => {
-      // Add 3D Extruded Zones
+      // Elegant Subtle Zones Layers
+      const activeZones = demoScenario === 'before' ? DEMO_ZONES_BEFORE : DEMO_ZONES_AFTER;
       const geojson = {
         type: 'FeatureCollection',
-        features: DEMO_ZONES.map((z, idx) => ({
+        features: activeZones.map((z, idx) => ({
           type: 'Feature',
-          properties: {
-            id: z.id,
-            name: z.name,
-            capacity: z.cap,
-            active: z.active,
-            score: z.score,
-            color: z.color,
-            height: 40 + idx * 12,
-          },
+          properties: { id: z.id, name: z.name, capacity: z.cap, active: z.active, score: z.score, color: z.color, height: 25 + idx * 8 },
           geometry: { type: 'Polygon', coordinates: z.poly },
         })),
       };
@@ -245,7 +209,7 @@ export default function JuriDemoPage() {
         id: 'demo-zones-fill',
         type: 'fill',
         source: 'demo-zones-src',
-        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.35 },
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.18 }, // Elegant subtle opacity
       });
 
       map.addLayer({
@@ -256,33 +220,7 @@ export default function JuriDemoPage() {
           'fill-extrusion-color': ['get', 'color'],
           'fill-extrusion-height': ['get', 'height'],
           'fill-extrusion-base': 0,
-          'fill-extrusion-opacity': 0.55,
-        },
-      });
-
-      // Add Subtle Dashed Polyline Route Lines on Map
-      const routeGeoJSON = {
-        type: 'FeatureCollection',
-        features: ROUTED_DEMO_VEHICLES.map((v) => ({
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: v.waypoints,
-          },
-        })),
-      };
-
-      map.addSource('demo-routes-src', { type: 'geojson', data: routeGeoJSON });
-
-      map.addLayer({
-        id: 'demo-routes-line',
-        type: 'line',
-        source: 'demo-routes-src',
-        paint: {
-          'line-color': '#14b8a6',
-          'line-width': 2.5,
-          'line-dasharray': [2, 2],
-          'line-opacity': 0.65,
+          'fill-extrusion-opacity': 0.28,
         },
       });
 
@@ -310,6 +248,24 @@ export default function JuriDemoPage() {
     };
   }, []);
 
+  // Update Zones Layer when Scenario Toggles
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.getSource('demo-zones-src')) return;
+
+    const activeZones = demoScenario === 'before' ? DEMO_ZONES_BEFORE : DEMO_ZONES_AFTER;
+    const geojson = {
+      type: 'FeatureCollection',
+      features: activeZones.map((z, idx) => ({
+        type: 'Feature',
+        properties: { id: z.id, name: z.name, capacity: z.cap, active: z.active, score: z.score, color: z.color, height: 25 + idx * 8 },
+        geometry: { type: 'Polygon', coordinates: z.poly },
+      })),
+    };
+
+    map.getSource('demo-zones-src').setData(geojson);
+  }, [demoScenario]);
+
   // ANIMATED MOVING VEHICLES ALONG REAL LINEAR ROAD POLYLINES (STATIONARY AT SPBU & LAMPU MERAH)
   useEffect(() => {
     const map = mapRef.current;
@@ -318,8 +274,9 @@ export default function JuriDemoPage() {
     let progress = 0;
     let direction = 1;
 
+    const activeList = demoScenario === 'before' ? BEFORE_SCENARIO_VEHICLES : AFTER_SCENARIO_VEHICLES;
+
     const animateVehiclesAlongRoads = () => {
-      // Slow, realistic live tracking speed
       progress += 0.0006 * direction;
       if (progress >= 1) {
         progress = 1;
@@ -330,13 +287,13 @@ export default function JuriDemoPage() {
       }
 
       // Compute exact position along polylines for each vehicle
-      const currentPosList = ROUTED_DEMO_VEHICLES.map((v) => {
+      const currentPosList = activeList.map((v) => {
         let lng, lat;
 
-        if (v.isStopped) {
-          // Stationary at SPBU or Lampu Merah waypoint stop
-          lng = v.waypoints[1][0];
-          lat = v.waypoints[1][1];
+        if (v.isStopped || demoScenario === 'before') {
+          // Stationary at SPBU or Lampu Merah waypoint stop, or wild jammed parked
+          lng = v.waypoints[0][0];
+          lat = v.waypoints[0][1];
         } else {
           // Moving slowly along polyline
           const point = getPointAlongPolyline(v.waypoints, progress);
@@ -352,12 +309,15 @@ export default function JuriDemoPage() {
       });
 
       // Update markers
-      if (vehicleMarkersRef.current.length === 0) {
+      if (vehicleMarkersRef.current.length === 0 || vehicleMarkersRef.current.length !== activeList.length) {
+        vehicleMarkersRef.current.forEach((m) => m.remove());
+        vehicleMarkersRef.current = [];
+
         currentPosList.forEach((v) => {
           const el = document.createElement('div');
           el.className = 'group cursor-pointer flex flex-col items-center';
 
-          const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'active' ? '#3b82f6' : '#f59e0b';
+          const statusColor = v.status === 'confirmed' ? '#10b981' : v.status === 'jammed' ? '#ef4444' : '#f59e0b';
 
           el.innerHTML = `
             <div className="bg-slate-900/95 text-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/50 shadow-md mb-1 whitespace-nowrap flex items-center gap-1">
@@ -379,7 +339,7 @@ export default function JuriDemoPage() {
             setSelectedItem({
               title: `Armada Real: ${v.plate}`,
               subtitle: `Tipe: ${v.type} | Rute: ${v.origin} ➔ ${v.destination}`,
-              details: `Kondisi Rute: ${v.condition} | Posisi: ${v.lng.toFixed(6)}, ${v.lat.toFixed(6)} | Sisa Jarak: ${v.distanceRemaining}`,
+              details: `Kondisi Rute: ${v.condition} | Posisi: ${v.lng.toFixed(6)}, ${v.lat.toFixed(6)}`,
               type: 'Armada Logistik Aktif',
               color: statusColor,
             });
@@ -404,7 +364,7 @@ export default function JuriDemoPage() {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, []);
+  }, [demoScenario]);
 
   // Action 1: Panic Reschedule Test
   const handlePanicRescheduleDemo = (v) => {
@@ -430,14 +390,14 @@ export default function JuriDemoPage() {
   // Action 3: SmartSlot Booking Test
   const handleRunDemoBooking = (e) => {
     e.preventDefault();
-    const selectedZoneObj = DEMO_ZONES.find((z) => z.id === demoZone);
+    const selectedZoneObj = DEMO_ZONES_AFTER.find((z) => z.id === demoZone);
 
     setBookingResult({
       zoneName: selectedZoneObj?.name || 'Zona A - Pasar Tanah Abang',
       plate: demoPlate,
       requestedTime: demoTime,
       recommendedSlotTime: demoTime === '10.00' ? '10.30 WIB (Disarankan Rebalance)' : `${demoTime} WIB`,
-      congestionScore: selectedZoneObj?.score || 8.8,
+      congestionScore: selectedZoneObj?.score || 2.8,
       status: 'confirmed',
     });
 
@@ -474,7 +434,7 @@ export default function JuriDemoPage() {
       {/* FEATURE NAVIGATION TABS FOR JURY */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold no-scrollbar">
         <button
-          onClick={() => setActiveTab('map')}
+          onClick={() => handleTabChange('map')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'map' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -483,7 +443,7 @@ export default function JuriDemoPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('qr')}
+          onClick={() => handleTabChange('qr')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'qr' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -492,7 +452,7 @@ export default function JuriDemoPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('booking')}
+          onClick={() => handleTabChange('booking')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'booking' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -501,7 +461,7 @@ export default function JuriDemoPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('dashboard')}
+          onClick={() => handleTabChange('dashboard')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'dashboard' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -510,7 +470,7 @@ export default function JuriDemoPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('analytics')}
+          onClick={() => handleTabChange('analytics')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'analytics' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -519,7 +479,7 @@ export default function JuriDemoPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab('geofence')}
+          onClick={() => handleTabChange('geofence')}
           className={`px-4 py-2.5 rounded-2xl transition flex items-center gap-1.5 shrink-0 shadow-sm ${
             activeTab === 'geofence' ? 'bg-teal-600 text-white shadow-teal-600/30 font-black' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
           }`}
@@ -528,18 +488,50 @@ export default function JuriDemoPage() {
         </button>
       </div>
 
-      {/* TAB 1: PETA SPASIAL LIVE 3D WITH ANIMATED MOVING VEHICLES & REAL ROUTES */}
-      {activeTab === 'map' && (
-        <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[540px]">
+      {/* TAB 1: PETA SPASIAL LIVE 3D WITH SCENARIO TOGGLE (ALWAYS MOUNTED IN DOM TO PREVENT WHITE MAP CANVAS BUG) */}
+      <div className={activeTab === 'map' ? 'block space-y-4' : 'hidden'}>
+        {/* BEFORE VS AFTER IMPACT SCENARIO TOGGLE BAR FOR JURY */}
+        <div className="p-3 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-sm">
+          <div className="flex items-center gap-2 font-black text-slate-900">
+            <Flame className="h-4 w-4 text-amber-600" />
+            <span>Bandingkan Dampak Nyata Solusi:</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => handleToggleScenario('before')}
+              className={`px-3.5 py-1.5 rounded-xl font-bold flex items-center justify-center gap-1.5 border transition ${
+                demoScenario === 'before'
+                  ? 'bg-rose-600 text-white border-rose-600 shadow-md font-black'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-rose-50 hover:text-rose-800'
+              }`}
+            >
+              <AlertTriangle className="h-3.5 w-3.5" /> Skenario Sebelum (18+ Truk Parkir Liar)
+            </button>
+
+            <button
+              onClick={() => handleToggleScenario('after')}
+              className={`px-3.5 py-1.5 rounded-xl font-bold flex items-center justify-center gap-1.5 border transition ${
+                demoScenario === 'after'
+                  ? 'bg-teal-600 text-white border-teal-600 shadow-md font-black'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-teal-50 hover:text-teal-800'
+              }`}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" /> Skenario Dengan UrbanLoad.AI (Lancar)
+            </button>
+          </div>
+        </div>
+
+        <Card className="p-0 overflow-hidden relative bg-slate-950 rounded-3xl border border-slate-800 shadow-2xl h-[520px]">
           <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Floating Top Left Layer Info */}
           <div className="absolute top-4 left-4 z-20 bg-slate-900/90 p-3 rounded-2xl border border-slate-800 text-white text-xs backdrop-blur-md space-y-1">
             <div className="font-extrabold text-teal-400 flex items-center gap-1.5">
-              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D (Pergerakan Lurus Jalur Jalan)
+              <Radio className="h-3.5 w-3.5 text-teal-400 animate-pulse" /> Peta Spasial Live 3D ({demoScenario === 'before' ? 'Macet Bahu Jalan' : 'Slot Terjadwal'})
             </div>
             <p className="text-[10px] text-slate-300 font-semibold">
-              Simulasi Kejadian Rute: 🛑 Lampu Merah | ⚠️ Macet | ⛽ SPBU Bensin
+              Status Kejadian: 🛑 Lampu Merah (Berhenti) | ⛽ SPBU Bensin (Berhenti) | 🟢 Moving
             </p>
           </div>
 
@@ -556,7 +548,7 @@ export default function JuriDemoPage() {
             </div>
           )}
         </Card>
-      )}
+      </div>
 
       {/* TAB 2: QUICKPASS QR SCANNER & BARCODE TICKET */}
       {activeTab === 'qr' && (
@@ -640,7 +632,7 @@ export default function JuriDemoPage() {
                   onChange={(e) => setDemoZone(e.target.value)}
                   className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
                 >
-                  {DEMO_ZONES.map((z) => (
+                  {DEMO_ZONES_AFTER.map((z) => (
                     <option key={z.id} value={z.id}>{z.name} (Kapasitas: {z.cap} Slot)</option>
                   ))}
                 </select>
