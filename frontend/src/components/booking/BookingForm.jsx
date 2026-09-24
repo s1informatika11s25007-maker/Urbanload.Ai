@@ -46,12 +46,20 @@ export function BookingForm({ onCheckSlot }) {
 
       const selectedZoneObj = zones.find((z) => z.id === zoneId);
 
+      // Query real count of active bookings for this zone
+      const supabase = createClient();
+      const { count: realActiveCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('zone_id', zoneId)
+        .in('status', ['confirmed', 'active', 'pending']);
+
       // 2. Tahap 1: Perencanaan & Optimalisasi AI (GroqLogix Engine: CongestionScore AI & LoadBalancer AI)
       const aiResult = await runGroqLogixOptimization({
         zoneId,
         zoneName: selectedZoneObj?.name || 'Zona Logistik',
         requestedTime,
-        activeTrucksCount: Math.floor(Math.random() * 8) + 5,
+        activeTrucksCount: realActiveCount || 0,
         capacityMax: selectedZoneObj?.max_truck_capacity || 15,
         truckDimensions,
       });

@@ -31,8 +31,12 @@ export default function NewBooking() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Ensure valid UUID for authenticated user or guest reviewer
-      const user_id = user?.id || '00000000-0000-0000-0000-000000000001';
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      const user_id = user.id;
       const slotTime = formData.aiResult?.recommendedSlotTime || formData.requestedTime || '10.00';
 
       const now = new Date();

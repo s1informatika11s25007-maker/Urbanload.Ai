@@ -9,9 +9,6 @@ const BookingHistoryTable = lazy(() => import('../components/booking/BookingHist
 const HighAccuracyTracker = lazy(() => import('../components/location/HighAccuracyTracker.jsx').then(m => ({ default: m.HighAccuracyTracker })));
 
 function DashboardMainContent() {
-  const [searchParams] = useSearchParams();
-  const isDemo = searchParams.get('demo') === 'true';
-
   const [activeCount, setActiveCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [complianceScore, setComplianceScore] = useState(100);
@@ -26,7 +23,7 @@ function DashboardMainContent() {
       const activeUserId = userSession?.user?.id;
 
       let query = supabase.from('bookings').select('status');
-      if (activeUserId && !isDemo) {
+      if (activeUserId) {
         query = query.eq('user_id', activeUserId);
       }
 
@@ -64,22 +61,10 @@ function DashboardMainContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isDemo]);
+  }, []);
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4">
-      {/* Banner Sesi Demo Juri / Guest Reviewer */}
-      {isDemo && (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-sm">
-          <div className="flex items-center gap-2 font-bold">
-            <Award className="h-5 w-5 text-amber-600 shrink-0" />
-            <span>Mode Evaluasi Juri — Terhubung ke Database Spatial Supabase Realtime</span>
-          </div>
-          <span className="bg-white px-2.5 py-1 rounded-full text-[11px] font-mono border border-amber-200 text-amber-800">
-            Sesi Evaluator: reviewer@urbanload.ai
-          </span>
-        </div>
-      )}
 
       {/* Header Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
@@ -129,7 +114,7 @@ function DashboardMainContent() {
 
       {/* Tabel Riwayat Booking Real-time */}
       <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Riwayat Booking...</div>}>
-        <BookingHistoryTable isDemo={isDemo} />
+        <BookingHistoryTable />
       </Suspense>
     </div>
   );

@@ -68,10 +68,10 @@ export default function Home() {
         </p>
 
         <div className="pt-3 space-y-4">
-          <Link to="/demo/juri" className="inline-block w-full sm:w-auto">
+          <Link to="/rider/bookings/new" className="inline-block w-full sm:w-auto">
             <Button className="w-full sm:w-auto px-8 py-4 text-sm sm:text-base flex items-center justify-center gap-2.5 shadow-xl font-black bg-teal-600 hover:bg-teal-700 text-white rounded-2xl transform hover:scale-[1.02] transition">
-              <Award className="h-5 w-5 text-amber-300" />
-              <span>Coba Mode Demo Juri (Tanpa Daftar)</span>
+              <ShieldCheck className="h-5 w-5 text-teal-200" />
+              <span>Pesan Slot Booking Baru</span>
               <ArrowRight className="h-5 w-5" />
             </Button>
           </Link>
@@ -210,7 +210,7 @@ export default function Home() {
             Lihat Langsung Sistemnya Bekerja
           </h2>
           <p className="text-xs sm:text-sm font-bold text-slate-700 max-w-xl mx-auto">
-            Bukan mockup — semua bisa dicoba langsung lewat mode demo juri.
+            Sistem terintegrasi secara real-time dengan database dan peta interaktif.
           </p>
         </div>
 
@@ -272,9 +272,9 @@ export default function Home() {
                 Pas digital Barcode QuickPass QR untuk verifikasi petugas Dishub, plus tombol Panic Reschedule darurat saat macet.
               </p>
             </div>
-            <Link to="/demo/juri" className="block pt-2">
+            <Link to="/rider/bookings/new" className="block pt-2">
               <Button className="w-full text-xs font-black py-3 rounded-xl shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white">
-                Coba QuickPass QR <ArrowRight className="h-4 w-4" />
+                Buat Booking & QuickPass QR <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </Card>
@@ -384,25 +384,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* 6. BANNER MODE DEMO JURI */}
-      <Card className="p-8 bg-gradient-to-r from-teal-50 via-white to-emerald-50 border-teal-200 flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg rounded-3xl">
-        <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-1.5 font-extrabold text-teal-900 text-xs bg-white px-3.5 py-1 rounded-full border border-teal-300 shadow-sm">
-            <Award className="h-4 w-4 text-teal-600" /> Khusus Penilaian Juri Lomba
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Uji Coba Interactive Sandbox Demo</h2>
-          <p className="text-xs sm:text-sm font-semibold text-slate-700 max-w-xl leading-relaxed">
-            Akses simulasi lengkap — pemesanan slot, verifikasi scan Dishub, hingga peta live — tanpa perlu mendaftar akun.
-          </p>
-        </div>
-
-        <Link to="/demo/juri" className="shrink-0">
-          <Button className="px-8 py-3.5 text-xs sm:text-sm font-black shadow-xl bg-teal-600 hover:bg-teal-700 text-white rounded-2xl">
-            Mulai Mode Demo Juri
-          </Button>
-        </Link>
-      </Card>
     </div>
   );
 }

@@ -16,13 +16,6 @@ function HeaderNavContent() {
 
   useEffect(() => {
     async function loadUserProfile() {
-      const isDemo = searchParams.get('demo') === 'true';
-      if (isDemo) {
-        setCurrentUser({ id: 'demo-user' });
-        setUserProfile({ name: 'Juri Reviewer', roleLabel: 'Evaluator Juri', initial: 'J' });
-        return;
-      }
-
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -49,7 +42,7 @@ function HeaderNavContent() {
     }
 
     loadUserProfile();
-  }, [searchParams, pathname]);
+  }, [pathname]);
 
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
 
@@ -62,7 +55,6 @@ function HeaderNavContent() {
     pathname.startsWith('/kontak') ||
     pathname.startsWith('/docs-api') ||
     pathname.startsWith('/status-sistem') ||
-    pathname.startsWith('/demo') ||
     pathname === '/login' ||
     pathname === '/register' ||
     isPublicPreviewMap

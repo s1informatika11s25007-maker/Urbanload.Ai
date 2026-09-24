@@ -40,13 +40,6 @@ export default function Login() {
   const handleRoleSelect = (selectedRole) => {
     setRole(selectedRole);
     setErrorMessage(null);
-    if (selectedRole === 'rider') {
-      setEmailInput('kurir@urbanload.ai');
-    } else if (selectedRole === 'city') {
-      setEmailInput('admin@urbanload.ai');
-    } else if (selectedRole === 'dishub') {
-      setEmailInput('petugas@dishub.go.id');
-    }
   };
 
   const handleApplyDomain = (domain) => {
@@ -199,22 +192,6 @@ export default function Login() {
               Pilih peran akun dan masukkan kredensial untuk mengakses dashboard
             </p>
           </div>
-
-          {/* Guest Reviewer / Demo Juri Banner */}
-          <Link to="/rider/dashboard?demo=true" className="block">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 hover:border-amber-300 transition shadow-sm flex items-center justify-between text-xs group text-amber-900">
-              <div className="flex items-center gap-2.5 font-bold">
-                <div className="h-7 w-7 rounded-xl bg-amber-100 flex items-center justify-center shrink-0 border border-amber-200">
-                  <Award className="h-4 w-4 text-amber-700" />
-                </div>
-                <div className="space-y-0.5 text-left">
-                  <div className="text-amber-900 font-bold">Login Guest Reviewer (Juri Lomba)</div>
-                  <div className="text-[10px] text-amber-700 font-normal">Akses otomatis data contoh terisolasi</div>
-                </div>
-              </div>
-              <ArrowRight className="h-4 w-4 text-amber-700 group-hover:translate-x-1 transition shrink-0" />
-            </div>
-          </Link>
 
           {/* Role Selector Tabs */}
           <div className="space-y-2">

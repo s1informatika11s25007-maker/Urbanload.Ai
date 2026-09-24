@@ -32,7 +32,7 @@ export function StatsSidebar() {
           return {
             name: z.name.replace('Zona ', 'Z-').slice(0, 10),
             fullName: z.name,
-            utilizationPct: utilizationPct > 0 ? utilizationPct : Math.floor(Math.random() * 40) + 35, // Dynamic real fallback
+            utilizationPct,
             activeBookings: activeCount,
             capacity: maxCap,
           };
@@ -44,13 +44,8 @@ export function StatsSidebar() {
         const sorted = [...chartData].sort((a, b) => b.utilizationPct - a.utilizationPct);
         if (sorted[0]) setMostCongested(sorted[0].fullName);
       } else {
-        // Real default zones analytics
-        setBayChartData([
-          { name: 'Z-A T.Abang', fullName: 'Zona A - Pasar Tanah Abang', utilizationPct: 88, activeBookings: 13, capacity: 15 },
-          { name: 'Z-B Priok', fullName: 'Zona B - Pelabuhan Tanjung Priok', utilizationPct: 65, activeBookings: 22, capacity: 35 },
-          { name: 'Z-C Sudirman', fullName: 'Zona C - Koridor Sudirman', utilizationPct: 35, activeBookings: 7, capacity: 20 },
-          { name: 'Z-D K.Gading', fullName: 'Zona D - Kelapa Gading', utilizationPct: 58, activeBookings: 10, capacity: 18 },
-        ]);
+        setBayChartData([]);
+        setMostCongested('Belum Ada Zona');
       }
 
       setTotalBookings(bookings?.length || 0);

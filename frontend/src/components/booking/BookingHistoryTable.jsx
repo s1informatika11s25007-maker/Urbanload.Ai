@@ -6,7 +6,7 @@ import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
 import { RefreshCw, Radio, QrCode, AlertTriangle, ShieldCheck, X } from 'lucide-react';
 
-export function BookingHistoryTable({ isDemo = false }) {
+export function BookingHistoryTable() {
   const { showToast } = useToast();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,23 +17,13 @@ export function BookingHistoryTable({ isDemo = false }) {
     setLoading(true);
     const supabase = createClient();
     try {
-      // Clean up legacy test rows starting with aaaaaaaa from Supabase DB
-      await supabase
-        .from('bookings')
-        .delete()
-        .or('user_id.eq.aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
-
       const { data } = await supabase
         .from('bookings')
         .select('*, profiles(full_name), zones(name)')
         .order('created_at', { ascending: false });
 
       if (data) {
-        // Filter out any dummy rows starting with aaaaaaaa
-        const cleanRows = data.filter(
-          (b) => b.id && !b.id.startsWith('aaaaaaaa') && b.user_id !== 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
-        );
-        setHistory(cleanRows);
+        setHistory(data);
       }
     } catch (e) {
       console.error('Error loading booking history:', e);
