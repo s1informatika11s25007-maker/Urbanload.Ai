@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vercel dev",
     "build": "tsc --noEmit",
     "generate-types": "ts-node scripts/generate-types.ts",
     "seed": "ts-node scripts/seed-demo.ts"
