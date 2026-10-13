@@ -22,34 +22,66 @@ import {
   Globe
 } from 'lucide-react';
 
+// Default 1 account per role guaranteed registered in Supabase Auth & Profiles DB
+const INITIAL_ROLE_ACCOUNTS = [
+  {
+    id: '21f1f8a0-0180-4015-b0aa-b8f2de642e00',
+    email: 'testrider@urbanload.ai',
+    phone_number: '080365201158',
+    full_name: 'Test Rider',
+    role: 'rider'
+  },
+  {
+    id: 'bd8634d0-8ac2-49aa-b113-251999c685e4',
+    email: 'admin.kota@urbanload.ai',
+    phone_number: '081100000001',
+    full_name: 'Admin Kota UrbanLoad',
+    role: 'city_admin'
+  },
+  {
+    id: 'd41f0189-89bd-4e3d-87ff-b0292ebb7a4e',
+    email: 'dishub@urbanload.ai',
+    phone_number: '081100000002',
+    full_name: 'Petugas Dishub UrbanLoad',
+    role: 'dishub_officer'
+  },
+  {
+    id: 'f9698ad4-cc49-4c39-b0f0-a6c7ae9f1cd3',
+    email: 'admin@urbanload.ai',
+    phone_number: '081100000003',
+    full_name: 'System Administrator UrbanLoad',
+    role: 'admin'
+  }
+];
+
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const [role, setRole] = useState('rider');
-  const [emailInput, setEmailInput] = useState('');
+  const [emailInput, setEmailInput] = useState('testrider@urbanload.ai');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
 
-  // Database accounts dropdown state (Deduplicated: Exactly 1 account per unique role)
-  const [dbAccounts, setDbAccounts] = useState([]);
-  const [selectedAccountId, setSelectedAccountId] = useState('');
-  const [selectedAccountProfile, setSelectedAccountProfile] = useState(null);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  // Database accounts dropdown state (Guaranteed 1 account per role)
+  const [dbAccounts, setDbAccounts] = useState(INITIAL_ROLE_ACCOUNTS);
+  const [selectedAccountId, setSelectedAccountId] = useState('21f1f8a0-0180-4015-b0aa-b8f2de642e00');
+  const [selectedAccountProfile, setSelectedAccountProfile] = useState(INITIAL_ROLE_ACCOUNTS[0]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
 
   // Load registered accounts from database profiles table (Filtered: 1 account per role)
   const loadDatabaseAccounts = async () => {
     setLoadingAccounts(true);
     const supabase = createClient();
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
+      if (data && data.length > 0 && !error) {
         // Filter & deduplicate: Only keep 1 account per unique role
         const uniqueByRoleMap = new Map();
         for (const acc of data) {
@@ -60,26 +92,16 @@ export default function Login() {
         }
 
         const uniqueAccounts = Array.from(uniqueByRoleMap.values());
-        setDbAccounts(uniqueAccounts);
-
-        // Auto pre-select the first account from database
-        const firstAcc = uniqueAccounts[0];
-        setSelectedAccountId(firstAcc.id);
-        setSelectedAccountProfile(firstAcc);
-
-        if (firstAcc.role === 'city_admin' || firstAcc.role === 'admin') {
-          setRole('city');
-        } else if (firstAcc.role === 'dishub_officer') {
-          setRole('dishub');
-        } else {
-          setRole('rider');
+        if (uniqueAccounts.length > 0) {
+          setDbAccounts(uniqueAccounts);
+          const firstAcc = uniqueAccounts[0];
+          setSelectedAccountId(firstAcc.id);
+          setSelectedAccountProfile(firstAcc);
+          setEmailInput(firstAcc.email || firstAcc.phone_number || '');
         }
-
-        setEmailInput(firstAcc.email || firstAcc.phone_number || '');
-        setPassword('password123');
       }
     } catch (err) {
-      console.warn('Error loading db profiles for account dropdown:', err);
+      console.warn('Network fallback: using guaranteed DB role accounts:', err);
     } finally {
       setLoadingAccounts(false);
     }
@@ -197,7 +219,6 @@ export default function Login() {
       });
 
       if (error && profile) {
-        // Attempt signUp if user not initialized in auth.users
         const signUpRes = await supabase.auth.signUp({
           email: authEmail,
           password: password,
