@@ -31,6 +31,12 @@ body {
   display: flex;
   flex-direction: column;
   letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+/* Responsive media safeguards */
+img, video, canvas, svg {
+  max-width: 100%;
 }
 
 /* Monospace Class Utility */
