@@ -1,4 +1,7 @@
 {
+  "buildCommand": null,
+  "devCommand": null,
+  "outputDirectory": "public",
   "crons": [
     {
       "path": "/api/cron/congestion-recalc",
