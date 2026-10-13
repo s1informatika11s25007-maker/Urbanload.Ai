@@ -18,7 +18,7 @@ export function BookingSummary({ bookingData, onConfirm, onCancel }) {
           </div>
           <div>
             <h3 className="text-base font-black text-slate-900">Rekomendasi Optimalisasi LoadBalancer AI</h3>
-            <p className="text-[11px] text-teal-800 font-semibold">{aiResult?.source || 'GroqLogix Engine (Qwen 27B/32B)'}</p>
+            <p className="text-[11px] text-teal-800 font-semibold">{aiResult?.source || 'UrbanLoad AI Engine'}</p>
           </div>
         </div>
 

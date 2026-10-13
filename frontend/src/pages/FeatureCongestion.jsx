@@ -27,7 +27,7 @@ export default function FeatureCongestion() {
           CongestionScore Real-Time
         </h1>
         <p className="text-xs md:text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
-          Skor kepadatan zona 1–10 berbasis GroqLogix AI dan algoritma rule-based transparan yang terhubung ke database PostGIS Supabase.
+          Skor kepadatan zona 1–10 berbasis UrbanLoad AI Engine dan algoritma rule-based transparan yang terhubung ke database PostGIS Supabase.
         </p>
       </div>
 

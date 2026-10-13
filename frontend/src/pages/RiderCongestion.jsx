@@ -78,7 +78,7 @@ export default function RiderCongestion() {
             <Activity className="h-6 w-6 text-teal-600" /> Dashboard Kepadatan & CongestionScore Real-Time
           </h1>
           <p className="text-xs text-slate-500">
-            Pemantauan skor kepadatan zona (1.0 - 10.0) berbasis AI GroqLogix & telemetri real-time.
+            Pemantauan skor kepadatan zona (1.0 - 10.0) berbasis UrbanLoad AI & telemetri real-time.
           </p>
         </div>
 

@@ -273,7 +273,7 @@ export default function Login() {
         <div className="relative z-10 space-y-6 my-auto max-w-lg">
           <div className="space-y-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold bg-teal-100 text-teal-800 border border-teal-200">
-              <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> Ditenagai GroqLogix AI Qwen 32B
+              <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> Ditenagai UrbanLoad AI Engine
             </span>
             <h2 className="text-3xl font-black leading-tight text-slate-900">
               Optimalisasi Jendela Slot Logistik Bebas Antrean

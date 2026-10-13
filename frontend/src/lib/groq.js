@@ -210,7 +210,7 @@ Berikan respon JSON murni dengan format berikut tanpa teks ekstra:
       originalTime: requestedTime,
       activeTrucks: activeTrucksCount,
       explanation: parsed?.explanation || 'LoadBalancer AI memecah jadwal kedatangan untuk mencegah penumpukan di lokasi bongkar muat.',
-      source: 'GroqLogix Engine (Qwen 27B/32B)',
+      source: 'UrbanLoad AI Engine',
     };
   } catch (err) {
     console.warn('GroqLogix direct API call fallback:', err);

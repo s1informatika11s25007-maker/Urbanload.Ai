@@ -205,7 +205,7 @@ export function CityAdminPanel() {
               activeTab === 'llm' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
-            <Cpu className="h-3.5 w-3.5 text-indigo-600" /> LLM Assistant
+            <Cpu className="h-3.5 w-3.5 text-indigo-600" /> UrbanLoad AI Copilot
           </button>
         </div>
       </div>
@@ -436,11 +436,11 @@ export function CityAdminPanel() {
         </div>
       )}
 
-      {/* TAB 5: LLM ASSISTANT */}
+      {/* TAB 5: URBANLOAD AI COPILOT */}
       {activeTab === 'llm' && (
         <div className="space-y-4">
           <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-medium">
-            LLM Assistant (Groq Qwen 32B via Tool-Calling Server-Side). AI tidak menjadwalkan secara langsung, tetapi memanggil tool deterministik.
+            UrbanLoad AI Copilot — Asisten Cerdas Pengambil Keputusan Logistik. AI menganalisis kondisi zona & mensimulasikan kebijakan menggunakan tool terintegrasi.
           </div>
 
           <div className="h-64 overflow-y-auto border rounded-xl p-4 space-y-3 bg-slate-50">

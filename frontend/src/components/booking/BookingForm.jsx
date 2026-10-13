@@ -85,10 +85,10 @@ export function BookingForm({ onCheckSlot }) {
     <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
         <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking — GroqLogix AI Engine
+          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking — UrbanLoad AI Engine
         </h3>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-800 border border-teal-200 px-3 py-1 rounded-full">
-          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> GroqLogix Engine — ditenagai Qwen 32B via Groq LPU (inferensi ultra-cepat)
+          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> UrbanLoad Smart Optimization Engine (Inferensi Real-Time)
         </span>
       </div>
 

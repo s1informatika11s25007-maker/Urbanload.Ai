@@ -95,7 +95,7 @@ export default function Home() {
               <Database className="h-3.5 w-3.5 text-teal-400" /> PostGIS WGS84
             </span>
             <span className="px-3 py-1 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center gap-1.5 text-slate-300">
-              <Cpu className="h-3.5 w-3.5 text-teal-400" /> Groq Qwen 32B
+              <Cpu className="h-3.5 w-3.5 text-teal-400" /> UrbanLoad AI Engine
             </span>
             <span className="px-3 py-1 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center gap-1.5 text-slate-300">
               <Globe className="h-3.5 w-3.5 text-teal-400" /> MapLibre GL 3D

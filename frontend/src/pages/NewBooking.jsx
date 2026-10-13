@@ -82,7 +82,7 @@ export default function NewBooking() {
             <Link to="/" className="hover:underline">Beranda</Link> / <Link to="/rider/dashboard" className="hover:underline">Booking</Link> / <span className="font-semibold text-slate-700">Baru</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900">Pesan Slot Bongkar Muat Realtime</h1>
-          <p className="text-xs text-slate-500">"Pilih zona, isi plat kendaraan, sistem GroqLogix AI akan mengoptimalkan slot bebas antrean."</p>
+          <p className="text-xs text-slate-500">"Pilih zona, isi plat kendaraan, sistem UrbanLoad AI akan mengoptimalkan slot bebas antrean."</p>
         </div>
 
         <div className="flex items-center gap-2">

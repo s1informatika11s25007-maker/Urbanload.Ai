@@ -27,7 +27,7 @@ export function Footer() {
           </span>
           <span>•</span>
           <span className="flex items-center gap-1 text-slate-700">
-            <Cpu className="h-3.5 w-3.5 text-teal-600" /> Groq Qwen 32B
+            <Cpu className="h-3.5 w-3.5 text-teal-600" /> UrbanLoad AI Engine
           </span>
           <span>•</span>
           <span className="flex items-center gap-1 text-slate-700">
