@@ -16,21 +16,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: bookings } = await supabaseAdmin
       .from('bookings')
-      .select('time_window_start, time_window_end')
+      .select('time_window_start, time_window_end, status')
       .eq('zone_id', id)
-      .in('status', ['pending', 'confirmed']);
+      .in('status', ['pending', 'confirmed', 'active']);
 
     const maxCap = zone.max_truck_capacity || 10;
-    const activeCount = bookings ? bookings.length : 0;
-    const remaining = Math.max(maxCap - activeCount, 0);
+    const startHour = parseInt((zone.operating_hours_start || '06:00').split(':')[0], 10) || 6;
+    const endHour = parseInt((zone.operating_hours_end || '22:00').split(':')[0], 10) || 22;
 
-    const slots = [
-      { time: '08:00 - 09:00', remainingCapacity: remaining, maxDimension: '12m x 2.5m x 3.8m', status: remaining > 2 ? 'available' : remaining > 0 ? 'almost_full' : 'full' },
-      { time: '09:00 - 10:00', remainingCapacity: Math.max(remaining - 1, 0), maxDimension: '12m x 2.5m x 3.8m', status: remaining - 1 > 0 ? 'available' : 'full' },
-      { time: '10:00 - 11:00', remainingCapacity: remaining, maxDimension: '12m x 2.5m x 3.8m', status: remaining > 0 ? 'available' : 'full' },
-      { time: '11:00 - 12:00', remainingCapacity: remaining, maxDimension: '12m x 2.5m x 3.8m', status: remaining > 0 ? 'available' : 'full' },
-      { time: '14:00 - 15:00', remainingCapacity: remaining, maxDimension: '12m x 2.5m x 3.8m', status: remaining > 0 ? 'available' : 'full' },
-    ];
+    const slots = [];
+    for (let h = startHour; h < endHour; h += 2) {
+      const startStr = `${h.toString().padStart(2, '0')}:00`;
+      const endStr = `${(h + 2).toString().padStart(2, '0')}:00`;
+      const timeRange = `${startStr} - ${endStr}`;
+
+      const bookedInWindow = (bookings || []).filter((b) => {
+        if (!b.time_window_start) return false;
+        const bHour = new Date(b.time_window_start).getHours();
+        return bHour >= h && bHour < h + 2;
+      }).length;
+
+      const remaining = Math.max(maxCap - bookedInWindow, 0);
+      const status = remaining > 2 ? 'available' : remaining > 0 ? 'almost_full' : 'full';
+
+      slots.push({
+        time: timeRange,
+        remainingCapacity: remaining,
+        maxCapacity: maxCap,
+        status,
+      });
+    }
 
     return sendSuccess(res, { zoneId: id, zoneName: zone.name, maxCapacity: maxCap, slots });
   } catch (err: any) {

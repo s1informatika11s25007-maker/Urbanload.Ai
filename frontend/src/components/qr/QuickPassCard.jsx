@@ -1,13 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Card } from '../ui/card.jsx';
+import { createClient } from '../../lib/supabase/client.js';
 
-export function QuickPassCard({
-  bookingId = 'UL-2026-PASS',
-  zone = 'Zona A - Pasar Tanah Abang',
-  vehiclePlate = 'B 9123 TXT'
-}) {
+export function QuickPassCard({ bookingId, zone, vehiclePlate }) {
+  const [realBooking, setRealBooking] = useState(null);
   const [timeLeft, setTimeLeft] = useState(1799); // 30 mins
+
+  useEffect(() => {
+    async function loadLatestBooking() {
+      if (bookingId) return; // Prop was provided
+
+      const supabase = createClient();
+      const { data: userSession } = await supabase.auth.getUser();
+      const userId = userSession?.user?.id;
+
+      let query = supabase.from('bookings').select('*, zones(name)').order('created_at', { ascending: false }).limit(1);
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data } = await query;
+      if (data && data.length > 0) {
+        setRealBooking(data[0]);
+      }
+    }
+
+    loadLatestBooking();
+  }, [bookingId]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -22,24 +42,28 @@ export function QuickPassCard({
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  const displayId = bookingId || realBooking?.id?.slice(0, 16) || 'Lakukan Booking';
+  const displayZone = zone || realBooking?.zones?.name || 'Zona Logistik';
+  const displayPlate = vehiclePlate || realBooking?.vehicle_plate || 'Truk Real';
+
   return (
     <Card className="max-w-[420px] mx-auto p-6 text-center shadow-xl border-slate-200 rounded-2xl bg-white">
       <div className="flex justify-between items-center mb-4 border-b pb-3">
         <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tiket Digital QuickPass QR</span>
         <span className="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">
-          CONFIRMED
+          {realBooking?.status ? realBooking.status.toUpperCase() : 'CONFIRMED'}
         </span>
       </div>
 
       {/* Hero QR Container */}
       <div className="my-4 flex justify-center p-4 bg-slate-50 rounded-2xl border border-slate-100 relative">
-        <QRCodeSVG value={`URBANLOAD-QR|${bookingId}|${vehiclePlate}|HMAC-SHA256`} size={200} />
+        <QRCodeSVG value={`URBANLOAD-QR|${displayId}|${displayPlate}|HMAC-SHA256`} size={200} />
       </div>
 
       <div className="space-y-1.5 text-slate-800">
-        <div className="text-xs font-mono text-slate-500">ID Booking: <strong className="text-slate-900">{bookingId}</strong></div>
-        <div className="text-sm font-bold text-teal-800">{zone}</div>
-        <div className="text-xs font-medium text-slate-600 font-mono">No. Truk: <span className="font-bold text-slate-900">{vehiclePlate}</span></div>
+        <div className="text-xs font-mono text-slate-500">ID Booking: <strong className="text-slate-900">{displayId}</strong></div>
+        <div className="text-sm font-bold text-teal-800">{displayZone}</div>
+        <div className="text-xs font-medium text-slate-600 font-mono">No. Truk: <span className="font-bold text-slate-900">{displayPlate}</span></div>
       </div>
 
       {/* Countdown Timer & Pulse */}

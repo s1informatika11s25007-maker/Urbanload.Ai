@@ -3,15 +3,6 @@ import { Card } from '../ui/card.jsx';
 import { createClient } from '../../lib/supabase/client.js';
 import { Radio, Truck, Activity } from 'lucide-react';
 
-const SEEDED_TRUCK_ACTIVITIES = [
-  { id: 'a1', vehicle_plate: 'B 9123 TXT', zones: { name: 'Zona A - Pasar Tanah Abang' }, status: 'confirmed', created_at: new Date().toISOString() },
-  { id: 'a2', vehicle_plate: 'B 9552 SQR', zones: { name: 'Zona A - Pasar Tanah Abang' }, status: 'active', created_at: new Date(Date.now() - 300000).toISOString() },
-  { id: 'a3', vehicle_plate: 'B 9081 CDE', zones: { name: 'Zona B - Pelabuhan Tanjung Priok' }, status: 'confirmed', created_at: new Date(Date.now() - 600000).toISOString() },
-  { id: 'a4', vehicle_plate: 'B 9722 KJN', zones: { name: 'Zona B - Pelabuhan Tanjung Priok' }, status: 'completed', created_at: new Date(Date.now() - 1200000).toISOString() },
-  { id: 'a5', vehicle_plate: 'B 9301 WXY', zones: { name: 'Zona C - Kawasan Industri Pulogadung' }, status: 'confirmed', created_at: new Date(Date.now() - 1800000).toISOString() },
-  { id: 'a6', vehicle_plate: 'B 9488 TRK', zones: { name: 'Zona C - Kawasan Industri Pulogadung' }, status: 'active', created_at: new Date(Date.now() - 2400000).toISOString() }
-];
-
 export function LiveActivityTable() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,14 +17,14 @@ export function LiveActivityTable() {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (data && data.length > 0) {
+      if (data) {
         setActivities(data);
       } else {
-        setActivities(SEEDED_TRUCK_ACTIVITIES);
+        setActivities([]);
       }
     } catch (e) {
       console.error('Error fetching live activity:', e);
-      setActivities(SEEDED_TRUCK_ACTIVITIES);
+      setActivities([]);
     } finally {
       setLoading(false);
     }
@@ -68,8 +59,8 @@ export function LiveActivityTable() {
 
       <div className="space-y-2 max-h-56 overflow-y-auto">
         {activities.length === 0 ? (
-          <div className="p-4 text-center text-slate-400 text-xs">
-            {loading ? 'Memuat aktivitas real...' : 'Belum ada transaksi booking.'}
+          <div className="p-4 text-center text-slate-400 text-xs font-medium">
+            {loading ? 'Memuat aktivitas real...' : 'Belum ada transaksi booking tercatat di database.'}
           </div>
         ) : (
           activities.map((a) => (

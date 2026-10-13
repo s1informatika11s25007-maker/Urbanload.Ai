@@ -6,89 +6,6 @@ import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
 import { RefreshCw, Radio, QrCode, AlertTriangle, ShieldCheck, X } from 'lucide-react';
 
-const SEEDED_TRUCK_VEHICLES = [
-  {
-    id: 'b1111111-1111-1111-1111-111111111111',
-    vehicle_plate: 'B 9123 TXT',
-    zones: { name: 'Zona A - Pasar Tanah Abang' },
-    status: 'confirmed',
-    duration_p50_min: 30,
-    duration_p90_min: 45,
-    time_window_start: new Date().toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b2222222-2222-2222-2222-222222222222',
-    vehicle_plate: 'B 9552 SQR',
-    zones: { name: 'Zona A - Pasar Tanah Abang' },
-    status: 'active',
-    duration_p50_min: 40,
-    duration_p90_min: 55,
-    time_window_start: new Date(Date.now() + 3600000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b3333333-3333-3333-3333-333333333333',
-    vehicle_plate: 'B 9081 CDE',
-    zones: { name: 'Zona B - Pelabuhan Tanjung Priok' },
-    status: 'confirmed',
-    duration_p50_min: 60,
-    duration_p90_min: 80,
-    time_window_start: new Date(Date.now() + 7200000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b4444444-4444-4444-4444-444444444444',
-    vehicle_plate: 'B 9722 KJN',
-    zones: { name: 'Zona B - Pelabuhan Tanjung Priok' },
-    status: 'completed',
-    duration_p50_min: 35,
-    duration_p90_min: 50,
-    time_window_start: new Date(Date.now() - 7200000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b5555555-5555-5555-5555-555555555555',
-    vehicle_plate: 'B 9301 WXY',
-    zones: { name: 'Zona C - Kawasan Industri Pulogadung' },
-    status: 'confirmed',
-    duration_p50_min: 25,
-    duration_p90_min: 35,
-    time_window_start: new Date(Date.now() + 10800000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b6666666-6666-6666-6666-666666666666',
-    vehicle_plate: 'B 9488 TRK',
-    zones: { name: 'Zona C - Kawasan Industri Pulogadung' },
-    status: 'confirmed',
-    duration_p50_min: 50,
-    duration_p90_min: 70,
-    time_window_start: new Date(Date.now() + 14400000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b7777777-7777-7777-7777-777777777777',
-    vehicle_plate: 'B 9210 PKU',
-    zones: { name: 'Zona D - Terminal Logistik Marunda' },
-    status: 'confirmed',
-    duration_p50_min: 75,
-    duration_p90_min: 95,
-    time_window_start: new Date(Date.now() + 18000000).toISOString(),
-    created_at: new Date().toISOString()
-  },
-  {
-    id: 'b8888888-8888-8888-8888-888888888888',
-    vehicle_plate: 'B 9877 MKL',
-    zones: { name: 'Zona A - Pasar Tanah Abang' },
-    status: 'active',
-    duration_p50_min: 30,
-    duration_p90_min: 40,
-    time_window_start: new Date().toISOString(),
-    created_at: new Date().toISOString()
-  }
-];
-
 export function BookingHistoryTable() {
   const { showToast } = useToast();
   const [history, setHistory] = useState([]);
@@ -105,14 +22,14 @@ export function BookingHistoryTable() {
         .select('*, profiles(full_name), zones(name)')
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
+      if (data) {
         setHistory(data);
       } else {
-        setHistory(SEEDED_TRUCK_VEHICLES);
+        setHistory([]);
       }
     } catch (e) {
       console.error('Error loading booking history:', e);
-      setHistory(SEEDED_TRUCK_VEHICLES);
+      setHistory([]);
     } finally {
       setLoading(false);
     }
@@ -200,7 +117,7 @@ export function BookingHistoryTable() {
             {history.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-slate-400 font-semibold">
-                  {loading ? 'Memuat riwayat booking dari database...' : 'Belum ada riwayat booking.'}
+                  {loading ? 'Memuat riwayat booking dari database...' : 'Belum ada riwayat booking di database.'}
                 </td>
               </tr>
             ) : (
@@ -224,7 +141,6 @@ export function BookingHistoryTable() {
                     </span>
                   </td>
                   <td className="p-3 text-right flex items-center justify-end gap-1.5">
-                    {/* Button 1: QuickPass QR Modal Toggle */}
                     <Button
                       onClick={() => setActiveQRBooking(h)}
                       className="text-[10px] py-1 h-7 px-2.5 bg-teal-600 hover:bg-teal-700 font-bold flex items-center gap-1 shadow-sm"
@@ -232,7 +148,6 @@ export function BookingHistoryTable() {
                       <QrCode className="h-3.5 w-3.5" /> QuickPass QR
                     </Button>
 
-                    {/* Button 2: Panic Reschedule Emergency Button */}
                     <Button
                       onClick={() => handlePanicReschedule(h)}
                       disabled={reschedulingId === h.id}
@@ -250,7 +165,6 @@ export function BookingHistoryTable() {
         </table>
       </div>
 
-      {/* QUICKPASS QR MODAL DISPLAY FOR DISHUB VERIFICATION SCAN */}
       {activeQRBooking && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
           <Card className="w-full max-w-sm p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl text-center space-y-4 relative">
@@ -269,7 +183,6 @@ export function BookingHistoryTable() {
               <p className="text-xs text-slate-500 font-mono font-bold">Plat: {activeQRBooking.vehicle_plate}</p>
             </div>
 
-            {/* QR SVG Canvas */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl inline-block mx-auto shadow-inner">
               <QRCodeSVG
                 value={`URBANLOAD-QR|${activeQRBooking.id}|${activeQRBooking.vehicle_plate}|HMAC-SHA256-VALID`}

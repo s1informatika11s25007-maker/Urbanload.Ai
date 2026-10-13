@@ -1,31 +1,59 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders } from '../../_lib/cors';
 import { sendError, sendSuccess } from '../../_lib/response';
-import { supabaseAdmin } from '../../_lib/supabaseAdmin';
+import { queryDb } from '../../_lib/db';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
-    const { data: zones, error } = await supabaseAdmin.from('zones').select('id, name, max_truck_capacity, status');
-    if (error) return sendError(res, error.message, 500);
+    const rows = await queryDb(`
+      SELECT
+        id,
+        name,
+        max_truck_capacity,
+        zone_type,
+        priority_level,
+        ST_AsGeoJSON(boundary_polygon::geometry) as boundary_geojson
+      FROM public.zones
+      ORDER BY created_at DESC
+    `);
 
-    const features = (zones || []).map((z, idx) => ({
-      type: 'Feature',
-      id: z.id,
-      properties: { name: z.name, capacity: z.max_truck_capacity, status: z.status },
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          idx === 0
-            ? [[106.810, -6.180], [106.820, -6.180], [106.820, -6.190], [106.810, -6.190], [106.810, -6.180]]
-            : idx === 1
-            ? [[106.820, -6.170], [106.830, -6.170], [106.830, -6.180], [106.820, -6.180], [106.820, -6.170]]
-            : [[106.870, -6.100], [106.890, -6.100], [106.890, -6.120], [106.870, -6.120], [106.870, -6.100]],
-        ],
-      },
-    }));
+    const features = rows.map((z, idx) => {
+      let geom: any = null;
+      if (z.boundary_geojson) {
+        try { geom = JSON.parse(z.boundary_geojson); } catch (e) { geom = null; }
+      }
+
+      if (!geom || !geom.coordinates) {
+        const baseLng = 106.812 + (idx % 4) * 0.03;
+        const baseLat = -6.185 - Math.floor(idx / 4) * 0.03;
+        geom = {
+          type: 'Polygon',
+          coordinates: [[
+            [baseLng, baseLat],
+            [baseLng + 0.02, baseLat],
+            [baseLng + 0.02, baseLat - 0.015],
+            [baseLng, baseLat - 0.015],
+            [baseLng, baseLat]
+          ]],
+        };
+      }
+
+      return {
+        type: 'Feature',
+        id: z.id,
+        properties: {
+          id: z.id,
+          name: z.name,
+          capacity: z.max_truck_capacity,
+          zoneType: z.zone_type,
+          priority: z.priority_level,
+        },
+        geometry: geom,
+      };
+    });
 
     return sendSuccess(res, {
       type: 'FeatureCollection',
