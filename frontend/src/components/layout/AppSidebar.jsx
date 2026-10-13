@@ -15,8 +15,7 @@ import {
   BarChart3,
   Cpu,
   Radio,
-  SlidersHorizontal,
-  Home
+  SlidersHorizontal
 } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 import { RealtimeStatusDot } from './RealtimeStatusDot.jsx';
@@ -70,13 +69,14 @@ export function AppSidebar() {
   }, [pathname]);
 
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
-  const isPublicPage = !currentUser && (
-    pathname === '/' ||
-    pathname.startsWith('/fitur') ||
-    pathname.startsWith('/tentang') ||
-    pathname === '/login' ||
-    pathname === '/register' ||
-    isPublicPreviewMap
+  const isPublicPage = pathname === '/' || (
+    !currentUser && (
+      pathname.startsWith('/fitur') ||
+      pathname.startsWith('/tentang') ||
+      pathname === '/login' ||
+      pathname === '/register' ||
+      isPublicPreviewMap
+    )
   );
 
   // If public page (home, login, register), sidebar is hidden
@@ -256,16 +256,6 @@ export function AppSidebar() {
           >
             <Activity className="h-4 w-4 shrink-0 text-amber-400" />
             {!collapsed && <span>Skor Kepadatan AI</span>}
-          </Link>
-
-          {/* LANDING PAGE LINK */}
-          <Link
-            to="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-white transition"
-            title="Kembali ke Landing Page"
-          >
-            <Home className="h-4 w-4 shrink-0 text-slate-400" />
-            {!collapsed && <span>Beranda Utama</span>}
           </Link>
         </div>
       </div>

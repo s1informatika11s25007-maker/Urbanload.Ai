@@ -20,7 +20,7 @@ CREATE INDEX IF NOT EXISTS profiles_email_idx ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS profiles_role_idx ON public.profiles(role);
 
 -- 4. Congestion Scores Table Performance Indexes
-CREATE INDEX IF NOT EXISTS congestion_scores_zone_calc_idx ON public.congestion_scores(zone_id, calculated_at DESC);
+CREATE INDEX IF NOT EXISTS congestion_scores_zone_calc_idx ON public.congestion_scores(zone_id, created_at DESC);
 
 -- 5. QR Tokens Table Performance Indexes
 CREATE INDEX IF NOT EXISTS qr_tokens_expires_at_idx ON public.qr_tokens(expires_at);
