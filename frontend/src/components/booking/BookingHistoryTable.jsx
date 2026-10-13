@@ -121,7 +121,7 @@ export function BookingHistoryTable() {
               history.map((h, idx) => (
                 <tr key={h.id} className="hover:bg-slate-50 transition">
                   <td className="p-3 font-mono font-bold text-slate-900">
-                    UL-2025-{(idx + 101).toString()}
+                    {h.id ? h.id.slice(0, 8).toUpperCase() : `UL-${idx + 1}`}
                   </td>
                   <td className="p-3 font-mono font-bold text-teal-700">{h.vehicle_plate || 'B 1234 ABC'}</td>
                   <td className="p-3 font-semibold text-slate-800">{h.zones?.name || 'Zona Logistik'}</td>
