@@ -329,63 +329,99 @@ export default function Login() {
             </p>
           </div>
 
-          {/* DROPDOWN AKUN TERDAFTAR DI DATABASE (EXACTLY 1 ACCOUNT PER ROLE) */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-50/80 via-white to-emerald-50/50 border border-teal-200 space-y-2.5 shadow-sm">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-extrabold text-teal-900 flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-teal-600" /> Pilih Akun Per Role ({dbAccounts.length} Role Terdaftar)
-              </label>
-              <span className="text-[10px] font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full border border-teal-300 font-bold">
-                1 Per Role
+          {/* CARD KARTU AKUN PER ROLE (EXECUTIVE MODERN DESIGN) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-950 via-slate-900 to-slate-950 text-white border border-teal-800/80 shadow-xl space-y-3.5 relative overflow-hidden">
+            {/* Ambient Background Glow Effect */}
+            <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+            {/* Header Title Bar */}
+            <div className="flex items-center justify-between border-b border-teal-800/80 pb-2.5 relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-teal-500/20 border border-teal-500/30 text-teal-400">
+                  <Users className="h-4 w-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-black text-white block">Pilih Akun Per Role</span>
+                  <span className="text-[10px] text-teal-300 font-mono">
+                    {dbAccounts.length} Role Terdaftar • 1 Akun Resmi Per Peran
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/40 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Live DB
               </span>
             </div>
 
-            <select
-              value={selectedAccountId}
-              onChange={(e) => handleSelectAccountFromDropdown(e.target.value)}
-              className="w-full rounded-xl border border-teal-300 bg-white px-3 py-2 text-xs font-bold text-slate-900 focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15"
-            >
-              <option value="">
-                {loadingAccounts ? 'Memuat akun dari database...' : '-- Pilih Akun Terdaftar dari Database --'}
-              </option>
+            {/* Select Input Dropdown */}
+            <div className="relative z-10">
+              <select
+                value={selectedAccountId}
+                onChange={(e) => handleSelectAccountFromDropdown(e.target.value)}
+                className="w-full rounded-xl border border-teal-700/80 bg-slate-900/95 text-teal-100 px-3.5 py-2.5 text-xs font-bold focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/20 shadow-inner"
+              >
+                <option value="" className="bg-slate-900 text-slate-300">
+                  {loadingAccounts ? 'Memuat akun dari database...' : '-- Pilih Akun Per Role --'}
+                </option>
 
-              {dbAccounts.map((acc) => {
-                const roleLabel =
-                  acc.role === 'city_admin' || acc.role === 'admin'
-                    ? 'Admin Kota'
-                    : acc.role === 'dishub_officer'
-                    ? 'Petugas Dishub'
-                    : 'Kurir';
-
-                const contactInfo = acc.phone_number ? `No. HP: ${acc.phone_number}` : `Email: ${acc.email}`;
-                const emailNotice = acc.email ? acc.email : 'Tanpa Email';
-
-                return (
-                  <option key={acc.id} value={acc.id}>
-                    [{roleLabel}] {acc.full_name} — {contactInfo} ({emailNotice})
-                  </option>
-                );
-              })}
-            </select>
-
-            {/* Selected Account Profile Preview Card */}
-            {selectedAccountProfile && (
-              <div className="p-3 bg-white border border-teal-200 rounded-xl text-xs space-y-1.5 animate-in fade-in">
-                <div className="flex justify-between items-center border-b pb-1.5">
-                  <span className="font-black text-slate-900 text-xs flex items-center gap-1">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" /> {selectedAccountProfile.full_name}
-                  </span>
-                  <span className="text-[10px] font-extrabold bg-teal-100 text-teal-900 px-2.5 py-0.5 rounded-full uppercase border border-teal-300">
-                    {selectedAccountProfile.role === 'city_admin' || selectedAccountProfile.role === 'admin'
+                {dbAccounts.map((acc) => {
+                  const roleLabel =
+                    acc.role === 'city_admin'
                       ? 'Admin Kota'
+                      : acc.role === 'admin'
+                      ? 'System Admin'
+                      : acc.role === 'dishub_officer'
+                      ? 'Petugas Dishub'
+                      : 'Kurir';
+
+                  return (
+                    <option key={acc.id} value={acc.id} className="bg-slate-900 text-white font-medium">
+                      [{roleLabel}] {acc.full_name} — No. HP: {acc.phone_number || '-'} ({acc.email || 'Tanpa Email'})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Selected Account Profile Detail Card */}
+            {selectedAccountProfile && (
+              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-teal-700/60 backdrop-blur-md space-y-2.5 relative z-10 transition-all duration-200">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-teal-500/20 text-teal-300 border border-teal-500/40 flex items-center justify-center font-black text-xs">
+                      {selectedAccountProfile.full_name?.charAt(0) || 'A'}
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-white text-xs flex items-center gap-1.5">
+                        {selectedAccountProfile.full_name}
+                        <CheckCircle2 className="h-3.5 w-3.5 text-teal-400" />
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono block">
+                        Terverifikasi di Supabase Auth & Profiles
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                    {selectedAccountProfile.role === 'city_admin'
+                      ? 'Admin Kota'
+                      : selectedAccountProfile.role === 'admin'
+                      ? 'System Admin'
                       : selectedAccountProfile.role === 'dishub_officer'
                       ? 'Petugas Dishub'
                       : 'Kurir'}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-600 flex justify-between font-mono">
-                  <span>No HP: <strong className="text-slate-900">{selectedAccountProfile.phone_number}</strong></span>
-                  <span>Email: <strong className="text-teal-700">{selectedAccountProfile.email || 'NULL (Tanpa Email)'}</strong></span>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800 space-y-0.5">
+                    <span className="text-[9px] text-slate-400 block font-sans font-bold uppercase">No. Handphone</span>
+                    <span className="text-teal-200 font-bold block truncate">{selectedAccountProfile.phone_number || '-'}</span>
+                  </div>
+
+                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800 space-y-0.5">
+                    <span className="text-[9px] text-slate-400 block font-sans font-bold uppercase">Alamat Email</span>
+                    <span className="text-teal-200 font-bold block truncate">{selectedAccountProfile.email || '-'}</span>
+                  </div>
                 </div>
               </div>
             )}
