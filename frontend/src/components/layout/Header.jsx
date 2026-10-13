@@ -174,7 +174,7 @@ function HeaderNavContent() {
                 setCurrentUser(null);
                 navigate('/login');
               }}
-              className="text-slate-400 hover:text-rose-600 transition p-1"
+              className="lg:hidden text-slate-400 hover:text-rose-600 transition p-1"
               title="Keluar dari Akun"
             >
               <LogOut className="h-5 w-5" />

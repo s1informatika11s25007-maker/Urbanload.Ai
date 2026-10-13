@@ -1,47 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, CheckCircle2, AlertTriangle, ShieldCheck, X, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Bell, CheckCircle2, AlertTriangle, ShieldCheck, X, Trash2, RefreshCw } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'notif-1',
-      title: 'SmartSlot Confirmed',
-      message: 'Booking slot logistik B 9812 UAI di Zona A telah dikonfirmasi AI.',
-      time: '2 menit lalu',
-      type: 'success',
-      unread: true,
-    },
-    {
-      id: 'notif-2',
-      title: 'Virtual GeoFence TrustGuard',
-      message: 'Sinyal GPS telemetri berada di dalam radius 20m zona bongkar muat.',
-      time: '12 menit lalu',
-      type: 'info',
-      unread: true,
-    },
-    {
-      id: 'notif-3',
-      title: 'LoadBalancer AI Penyeimbangan',
-      message: 'Jadwal booking berhasil disesuaikan untuk mencegah penumpukan bahu jalan.',
-      time: '1 jam lalu',
-      type: 'warning',
-      unread: false,
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const fetchRealNotifications = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    try {
+      const { data: bookings } = await supabase
+        .from('bookings')
+        .select('*, zones(name)')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (bookings && bookings.length > 0) {
+        const notifs = bookings.map((b) => {
+          const createdAt = new Date(b.created_at || Date.now());
+          const diffMins = Math.max(0, Math.floor((Date.now() - createdAt.getTime()) / 60000));
+          const timeLabel = diffMins === 0 ? 'Baru saja' : `${diffMins} menit lalu`;
+
+          return {
+            id: `notif-${b.id}`,
+            title: `SmartSlot AI — ${b.zones?.name || 'Zona Logistik'}`,
+            message: `Booking slot logistik truk ${b.vehicle_plate || 'Truk'} dikonfirmasi status [${b.status}].`,
+            time: timeLabel,
+            type: b.status === 'confirmed' ? 'success' : b.status === 'active' ? 'info' : 'warning',
+            unread: diffMins < 30,
+          };
+        });
+        setNotifications(notifs);
+      } else {
+        setNotifications([]);
+      }
+    } catch (e) {
+      console.error('Error loading real notifications:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Realtime Supabase Booking Notifications
+    fetchRealNotifications();
+
     const supabase = createClient();
     const channel = supabase
       .channel('header_notifications_channel')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'bookings' }, (payload) => {
         const newNotif = {
-          id: `notif-${Date.now()}`,
-          title: 'Booking Realtime Baru',
+          id: `notif-${payload.new.id}-${Date.now()}`,
+          title: 'SmartSlot Realtime Booking',
           message: `Booking baru ${payload.new.vehicle_plate || 'Truk'} dikonfirmasi di database.`,
           time: 'Baru saja',
           type: 'success',
@@ -54,7 +65,9 @@ export function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchRealNotifications]);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
@@ -69,7 +82,7 @@ export function NotificationBell() {
       <button
         onClick={() => setOpen(!open)}
         className="p-2 text-slate-600 hover:bg-slate-100 rounded-full relative transition"
-        title="Pemberitahuan Sistem"
+        title="Pemberitahuan Sistem Realtime"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -84,7 +97,7 @@ export function NotificationBell() {
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <h4 className="text-xs font-black uppercase text-teal-400 tracking-wider">
-                Pemberitahuan Realtime
+                Pemberitahuan Realtime Database
               </h4>
               {unreadCount > 0 && (
                 <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full">
@@ -110,8 +123,12 @@ export function NotificationBell() {
           </div>
 
           <div className="space-y-2 mt-3 max-h-72 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-6">Tidak ada notifikasi baru.</p>
+            {loading ? (
+              <div className="p-6 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+                <RefreshCw className="h-4 w-4 animate-spin text-teal-400" /> Memuat pemberitahuan real...
+              </div>
+            ) : notifications.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-6">Belum ada notifikasi transaksi database.</p>
             ) : (
               notifications.map((n) => (
                 <div
