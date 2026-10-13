@@ -39,15 +39,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (authError) {
-      // If user already exists in auth.users, retrieve existing user list
+      // Check if user already exists in auth.users
       const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
       const existingUser = usersData?.users?.find(u => u.email === authEmail || u.phone === phoneNumber);
 
       if (existingUser) {
         authUserId = existingUser.id;
       } else {
-        // Fallback uuid if auth.admin fails due to policy
-        authUserId = '00000000-0000-0000-0000-' + cleanPhone.padStart(12, '0').slice(-12);
+        return sendError(res, `Gagal mendaftarkan akun autentikasi: ${authError.message}`, 400);
       }
     } else {
       authUserId = authData.user.id;

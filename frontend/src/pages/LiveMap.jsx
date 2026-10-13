@@ -1,6 +1,8 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, useEffect, useState, lazy } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Maximize2, Radio, Loader2, Eye } from 'lucide-react';
+import { Maximize2, Radio, Loader2, Eye, Shield, Building2, Truck, Cpu } from 'lucide-react';
+import { createClient } from '../lib/supabase/client.js';
+import { CityAdminPanel } from '../components/analytics/CityAdminPanel.jsx';
 
 const LiveMapHero = lazy(() => import('../components/livemap/LiveMapHero.jsx').then(m => ({ default: m.LiveMapHero })));
 const StatsSidebar = lazy(() => import('../components/livemap/StatsSidebar.jsx').then(m => ({ default: m.StatsSidebar })));
@@ -9,15 +11,66 @@ const LiveActivityTable = lazy(() => import('../components/livemap/LiveActivityT
 function LiveMapMainContent() {
   const [searchParams] = useSearchParams();
   const isPublicPreview = searchParams.get('preview') === 'public';
+  const [userRole, setUserRole] = useState('rider');
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (profile?.role) {
+          setUserRole(profile.role);
+        }
+      }
+    }
+    fetchUserRole();
+  }, []);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4">
+      {/* Banner Role Dynamic Status */}
+      {!isPublicPreview && (
+        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-teal-50 to-indigo-50 border border-teal-200 text-teal-950 flex items-center justify-between text-xs shadow-sm">
+          <div className="flex items-center gap-2 font-bold">
+            {userRole === 'dishub_officer' ? (
+              <>
+                <Shield className="h-4 w-4 text-indigo-600 shrink-0" />
+                <span>Modul Petugas Dishub (`dishub_officer`) — Pemantauan Telemetri Truk, Verifikasi Pas QR Ed25519 & Deteksi Kluster Henti Liar (`ST_ClusterDBSCAN`)</span>
+              </>
+            ) : userRole === 'city_admin' ? (
+              <>
+                <Building2 className="h-4 w-4 text-teal-600 shrink-0" />
+                <span>Modul Admin Kota (`city_admin`) — Pemantauan Spasial Kota, Audit Log Keputusan Solver & Simulator Kebijakan What-If</span>
+              </>
+            ) : userRole === 'admin' ? (
+              <>
+                <Cpu className="h-4 w-4 text-purple-600 shrink-0" />
+                <span>Modul System Administrator (`admin`) — Pengawasan Ekosistem Platform, Audit Logs & Konfigurasi System Parameter</span>
+              </>
+            ) : (
+              <>
+                <Truck className="h-4 w-4 text-teal-600 shrink-0" />
+                <span>Modul Kurir (`rider`) — Pemantauan Lokasi Bay Spasial & Posisi Armada Realtime</span>
+              </>
+            )}
+          </div>
+          <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-teal-300 text-teal-800">
+            {userRole === 'dishub_officer' ? 'Petugas Dishub' : userRole === 'city_admin' ? 'Admin Kota' : userRole === 'admin' ? 'System Admin' : 'Kurir'} Access
+          </span>
+        </div>
+      )}
+
       {/* Banner Public Preview Status */}
       {isPublicPreview && (
         <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-xs shadow-sm">
           <div className="flex items-center gap-2 font-bold">
             <Eye className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>Mode Live Preview Publik — Tampilan Read-Only Kepadatan & Telemetri Kota untuk Pengunjung</span>
+            <span>Mode Live Preview Publik — Tampilan Read-Only Kepadatan & Telemetri Teragregasi Kota untuk Pengunjung</span>
           </div>
           <span className="bg-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold border border-emerald-200 text-emerald-800">
             Tanpa Akun (Read-Only Spectator)
@@ -29,7 +82,7 @@ function LiveMapMainContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Beranda / LiveMap</div>
-          <h1 className="text-2xl font-black text-slate-900">Dashboard Pemantauan Kota — Real-Time</h1>
+          <h1 className="text-2xl font-black text-slate-900">Dashboard Pemantauan Perkotaan — UrbanLoad.AI</h1>
         </div>
 
         <div className="flex items-center gap-4">
@@ -63,6 +116,9 @@ function LiveMapMainContent() {
           </Suspense>
         </div>
       </div>
+
+      {/* Section 3: Executive Analytics, Decision Audit Logs, What-If, System Configs */}
+      <CityAdminPanel />
     </div>
   );
 }

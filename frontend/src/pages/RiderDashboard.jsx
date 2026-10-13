@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { Award, Plus, Database, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Award, Plus, Database, ShieldCheck, RefreshCw, Truck } from 'lucide-react';
 
 const BookingHistoryTable = lazy(() => import('../components/booking/BookingHistoryTable.jsx').then(m => ({ default: m.BookingHistoryTable })));
 const HighAccuracyTracker = lazy(() => import('../components/location/HighAccuracyTracker.jsx').then(m => ({ default: m.HighAccuracyTracker })));
@@ -65,6 +65,16 @@ function DashboardMainContent() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4">
+      {/* Banner Khusus Modul Kurir */}
+      <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 flex items-center justify-between text-xs shadow-sm">
+        <div className="flex items-center gap-2 font-bold">
+          <Truck className="h-4 w-4 text-teal-600 shrink-0" />
+          <span>Modul Khusus Kurir Logistik (`rider`) — Pengelolaan Slot Booking, Tiket QuickPass QR & Pelacakan GNSS Presisi</span>
+        </div>
+        <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-teal-300 text-teal-800">
+          Kurir Access
+        </span>
+      </div>
 
       {/* Header Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">

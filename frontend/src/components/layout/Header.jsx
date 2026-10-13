@@ -2,7 +2,21 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { NotificationBell } from './NotificationBell.jsx';
 import { RealtimeStatusDot } from './RealtimeStatusDot.jsx';
-import { LogOut, Truck, UserCheck, UserPlus } from 'lucide-react';
+import {
+  LogOut,
+  Truck,
+  UserCheck,
+  UserPlus,
+  Building2,
+  Shield,
+  MapPin,
+  Calendar,
+  BarChart3,
+  Sliders,
+  Map,
+  Layers,
+  Activity
+} from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { createClient } from '../../lib/supabase/client.js';
 
@@ -12,7 +26,12 @@ function HeaderNavContent() {
   const navigate = useNavigate();
 
   const [currentUser, setCurrentUser] = useState(null);
-  const [userProfile, setUserProfile] = useState({ name: 'Pengguna', roleLabel: 'Kurir', initial: 'K' });
+  const [userProfile, setUserProfile] = useState({
+    name: 'Pengguna',
+    role: 'rider',
+    roleLabel: 'Kurir',
+    initial: 'K'
+  });
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -31,11 +50,12 @@ function HeaderNavContent() {
         const role = profile?.role || user.user_metadata?.role || 'rider';
 
         let roleLabel = 'Kurir';
-        if (role === 'city_admin' || role === 'admin') roleLabel = 'Admin Kota';
+        if (role === 'city_admin') roleLabel = 'Admin Kota';
         else if (role === 'dishub_officer') roleLabel = 'Petugas Dishub';
+        else if (role === 'admin') roleLabel = 'System Admin';
 
         const initial = name.charAt(0).toUpperCase() || 'K';
-        setUserProfile({ name, roleLabel, initial });
+        setUserProfile({ name, role, roleLabel, initial });
       } else {
         setCurrentUser(null);
       }
@@ -46,7 +66,6 @@ function HeaderNavContent() {
 
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
 
-  // If user is authenticated, they are NEVER treated as public visitor!
   const isPublicPage = !currentUser && (
     pathname === '/' ||
     pathname.startsWith('/fitur') ||
@@ -60,11 +79,22 @@ function HeaderNavContent() {
     isPublicPreviewMap
   );
 
+  const role = userProfile.role;
+
   return (
-    <header className="sticky top-0 z-50 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/80 px-4 sm:px-6 backdrop-blur-md text-slate-800">
-      {/* Kiri: Logo + Wordmark */}
+    <header className="sticky top-0 z-50 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/90 px-4 sm:px-6 backdrop-blur-md text-slate-800 shadow-sm">
+      {/* Kiri: Logo + Role Badge */}
       <div className="flex items-center gap-3">
-        <Link to={currentUser ? '/rider/dashboard' : '/'} className="flex items-center gap-2.5 group">
+        <Link
+          to={
+            role === 'city_admin' || role === 'admin'
+              ? '/city/zones'
+              : role === 'dishub_officer'
+              ? '/city/livemap'
+              : '/rider/dashboard'
+          }
+          className="flex items-center gap-2.5 group"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20 group-hover:scale-105 transition duration-200">
             <Truck className="h-5 w-5" />
           </div>
@@ -74,41 +104,97 @@ function HeaderNavContent() {
         </Link>
       </div>
 
-      {/* Tengah: Navigasi Terpisah (Public Marketing vs Operational App) */}
+      {/* Tengah: Navigasi Khusus per Role Pengguna */}
       {isPublicPage ? (
-        <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+        <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
           <Link to="/" className="hover:text-teal-600 transition">
             Beranda
           </Link>
-          <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-bold">
+          <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-extrabold">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Preview (View-Only)
+            Live Preview (Public Spectator)
           </Link>
           <Link to="/tentang" className="hover:text-teal-600 transition">
             Tentang Tim
           </Link>
         </nav>
       ) : (
-        <nav className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
-          <Link to="/rider/dashboard" className={`hover:text-teal-600 transition ${pathname === '/rider/dashboard' ? 'text-teal-600 font-bold' : ''}`}>
-            Dashboard
+        <nav className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100/80 p-1 rounded-2xl border border-slate-200">
+          {/* MENU UNTUK ROLE KURIR (rider) */}
+          {(role === 'rider' || role === 'admin') && (
+            <>
+              <Link
+                to="/rider/dashboard"
+                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+                  pathname === '/rider/dashboard' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                }`}
+              >
+                <Truck className="h-3.5 w-3.5 text-teal-600" /> Dashboard Kurir
+              </Link>
+              <Link
+                to="/rider/bookings/new"
+                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+                  pathname === '/rider/bookings/new' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                }`}
+              >
+                <Calendar className="h-3.5 w-3.5 text-teal-600" /> SmartSlot Booking
+              </Link>
+            </>
+          )}
+
+          {/* MENU UNTUK ADMIN KOTA (city_admin / admin) */}
+          {(role === 'city_admin' || role === 'admin') && (
+            <>
+              <Link
+                to="/city/zones"
+                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+                  pathname === '/city/zones' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="h-3.5 w-3.5 text-teal-600" /> Editor Zona PostGIS
+              </Link>
+            </>
+          )}
+
+          {/* MENU UNTUK PETUGAS DISHUB (dishub_officer / admin) */}
+          {(role === 'dishub_officer' || role === 'admin') && (
+            <>
+              <Link
+                to="/city/livemap"
+                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+                  pathname === '/city/livemap' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                }`}
+              >
+                <Shield className="h-3.5 w-3.5 text-indigo-600" /> Telemetri & Geofence
+              </Link>
+            </>
+          )}
+
+          {/* MENU KEPADATAN ZONA (SEMUA ROLE) */}
+          <Link
+            to="/rider/congestion"
+            className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+              pathname === '/rider/congestion' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+            }`}
+          >
+            <Activity className="h-3.5 w-3.5 text-amber-600" /> Skor Kepadatan
           </Link>
-          <Link to="/rider/bookings/new" className={`hover:text-teal-600 transition ${pathname === '/rider/bookings/new' ? 'text-teal-600 font-bold' : ''}`}>
-            Booking
-          </Link>
-          <Link to="/rider/congestion" className={`hover:text-teal-600 transition ${pathname === '/rider/congestion' ? 'text-teal-600 font-bold' : ''}`}>
-            Kepadatan
-          </Link>
-          <Link to="/city/zones" className={`hover:text-teal-600 transition ${pathname === '/city/zones' ? 'text-teal-600 font-bold' : ''}`}>
-            Zona
-          </Link>
-          <Link to="/city/livemap" className={`hover:text-teal-600 transition ${pathname === '/city/livemap' ? 'text-teal-600 font-bold' : ''}`}>
-            LiveMap
-          </Link>
+
+          {/* MENU LIVEMAP (KURIR & CITY ADMIN) */}
+          {role !== 'dishub_officer' && (
+            <Link
+              to="/city/livemap"
+              className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
+                pathname === '/city/livemap' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
+              }`}
+            >
+              <Map className="h-3.5 w-3.5 text-teal-600" /> LiveMap
+            </Link>
+          )}
         </nav>
       )}
 
-      {/* Kanan: Actions */}
+      {/* Kanan: Profile & Role Badge */}
       <div className="flex items-center gap-3">
         {isPublicPage ? (
           <div className="flex items-center gap-2">
@@ -128,15 +214,15 @@ function HeaderNavContent() {
             <NotificationBell />
             <RealtimeStatusDot />
 
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1">
-              <div className="h-6 w-6 rounded-full bg-teal-600 flex items-center justify-center text-xs font-bold text-white uppercase">
+            <div className="flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/60 px-3 py-1 shadow-sm">
+              <div className="h-6 w-6 rounded-full bg-teal-600 flex items-center justify-center text-xs font-black text-white uppercase">
                 {userProfile.initial}
               </div>
               <div className="text-left leading-tight hidden sm:block">
-                <span className="text-xs font-bold text-slate-800 block truncate max-w-[100px]">
+                <span className="text-xs font-bold text-slate-900 block truncate max-w-[110px]">
                   {userProfile.name}
                 </span>
-                <span className="text-[10px] text-teal-700 font-medium block">
+                <span className="text-[10px] font-black uppercase text-teal-800 tracking-wider block">
                   {userProfile.roleLabel}
                 </span>
               </div>
@@ -150,7 +236,7 @@ function HeaderNavContent() {
                 navigate('/login');
               }}
               className="text-slate-400 hover:text-rose-600 transition p-1"
-              title="Keluar"
+              title="Keluar dari Akun"
             >
               <LogOut className="h-5 w-5" />
             </button>

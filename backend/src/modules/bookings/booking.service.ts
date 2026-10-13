@@ -17,14 +17,23 @@ export async function createBooking(data: {
   timeWindowEnd: string;
   notes?: string;
 }) {
-  const defaultUser = data.userId || '00000000-0000-0000-0000-000000000000';
+  let activeUserId = data.userId;
+  if (!activeUserId) {
+    const activeProfiles = await queryDb('SELECT id FROM public.profiles ORDER BY created_at DESC LIMIT 1');
+    if (activeProfiles.length > 0) {
+      activeUserId = activeProfiles[0].id;
+    } else {
+      throw new Error('Gagal membuat booking: Tidak ada akun profil terautentikasi di database.');
+    }
+  }
+
   const defaultDim = data.truckDimension || { lengthCm: 800, widthCm: 220, heightCm: 320, weightKg: 8000 };
 
   const rows = await queryDb(
     `INSERT INTO public.bookings (user_id, zone_id, truck_dimension, time_window_start, time_window_end, notes, status)
      VALUES ($1, $2, $3, $4, $5, $6, 'confirmed')
      RETURNING id, user_id, zone_id, time_window_start, time_window_end, status, created_at`,
-    [defaultUser, data.zoneId, JSON.stringify(defaultDim), data.timeWindowStart, data.timeWindowEnd, data.notes || '']
+    [activeUserId, data.zoneId, JSON.stringify(defaultDim), data.timeWindowStart, data.timeWindowEnd, data.notes || '']
   );
   return rows[0];
 }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { useRealtimeZones } from '../../hooks/useRealtimeZones.js';
+import { createClient } from '../../lib/supabase/client.js';
 import { validatePromptGuard, runGroqLogixOptimization } from '../../lib/groq.js';
 import { TruckDimensionInput } from './TruckDimensionInput.jsx';
 import { Truck, MapPin, Clock, ShieldCheck, Cpu, AlertCircle, Loader2 } from 'lucide-react';

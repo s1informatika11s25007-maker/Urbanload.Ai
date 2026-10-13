@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Download, Plus, Loader2, X, MapPin, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Download, Plus, Loader2, X, MapPin, ShieldCheck, CheckCircle2, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
@@ -107,6 +107,17 @@ export default function CityZones() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4">
+      {/* Banner Khusus Modul Admin Kota */}
+      <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 flex items-center justify-between text-xs shadow-sm">
+        <div className="flex items-center gap-2 font-bold">
+          <Building2 className="h-4 w-4 text-teal-600 shrink-0" />
+          <span>Modul Khusus Admin Kota (`city_admin`) — Editor Geofence Poligon PostGIS, Kapasitas Bay & Jam Operasional</span>
+        </div>
+        <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-teal-300 text-teal-800">
+          Admin Kota Access
+        </span>
+      </div>
+
       {/* Header Halaman */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
