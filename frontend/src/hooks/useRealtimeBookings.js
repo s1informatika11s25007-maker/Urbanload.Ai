@@ -8,7 +8,12 @@ export function useRealtimeBookings() {
   useEffect(() => {
     const supabase = createClient();
     const fetchInitialBookings = async () => {
-      const { data, error } = await supabase.from('bookings').select('*, zones(name)').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('id, vehicle_plate, status, time_window_start, created_at, zone_id, zones(name)')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
       if (!error && data) setBookings(data);
       setLoading(false);
     };

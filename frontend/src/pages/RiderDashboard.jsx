@@ -22,7 +22,7 @@ function DashboardMainContent() {
       const { data: userSession } = await supabase.auth.getUser();
       const activeUserId = userSession?.user?.id;
 
-      let query = supabase.from('bookings').select('status');
+      let query = supabase.from('bookings').select('status').limit(200);
       if (activeUserId) {
         query = query.eq('user_id', activeUserId);
       }

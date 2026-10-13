@@ -167,23 +167,20 @@ export function LiveMapHero() {
     const supabase = createClient();
 
     try {
-      const { data: zonesData } = await supabase
-        .from('zones')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [zonesRes, bookingsRes] = await Promise.all([
+        supabase
+          .from('zones')
+          .select('id, name, max_truck_capacity, zone_type, priority_level, operating_hours_start, operating_hours_end, boundary_polygon')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('bookings')
+          .select('id, vehicle_plate, status, cargo_type, time_window_start, created_at, profiles(full_name), zones(id, name, boundary_polygon)')
+          .order('created_at', { ascending: false })
+          .limit(100)
+      ]);
 
-      if (zonesData) {
-        setRealZones(zonesData);
-      }
-
-      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*, profiles(full_name), zones(name, boundary_polygon)')
-        .order('created_at', { ascending: false });
-
-      if (bookingsData) {
-        setRealBookings(bookingsData);
-      }
+      if (zonesRes.data) setRealZones(zonesRes.data);
+      if (bookingsRes.data) setRealBookings(bookingsRes.data);
     } catch (err) {
       console.error('Error fetching Supabase map data:', err);
     } finally {

@@ -19,8 +19,9 @@ export function BookingHistoryTable() {
     try {
       const { data } = await supabase
         .from('bookings')
-        .select('*, profiles(full_name), zones(name)')
-        .order('created_at', { ascending: false });
+        .select('id, vehicle_plate, time_window_start, status, created_at, profiles(full_name), zones(name)')
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (data) {
         setHistory(data);

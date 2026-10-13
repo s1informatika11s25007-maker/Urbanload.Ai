@@ -23,10 +23,13 @@ export default function Home() {
     async function loadStats() {
       const supabase = createClient();
       try {
-        const { count: zCount } = await supabase.from('zones').select('id', { count: 'exact', head: true });
-        const { count: bCount } = await supabase.from('bookings').select('id', { count: 'exact', head: true });
-        if (zCount !== null) setZonesCount(zCount);
-        if (bCount !== null) setBookingsCount(bCount);
+        const [zRes, bRes] = await Promise.all([
+          supabase.from('zones').select('id', { count: 'exact', head: true }),
+          supabase.from('bookings').select('id', { count: 'exact', head: true })
+        ]);
+
+        if (zRes.count !== null) setZonesCount(zRes.count);
+        if (bRes.count !== null) setBookingsCount(bRes.count);
       } catch (e) {
         console.warn('Stats fetch warning:', e);
       }

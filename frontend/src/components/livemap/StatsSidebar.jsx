@@ -15,14 +15,15 @@ export function StatsSidebar() {
     const supabase = createClient();
 
     try {
-      // 1. Query Real Zones
-      const { data: zones } = await supabase.from('zones').select('*');
+      const [zonesRes, bookingsRes] = await Promise.all([
+        supabase.from('zones').select('id, name, max_truck_capacity'),
+        supabase.from('bookings').select('zone_id, status').limit(500)
+      ]);
 
-      // 2. Query Real Bookings
-      const { data: bookings } = await supabase.from('bookings').select('zone_id, status');
+      const zones = zonesRes.data;
+      const bookings = bookingsRes.data;
 
       if (zones && zones.length > 0) {
-        // Calculate real occupancy & utilization per zone
         const chartData = zones.map((z) => {
           const zoneBookings = bookings ? bookings.filter((b) => b.zone_id === z.id) : [];
           const activeCount = zoneBookings.length;
@@ -40,7 +41,6 @@ export function StatsSidebar() {
 
         setBayChartData(chartData);
 
-        // Find most congested
         const sorted = [...chartData].sort((a, b) => b.utilizationPct - a.utilizationPct);
         if (sorted[0]) setMostCongested(sorted[0].fullName);
       } else {

@@ -16,9 +16,13 @@ export default function RiderCongestion() {
     const supabase = createClient();
 
     try {
-      // Fetch real zones and active bookings from Supabase
-      const { data: zonesData } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
-      const { data: bookingsData } = await supabase.from('bookings').select('zone_id, status');
+      const [zonesRes, bookingsRes] = await Promise.all([
+        supabase.from('zones').select('id, name, max_truck_capacity').order('created_at', { ascending: false }),
+        supabase.from('bookings').select('zone_id, status').limit(500)
+      ]);
+
+      const zonesData = zonesRes.data;
+      const bookingsData = bookingsRes.data;
 
       if (zonesData) {
         const mapped = zonesData.map((z) => {

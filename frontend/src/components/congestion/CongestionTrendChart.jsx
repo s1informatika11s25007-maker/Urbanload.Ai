@@ -12,27 +12,21 @@ export function CongestionTrendChart() {
     setLoading(true);
     const supabase = createClient();
     try {
-      // 1. Fetch real zones
-      const { data: zones } = await supabase.from('zones').select('id, name').limit(3);
-      // 2. Fetch real congestion scores or calculate from active bookings
-      const { data: scores } = await supabase
-        .from('congestion_scores')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const [zonesRes, scoresRes, bookingsRes] = await Promise.all([
+        supabase.from('zones').select('id, name').limit(3),
+        supabase.from('congestion_scores').select('zone_id, score, calculated_at').order('calculated_at', { ascending: true }).limit(50),
+        supabase.from('bookings').select('zone_id, created_at').limit(300)
+      ]);
 
-      const { data: bookings } = await supabase
-        .from('bookings')
-        .select('created_at, zone_id');
+      const zones = zonesRes.data;
+      const scores = scoresRes.data;
+      const bookings = bookingsRes.data;
 
       const hours = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
-      const zoneA = zones?.[0]?.name || 'Zona A';
-      const zoneB = zones?.[1]?.name || 'Zona B';
-      const zoneC = zones?.[2]?.name || 'Zona C';
 
       const formatted = hours.map((jam, idx) => {
         const hourNum = parseInt(jam.split(':')[0], 10);
 
-        // Count bookings around this hour for zone 0, 1, 2
         const countA = bookings?.filter((b) => b.zone_id === zones?.[0]?.id).length || 0;
         const countB = bookings?.filter((b) => b.zone_id === zones?.[1]?.id).length || 0;
         const countC = bookings?.filter((b) => b.zone_id === zones?.[2]?.id).length || 0;
