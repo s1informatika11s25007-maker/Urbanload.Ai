@@ -11,11 +11,10 @@ import {
   Shield,
   MapPin,
   Calendar,
-  BarChart3,
-  Sliders,
+  Activity,
   Map,
-  Layers,
-  Activity
+  ChevronRight,
+  Database
 } from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { createClient } from '../../lib/supabase/client.js';
@@ -81,31 +80,45 @@ function HeaderNavContent() {
 
   const role = userProfile.role;
 
+  // Breadcrumb Context Label based on active route
+  const getBreadcrumbTitle = () => {
+    if (pathname === '/city/zones') return { category: 'Manajemen Spasial', title: 'Editor Zona PostGIS' };
+    if (pathname === '/city/livemap') return { category: 'Pemantauan Realtime', title: 'Telemetri & GeoFence Spasial' };
+    if (pathname === '/rider/dashboard') return { category: 'Operasional Kurir', title: 'Dashboard Slot Booking' };
+    if (pathname === '/rider/bookings/new') return { category: 'SmartSlot AI', title: 'Pemesanan Slot Baru' };
+    if (pathname === '/rider/congestion') return { category: 'Analisis Logistik', title: 'Skor Kepadatan Zona' };
+    return { category: 'UrbanLoad.AI', title: 'Dashboard System' };
+  };
+
+  const breadcrumb = getBreadcrumbTitle();
+
   return (
-    <header className="sticky top-0 z-50 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/90 px-4 sm:px-6 backdrop-blur-md text-slate-800 shadow-sm">
-      {/* Kiri: Logo + Role Badge */}
+    <header className="sticky top-0 z-30 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 backdrop-blur-md text-slate-800 shadow-sm">
+      {/* Kiri: Mobile Brand (atau Page Title Breadcrumb jika logged in) */}
       <div className="flex items-center gap-3">
         <Link
-          to={
-            role === 'city_admin' || role === 'admin'
-              ? '/city/zones'
-              : role === 'dishub_officer'
-              ? '/city/livemap'
-              : '/rider/dashboard'
-          }
-          className="flex items-center gap-2.5 group"
+          to="/"
+          className="flex lg:hidden items-center gap-2 group"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-600 text-white shadow-md shadow-teal-600/20 group-hover:scale-105 transition duration-200">
-            <Truck className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white shadow-md">
+            <Truck className="h-4 w-4" />
           </div>
-          <span className="text-lg font-black tracking-tight text-slate-900">
+          <span className="text-base font-black tracking-tight text-slate-900">
             UrbanLoad<span className="text-teal-600">.AI</span>
           </span>
         </Link>
+
+        {!isPublicPage && (
+          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <span className="text-slate-400 font-mono">{breadcrumb.category}</span>
+            <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+            <span className="font-extrabold text-slate-900 text-xs font-sans">{breadcrumb.title}</span>
+          </div>
+        )}
       </div>
 
-      {/* Tengah: Navigasi Khusus per Role Pengguna */}
-      {isPublicPage ? (
+      {/* Tengah: Navigasi Khusus Publik (Hanya muncul jika belum login) */}
+      {isPublicPage && (
         <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
           <Link to="/" className="hover:text-teal-600 transition">
             Beranda
@@ -118,83 +131,9 @@ function HeaderNavContent() {
             Tentang Tim
           </Link>
         </nav>
-      ) : (
-        <nav className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100/80 p-1 rounded-2xl border border-slate-200">
-          {/* MENU UNTUK ROLE KURIR (rider) */}
-          {(role === 'rider' || role === 'admin') && (
-            <>
-              <Link
-                to="/rider/dashboard"
-                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                  pathname === '/rider/dashboard' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-                }`}
-              >
-                <Truck className="h-3.5 w-3.5 text-teal-600" /> Dashboard Kurir
-              </Link>
-              <Link
-                to="/rider/bookings/new"
-                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                  pathname === '/rider/bookings/new' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-                }`}
-              >
-                <Calendar className="h-3.5 w-3.5 text-teal-600" /> SmartSlot Booking
-              </Link>
-            </>
-          )}
-
-          {/* MENU UNTUK ADMIN KOTA (city_admin / admin) */}
-          {(role === 'city_admin' || role === 'admin') && (
-            <>
-              <Link
-                to="/city/zones"
-                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                  pathname === '/city/zones' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-                }`}
-              >
-                <Building2 className="h-3.5 w-3.5 text-teal-600" /> Editor Zona PostGIS
-              </Link>
-            </>
-          )}
-
-          {/* MENU UNTUK PETUGAS DISHUB (dishub_officer / admin) */}
-          {(role === 'dishub_officer' || role === 'admin') && (
-            <>
-              <Link
-                to="/city/livemap"
-                className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                  pathname === '/city/livemap' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-                }`}
-              >
-                <Shield className="h-3.5 w-3.5 text-indigo-600" /> Telemetri & Geofence
-              </Link>
-            </>
-          )}
-
-          {/* MENU KEPADATAN ZONA (SEMUA ROLE) */}
-          <Link
-            to="/rider/congestion"
-            className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-              pathname === '/rider/congestion' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-            }`}
-          >
-            <Activity className="h-3.5 w-3.5 text-amber-600" /> Skor Kepadatan
-          </Link>
-
-          {/* MENU LIVEMAP (KURIR & CITY ADMIN) */}
-          {role !== 'dishub_officer' && (
-            <Link
-              to="/city/livemap"
-              className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                pathname === '/city/livemap' ? 'bg-white text-teal-700 shadow-sm font-extrabold' : 'hover:text-slate-900'
-              }`}
-            >
-              <Map className="h-3.5 w-3.5 text-teal-600" /> LiveMap
-            </Link>
-          )}
-        </nav>
       )}
 
-      {/* Kanan: Profile & Role Badge */}
+      {/* Kanan: Profile & Role Badge (Terpusat) */}
       <div className="flex items-center gap-3">
         {isPublicPage ? (
           <div className="flex items-center gap-2">
@@ -204,7 +143,7 @@ function HeaderNavContent() {
               </Button>
             </Link>
             <Link to="/register">
-              <Button className="text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold">
+              <Button className="text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold bg-teal-600 hover:bg-teal-700 text-white">
                 <UserPlus className="h-3.5 w-3.5" /> Daftar
               </Button>
             </Link>
@@ -214,12 +153,12 @@ function HeaderNavContent() {
             <NotificationBell />
             <RealtimeStatusDot />
 
-            <div className="flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/60 px-3 py-1 shadow-sm">
+            <div className="flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/70 px-3 py-1 shadow-sm">
               <div className="h-6 w-6 rounded-full bg-teal-600 flex items-center justify-center text-xs font-black text-white uppercase">
                 {userProfile.initial}
               </div>
               <div className="text-left leading-tight hidden sm:block">
-                <span className="text-xs font-bold text-slate-900 block truncate max-w-[110px]">
+                <span className="text-xs font-bold text-slate-900 block truncate max-w-[120px]">
                   {userProfile.name}
                 </span>
                 <span className="text-[10px] font-black uppercase text-teal-800 tracking-wider block">
