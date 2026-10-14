@@ -53,7 +53,7 @@ export function LiveActivityTable() {
           <Activity className="h-4 w-4 text-teal-600" /> Feed Aktivitas Realtime
         </h4>
         <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Live DB
+          <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime Feed
         </span>
       </div>
 
