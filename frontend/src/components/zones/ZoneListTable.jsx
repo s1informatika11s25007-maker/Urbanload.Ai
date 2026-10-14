@@ -3,8 +3,13 @@ import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { useRealtimeZones } from '../../hooks/useRealtimeZones.js';
 import { useToast } from '../ui/ToastNotification.jsx';
-import { RefreshCw, Radio, MapPin, Clock, ShieldCheck, Lock, Unlock, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Radio, Clock, Lock, Unlock, AlertTriangle } from 'lucide-react';
 
+/**
+ * ZoneListTable
+ * Displays real active logistics zones fetched directly from Supabase PostgreSQL Database (public.zones)
+ * with Realtime WebSocket updates.
+ */
 export function ZoneListTable() {
   const { zones, loading } = useRealtimeZones();
   const { showToast } = useToast();
@@ -16,13 +21,13 @@ export function ZoneListTable() {
 
     if (!isCurrentlyLocked) {
       showToast({
-        title: 'EventLock Aktif (Penutupan Darurat)',
-        message: `Zona ${zone.name} berhasil DIKUNCI sementara. Seluruh pendaftaran slot booking baru ditangguhkan.`,
+        title: 'Penutupan Darurat Aktif',
+        message: `Zona ${zone.name} berhasil DIKUNCI sementara. Pendaftaran slot baru ditangguhkan.`,
         type: 'warning',
       });
     } else {
       showToast({
-        title: 'EventLock Dinonaktifkan',
+        title: 'Zona Dibuka Kembali',
         message: `Akses booking ke zona ${zone.name} telah dibuka kembali secara normal.`,
         type: 'success',
       });
@@ -33,9 +38,9 @@ export function ZoneListTable() {
     <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4">
       <div className="flex justify-between items-center border-b pb-3">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm sm:text-base font-black text-slate-900">Daftar Zona Logistik Perkotaan Real & EventLock</h3>
-          <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full">
-            <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime DB ({zones.length} Zona Real)
+          <h3 className="text-sm sm:text-base font-black text-slate-900">Daftar Zona Logistik Perkotaan Database Supabase</h3>
+          <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full font-mono">
+            <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime DB ({zones.length} Zona)
           </span>
         </div>
         {loading && <RefreshCw className="h-4 w-4 animate-spin text-teal-600" />}
@@ -44,7 +49,7 @@ export function ZoneListTable() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {zones.length === 0 ? (
           <div className="col-span-1 md:col-span-2 p-6 text-center text-xs text-slate-400 font-semibold">
-            {loading ? 'Memuat data zona real dari database...' : 'Belum ada zona logistik di database.'}
+            {loading ? 'Memuat data zona dari Supabase PostgreSQL database...' : 'Belum ada zona logistik di database.'}
           </div>
         ) : (
           zones.map((z) => {
@@ -62,7 +67,7 @@ export function ZoneListTable() {
                 {isLocked && (
                   <div className="bg-red-600 text-white text-[10px] font-black uppercase tracking-wider py-1 px-3 flex items-center justify-between">
                     <span className="flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3 animate-bounce" /> EVENTLOCK ZONA AKTIF (DITUTUP SEMENTARA)
+                      <AlertTriangle className="h-3 w-3 animate-bounce" /> ZONA DITUTUP SEMENTARA (PENUTUPAN DARURAT)
                     </span>
                   </div>
                 )}
@@ -91,11 +96,11 @@ export function ZoneListTable() {
                   >
                     {isLocked ? (
                       <>
-                        <Unlock className="h-3 w-3" /> Buka EventLock
+                        <Unlock className="h-3 w-3" /> Buka Akses
                       </>
                     ) : (
                       <>
-                        <Lock className="h-3 w-3" /> EventLock Crisis
+                        <Lock className="h-3 w-3" /> Kunci Zona
                       </>
                     )}
                   </Button>

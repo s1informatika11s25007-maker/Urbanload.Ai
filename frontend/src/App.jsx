@@ -23,6 +23,8 @@ const FeatureGeofence = lazy(() => import('./pages/FeatureGeofence.jsx'));
 const DishubReportsPage = lazy(() => import('./pages/DishubReportsPage.jsx'));
 const LogiTalkPage = lazy(() => import('./pages/LogiTalkPage.jsx'));
 const PublicReportPage = lazy(() => import('./pages/PublicReportPage.jsx'));
+const VoiceDispatchPage = lazy(() => import('./pages/VoiceDispatchPage.jsx'));
+const EdgeSecurityPage = lazy(() => import('./pages/EdgeSecurityPage.jsx'));
 
 function PageFallback() {
   return (
@@ -62,6 +64,8 @@ function App() {
                   <Route path="/dishub/reports" element={<DishubReportsPage />} />
                   <Route path="/logitalk" element={<LogiTalkPage />} />
                   <Route path="/lapor" element={<PublicReportPage />} />
+                  <Route path="/dispatch/voice" element={<VoiceDispatchPage />} />
+                  <Route path="/security/prompt-guard" element={<EdgeSecurityPage />} />
                   <Route path="/fitur/congestion" element={<FeatureCongestion />} />
                   <Route path="/fitur/geofence" element={<FeatureGeofence />} />
                 </Routes>

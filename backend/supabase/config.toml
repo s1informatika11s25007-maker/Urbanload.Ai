@@ -10,3 +10,15 @@ port = 54322
 [studio]
 enabled = true
 port = 54323
+
+[functions.edge-prompt-guard]
+verify_jwt = false
+
+[functions.voice-dispatch]
+verify_jwt = false
+
+[functions.qr-verify]
+verify_jwt = false
+
+[functions.congestion-tick]
+verify_jwt = false

@@ -1,9 +1,21 @@
 import React, { Suspense, useEffect, useState, lazy } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { Award, Plus, Database, ShieldCheck, RefreshCw, Truck } from 'lucide-react';
+import {
+  Award,
+  Plus,
+  Database,
+  ShieldCheck,
+  RefreshCw,
+  Truck,
+  HelpCircle,
+  MapPin,
+  Calendar,
+  QrCode,
+  CheckCircle2
+} from 'lucide-react';
 
 const BookingHistoryTable = lazy(() => import('../components/booking/BookingHistoryTable.jsx').then(m => ({ default: m.BookingHistoryTable })));
 const HighAccuracyTracker = lazy(() => import('../components/location/HighAccuracyTracker.jsx').then(m => ({ default: m.HighAccuracyTracker })));
@@ -13,6 +25,7 @@ function DashboardMainContent() {
   const [completedCount, setCompletedCount] = useState(0);
   const [complianceScore, setComplianceScore] = useState(100);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
+  const [showGuide, setShowGuide] = useState(true);
 
   const loadMetrics = async () => {
     setLoadingMetrics(true);
@@ -69,7 +82,7 @@ function DashboardMainContent() {
       <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 flex items-center justify-between text-xs shadow-sm">
         <div className="flex items-center gap-2 font-bold">
           <Truck className="h-4 w-4 text-teal-600 shrink-0" />
-          <span>Modul Khusus Kurir Logistik (`rider`) — Pengelolaan Slot Booking, Tiket QuickPass QR & Pelacakan GNSS Presisi</span>
+          <span>Modul Operasional Kurir Logistik — Pengelolaan Slot Booking & Tiket QuickPass QR</span>
         </div>
         <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-teal-300 text-teal-800">
           Kurir Access
@@ -86,11 +99,69 @@ function DashboardMainContent() {
         </div>
 
         <Link to="/rider/bookings/new">
-          <Button className="text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm font-bold bg-teal-600 hover:bg-teal-700">
+          <Button className="text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm font-bold bg-teal-600 hover:bg-teal-700 text-white">
             <Plus className="h-4 w-4" /> Pesan Slot Booking Baru
           </Button>
         </Link>
       </div>
+
+      {/* 3-STEP QUICK USER GUIDE CARD */}
+      {showGuide && (
+        <Card className="p-5 bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl shadow-xl space-y-4 border border-teal-800/80 relative">
+          <div className="flex items-center justify-between border-b border-slate-700/80 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30">
+                <HelpCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-white">Panduan Penggunaan Cepat (3 Langkah Mudah)</h3>
+                <p className="text-xs text-slate-400">Cara menggunakan aplikasi UrbanLoad.AI untuk pengemudi kurir logistik</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowGuide(false)}
+              className="text-xs font-bold text-slate-400 hover:text-white bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700"
+            >
+              Tutup Panduan ×
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Step 1 */}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-1.5">
+              <div className="flex items-center gap-2 text-teal-400 font-bold text-xs">
+                <span className="h-6 w-6 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center font-mono text-xs text-teal-300 font-black">1</span>
+                <span>Aktifkan GPS Telemetri</span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Biarkan sinyal GPS aktif. Sistem otomatis memverifikasi posisi Anda di dalam radius geofence lokasi bongkar muat.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-1.5">
+              <div className="flex items-center gap-2 text-teal-400 font-bold text-xs">
+                <span className="h-6 w-6 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center font-mono text-xs text-teal-300 font-black">2</span>
+                <span>Pesan Slot Booking</span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Klik tombol <strong className="text-teal-300">Pesan Slot Booking Baru</strong> untuk memilih zona tujuan, jam kedatangan, dan dimensi truk.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-1.5">
+              <div className="flex items-center gap-2 text-teal-400 font-bold text-xs">
+                <span className="h-6 w-6 rounded-full bg-teal-500/20 border border-teal-500/40 flex items-center justify-center font-mono text-xs text-teal-300 font-black">3</span>
+                <span>Tunjukkan QR ke Dishub</span>
+              </div>
+              <p className="text-[11px] text-slate-300 leading-relaxed">
+                Saat tiba di bay lokasi, klik <strong className="text-teal-300">Tampilkan QR</strong> pada tabel riwayat untuk dipindai oleh petugas Dishub.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Tracker Lokasi...</div>}>
         <HighAccuracyTracker />

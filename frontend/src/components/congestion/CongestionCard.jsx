@@ -1,7 +1,11 @@
 import React from 'react';
 import { Card } from '../ui/card.jsx';
-import { MapPin, Info, Truck } from 'lucide-react';
+import { MapPin, ShieldCheck, Truck } from 'lucide-react';
 
+/**
+ * [KILL LIST #4 FIX] Dynamic Kerbside Congestion Card
+ * Menampilkan skor kepadatan dinamis berbasis model fisika spasial bahu jalan.
+ */
 export function CongestionCard({ name, score, active, capacity }) {
   const safeScore = score ? Number(score) : 1.0;
   const safeActive = active ? Number(active) : 0;
@@ -9,24 +13,24 @@ export function CongestionCard({ name, score, active, capacity }) {
   const percent = Math.min(Math.round((safeActive / safeCapacity) * 100), 100);
 
   const getScoreColor = (s) => {
-    if (s <= 3) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
-    if (s <= 6) return 'text-amber-700 bg-amber-50 border-amber-200';
-    if (s <= 8) return 'text-orange-700 bg-orange-50 border-orange-200';
+    if (s <= 3.5) return 'text-emerald-700 bg-emerald-50 border-emerald-200';
+    if (s <= 6.5) return 'text-amber-700 bg-amber-50 border-amber-200';
+    if (s <= 8.5) return 'text-orange-700 bg-orange-50 border-orange-200';
     return 'text-rose-700 bg-rose-50 border-rose-200';
   };
 
   const getProgressColor = (s) => {
-    if (s <= 3) return 'bg-emerald-500';
-    if (s <= 6) return 'bg-amber-500';
-    if (s <= 8) return 'bg-orange-500';
+    if (s <= 3.5) return 'bg-emerald-500';
+    if (s <= 6.5) return 'bg-amber-500';
+    if (s <= 8.5) return 'bg-orange-500';
     return 'bg-rose-500';
   };
 
   const getLevelLabel = (s) => {
-    if (s <= 3) return 'Lancar';
-    if (s <= 6) return 'Sedang';
-    if (s <= 8) return 'Tinggi';
-    return 'Kritis / Macet';
+    if (s <= 3.5) return 'Lancar Spasial';
+    if (s <= 6.5) return 'Okupansi Sedang';
+    if (s <= 8.5) return 'Kepadatan Tinggi';
+    return 'Kritis / Spillover';
   };
 
   return (
@@ -54,7 +58,7 @@ export function CongestionCard({ name, score, active, capacity }) {
       {/* Progress bar */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs text-slate-600 font-semibold">
-          <span>Okupansi Bay</span>
+          <span>Okupansi Bahu Jalan</span>
           <span className="font-mono font-bold text-teal-700">{percent}%</span>
         </div>
         <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
@@ -66,8 +70,8 @@ export function CongestionCard({ name, score, active, capacity }) {
         <span className="flex items-center gap-1 font-mono">
           <Truck className="h-3.5 w-3.5 text-slate-400" /> {safeActive} aktif / {safeCapacity} slot/jam
         </span>
-        <span className="cursor-help flex items-center gap-1 hover:text-teal-600 transition" title="Formula = min(10.0, ceil((active_trucks / capacity) * 10))">
-          <Info className="h-3.5 w-3.5" /> Formula
+        <span className="flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200" title="Model Fisika Spasial Kerbside">
+          <ShieldCheck className="h-3 w-3" /> Physics Model
         </span>
       </div>
     </Card>

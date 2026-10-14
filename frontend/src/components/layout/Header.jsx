@@ -127,7 +127,7 @@ function HeaderNavContent() {
           </Link>
           <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-extrabold">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live Preview (Public Spectator)
+            Live Map Publik
           </Link>
           <Link to="/tentang" className={`hover:text-teal-600 transition ${pathname === '/tentang' ? 'text-teal-600' : ''}`}>
             Tentang Tim

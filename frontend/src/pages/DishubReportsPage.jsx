@@ -28,7 +28,7 @@ export default function DishubReportsPage() {
         </div>
 
         <div className="flex items-center gap-2 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-full">
-          <Radio className="h-3.5 w-3.5 animate-pulse text-red-600" /> Live Feed Supabase
+          <Radio className="h-3.5 w-3.5 animate-pulse text-red-600" /> Live Feed Realtime
         </div>
       </div>
 

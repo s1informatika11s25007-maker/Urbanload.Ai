@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
-import { Download, Plus, Loader2, X, MapPin, ShieldCheck, CheckCircle2, Building2 } from 'lucide-react';
+import { Download, Plus, Loader2, X, MapPin, Building2, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
@@ -8,6 +8,30 @@ import { useToast } from '../components/ui/ToastNotification.jsx';
 const ZoneDrawMap = lazy(() => import('../components/zones/ZoneDrawMap.jsx').then((mod) => ({ default: mod.ZoneDrawMap })));
 const ZoneListTable = lazy(() => import('../components/zones/ZoneListTable.jsx').then((mod) => ({ default: mod.ZoneListTable })));
 const GeofenceValidator = lazy(() => import('../components/zones/GeofenceValidator.jsx').then((mod) => ({ default: mod.GeofenceValidator })));
+
+const CITY_CORRIDOR_PRESETS = [
+  {
+    name: 'Zona E - Kawasan Logistik Kebon Jeruk',
+    maxCapacity: 15,
+    zoneType: 'logistics',
+    priorityLevel: 'normal',
+    wkt: 'POLYGON((106.7680 -6.1820, 106.7850 -6.1820, 106.7850 -6.1960, 106.7680 -6.1960, 106.7680 -6.1820))'
+  },
+  {
+    name: 'Zona F - Koridor Sudirman-Thamrin',
+    maxCapacity: 8,
+    zoneType: 'mixed',
+    priorityLevel: 'priority_pass',
+    wkt: 'POLYGON((106.8180 -6.1980, 106.8280 -6.1980, 106.8280 -6.2150, 106.8180 -6.2150, 106.8180 -6.1980))'
+  },
+  {
+    name: 'Zona G - Terminal Kontainer Tanjung Priok 2',
+    maxCapacity: 30,
+    zoneType: 'port',
+    priorityLevel: 'priority_pass',
+    wkt: 'POLYGON((106.8800 -6.1000, 106.9100 -6.1000, 106.9100 -6.1180, 106.8800 -6.1180, 106.8800 -6.1000))'
+  }
+];
 
 export default function CityZones() {
   const { showToast } = useToast();
@@ -19,6 +43,16 @@ export default function CityZones() {
   const [maxCapacity, setMaxCapacity] = useState(15);
   const [zoneType, setZoneType] = useState('logistics');
   const [priorityLevel, setPriorityLevel] = useState('normal');
+  const [selectedWKT, setSelectedWKT] = useState('POLYGON((106.820 -6.180, 106.830 -6.180, 106.830 -6.190, 106.820 -6.190, 106.820 -6.180))');
+
+  const handleApplyPreset = (preset) => {
+    setNewZoneName(preset.name);
+    setMaxCapacity(preset.maxCapacity);
+    setZoneType(preset.zoneType);
+    setPriorityLevel(preset.priorityLevel);
+    setSelectedWKT(preset.wkt);
+    showToast({ title: 'Preset Koridor Diterapkan', message: preset.name, type: 'info' });
+  };
 
   const handleCreateZone = async (e) => {
     e.preventDefault();
@@ -28,15 +62,12 @@ export default function CityZones() {
     try {
       const supabase = createClient();
 
-      // Sample WKT Polygon centered around Jakarta
-      const sampleWKT = 'POLYGON((106.820 -6.180, 106.830 -6.180, 106.830 -6.190, 106.820 -6.190, 106.820 -6.180))';
-
       const { error } = await supabase.from('zones').insert({
         name: newZoneName,
         max_truck_capacity: Number(maxCapacity),
         zone_type: zoneType,
         priority_level: priorityLevel,
-        boundary_polygon: sampleWKT,
+        boundary_polygon: selectedWKT,
         operating_hours_start: '06:00',
         operating_hours_end: '22:00',
       });
@@ -44,7 +75,7 @@ export default function CityZones() {
       if (!error) {
         showToast({
           title: 'Zona Baru Berhasil Ditambahkan',
-          message: `${newZoneName} telah disimpan langsung ke database Supabase real.`,
+          message: `${newZoneName} telah disimpan langsung ke database Supabase.`,
           type: 'success',
         });
         setNewZoneName('');
@@ -111,7 +142,7 @@ export default function CityZones() {
       <div className="p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-teal-900 flex items-center justify-between text-xs shadow-sm">
         <div className="flex items-center gap-2 font-bold">
           <Building2 className="h-4 w-4 text-teal-600 shrink-0" />
-          <span>Modul Khusus Admin Kota (`city_admin`) — Editor Geofence Poligon PostGIS, Kapasitas Bay & Jam Operasional</span>
+          <span>Modul Khusus Admin Kota — Editor Geofence Poligon PostGIS, Kapasitas Bay & Jam Operasional</span>
         </div>
         <span className="bg-white px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border border-teal-300 text-teal-800">
           Admin Kota Access
@@ -126,7 +157,7 @@ export default function CityZones() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={() => setShowShowAddModal(true)} className="text-xs flex items-center gap-1 font-bold bg-teal-600 hover:bg-teal-700">
+          <Button onClick={() => setShowShowAddModal(true)} className="text-xs flex items-center gap-1 font-bold bg-teal-600 hover:bg-teal-700 text-white">
             <Plus className="h-3.5 w-3.5" /> Tambah Zona Baru Real
           </Button>
           <Button onClick={handleExportGeoJSON} variant="outline" className="text-xs flex items-center gap-1 font-bold">
@@ -168,6 +199,25 @@ export default function CityZones() {
               </button>
             </div>
 
+            {/* Presets Shortcut Chips */}
+            <div className="space-y-1.5 p-3 rounded-2xl bg-teal-50/80 border border-teal-200">
+              <span className="text-[10px] font-bold text-teal-900 flex items-center gap-1">
+                <Sparkles className="h-3 w-3 text-teal-600" /> Gunakan Preset Koridor Logistik Cepat:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {CITY_CORRIDOR_PRESETS.map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleApplyPreset(p)}
+                    className="text-[10px] font-bold bg-white text-teal-800 border border-teal-300 hover:bg-teal-600 hover:text-white px-2 py-1 rounded-lg transition"
+                  >
+                    + {p.name.split(' - ')[1] || p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <form onSubmit={handleCreateZone} className="space-y-3 text-xs">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Nama Zona Logistik</label>
@@ -176,7 +226,7 @@ export default function CityZones() {
                   required
                   value={newZoneName}
                   onChange={(e) => setNewZoneName(e.target.value)}
-                  placeholder="Contoh: Zona E - Kawasan Industri Pulogadung"
+                  placeholder="Contoh: Zona E - Kawasan Industri Kebon Jeruk"
                   className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
                 />
               </div>
@@ -224,7 +274,7 @@ export default function CityZones() {
               <Button
                 type="submit"
                 disabled={loadingAdd || !newZoneName}
-                className="w-full py-3 text-xs font-bold shadow-md bg-teal-600 hover:bg-teal-700 mt-2"
+                className="w-full py-3 text-xs font-bold shadow-md bg-teal-600 hover:bg-teal-700 text-white mt-2"
               >
                 {loadingAdd ? 'Menyimpan Ke Database Real...' : 'Simpan Zona Ke Database Real'}
               </Button>

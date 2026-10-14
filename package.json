@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "build": "cd frontend && npm install && npm run build",
+    "test:demo": "cd frontend && npm run test:demo",
+    "test:demo:ui": "cd frontend && npm run test:demo:ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0"
   }
 }

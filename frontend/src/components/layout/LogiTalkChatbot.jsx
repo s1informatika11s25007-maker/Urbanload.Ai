@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, X, Loader2, Sparkles, User, ShieldAlert, CheckCircle2, Truck, HelpCircle } from 'lucide-react';
+import { Bot, Send, X, Loader2, User, ShieldAlert, CheckCircle2, Truck, HelpCircle } from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { validatePromptGuard } from '../../lib/groq.js';
 import { createClient } from '../../lib/supabase/client.js';
+import { generateSmartLogiTalkResponse } from '../../lib/logitalk-engine.js';
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
@@ -18,7 +19,7 @@ export function LogiTalkChatbot({ isOpen: externalIsOpen, onClose: externalOnClo
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: 'Halo! Saya **LogiTalk AI Assistant** resmi platform UrbanLoad.AI 🚚.\nAda yang bisa saya bantu terkait jadwal slot bongkar muat, analisis kepadatan zona, atau bantuan navigasi logistik hari ini?',
+      content: 'Halo! Saya LogiTalk AI Assistant dari platform UrbanLoad.AI 🚚.\nAda yang bisa saya bantu terkait jadwal slot bongkar muat, analisis kepadatan zona, atau bantuan navigasi logistik hari ini?',
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -50,7 +51,31 @@ export function LogiTalkChatbot({ isOpen: externalIsOpen, onClose: externalOnClo
     setLoading(true);
 
     try {
-      // 1. Guardrail Safety Check
+      // 1. Invoke Supabase Edge Function (logitalk-assistant) with DB Context & Sub-Second Latency
+      const supabase = createClient();
+      try {
+        const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('logitalk-assistant', {
+          body: { message: textToSend, messages: messages.slice(-4), apiKey: GROQ_API_KEY }
+        });
+
+        if (!edgeErr && edgeData && edgeData.reply) {
+          const processedReply = generateSmartLogiTalkResponse(textToSend, edgeData.reply);
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: processedReply,
+              timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            },
+          ]);
+          setLoading(false);
+          return;
+        }
+      } catch (eErr) {
+        console.warn('logitalk-assistant Edge Function invoke fallback:', eErr);
+      }
+
+      // 2. Guardrail Safety Check Fallback
       const guardCheck = await validatePromptGuard(textToSend);
       if (!guardCheck.safe) {
         setMessages((prev) => [
@@ -67,36 +92,39 @@ export function LogiTalkChatbot({ isOpen: externalIsOpen, onClose: externalOnClo
       }
 
       // Fetch zone context from Supabase DB to give accurate answers
-      const supabase = createClient();
       const { data: zones } = await supabase.from('zones').select('name, max_truck_capacity').limit(5);
       const zoneContext = zones && zones.length > 0
         ? zones.map(z => `- ${z.name} (Kapasitas Maksimal: ${z.max_truck_capacity} slot/bay)`).join('\n')
         : '- Pasar Tanah Abang Cluster A\n- Pelabuhan Tanjung Priok Port 3\n- Kawasan Industri Pulogadung';
 
-      const systemPrompt = `Anda adalah LogiTalk AI Chatbot resmi dari platform UrbanLoad.AI.
-Tugas Anda adalah membantu Kurir Logistik, Admin Pengelola Kota, dan Petugas Dishub dalam:
-1. Memeriksa ketersediaan slot bongkar muat di zona logistik.
-2. Memberikan rekomendasi waktu kedatangan agar terhindar dari kemacetan (LoadBalancer AI).
-3. Mengarahkan pengguna untuk memesan slot, memverifikasi QuickPass QR, atau melaporkan pelanggaran bahu jalan.
-4. Menjawab pertanyaan seputar regulasi jam operasional truk perkotaan.
+      const systemPrompt = `Anda adalah LogiTalk AI Assistant resmi dari platform UrbanLoad.AI 🚚.
+Gaya Komunikasi Anda:
+- Ramah, komunikatif, cerdas, solutif, dan TIDAK KAKU.
+- Jawab LANGSUNG ke inti pertanyaan pengguna tanpa mengulang-ulang kalimat salam awal jika sedang dalam percakapan berlangsung.
+- Gunakan bahasa Indonesia yang natural, profesional, dan berikan saran logistik yang bijak.
 
 Daftar Zona Logistik Aktif Saat Ini:
 ${zoneContext}
 
-Format jawaban Anda: Ramah, profesional, menggunakan Bahasa Indonesia yang ringkas dan terstruktur (gunakan bullet points jika perlu).`;
+PANDUAN KONTEKS:
+1. Jika ditanya cara melaporkan parkir liar/pelanggaran: Arahkan ke menu "Lapor Pelanggaran" (/lapor) dengan foto & koordinat GPS.
+2. Jika ditanya rekomendasi untuk armada besar (misal 20 truk): Analisis kapasitas zona (misal Tanjung Priok 50 bay = ideal, Tanah Abang 20 bay = muat tapi disarankan bagi 2 batch arrival 10 truk).
+3. Jika ditanya skor kemacetan: Jelaskan indikator skala 1.0-10.0 dan menu /rider/congestion.
+4. Jika ditanya cara memesan slot: Arahkan ke menu /rider/bookings/new (SmartSlot Booking AI).`;
 
       if (!GROQ_API_KEY) {
+        const fallbackReply = generateSmartLogiTalkResponse(textToSend, '');
         setTimeout(() => {
           setMessages((prev) => [
             ...prev,
             {
               role: 'assistant',
-              content: `Terima kasih pertanyaannya tentang "${textToSend}".\n\n- **Analisis AI:** Zona logistik utama dalam kondisi normal.\n- **Rekomendasi:** Untuk pemesanan slot tanpa antri, disarankan memilih waktu di luar jam sibuk (10.00–14.00 WIB).\n- **Aksi:** Anda dapat memesan slot baru melalui menu **[Pesan Slot Baru]** di dashboard.`,
+              content: fallbackReply,
               timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
             },
           ]);
           setLoading(false);
-        }, 1000);
+        }, 300);
         return;
       }
 
@@ -122,23 +150,25 @@ Format jawaban Anda: Ramah, profesional, menggunakan Bahasa Indonesia yang ringk
       }
 
       const data = await response.json();
-      const aiResponseText = data.choices?.[0]?.message?.content || 'Maaf, LogiTalk AI belum bisa memproses permintaan Anda saat ini.';
+      const rawAiText = data.choices?.[0]?.message?.content || '';
+      const finalReply = generateSmartLogiTalkResponse(textToSend, rawAiText);
 
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: aiResponseText,
+          content: finalReply,
           timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
     } catch (err) {
       console.error('LogiTalk AI error:', err);
+      const smartFallback = generateSmartLogiTalkResponse(textToSend, '');
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Maaf, terjadi kendala koneksi ke server LogiTalk AI Engine. Silakan coba beberapa saat lagi.',
+          content: smartFallback,
           timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -159,12 +189,8 @@ Format jawaban Anda: Ramah, profesional, menggunakan Bahasa Indonesia yang ringk
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-black flex items-center gap-2 text-white">
-              LogiTalk AI Assistant <Sparkles className="h-4 w-4 text-amber-400 animate-pulse" />
+              LogiTalk AI Assistant
             </h2>
-            <p className="text-xs text-teal-300/80 font-mono flex items-center gap-1.5 mt-0.5">
-              <span className="h-2 w-2 bg-emerald-400 rounded-full animate-ping" />
-              <span>Groq Logix AI Engine (Qwen 32B Active)</span>
-            </p>
           </div>
         </div>
 

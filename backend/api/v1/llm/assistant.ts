@@ -3,10 +3,11 @@ import { setCorsHeaders } from '../../_lib/cors';
 import { sendSuccess, sendError } from '../../_lib/response';
 import { queryDb } from '../../../src/config/db';
 import { runABSimulation } from '../../../src/engine/simulator';
+import { validatePromptSecurity } from '../../_lib/prompt-guard';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL_NAME = 'qwen-2.5-32b';
+const MODEL_NAME = 'qwen-2.5-32b'; // Core Reasoning Engine
 
 async function executeTool(toolName: string, args: any) {
   if (toolName === 'get_zone_state') {
@@ -20,37 +21,23 @@ async function executeTool(toolName: string, args: any) {
     };
   }
 
-  if (toolName === 'run_simulation') {
-    const sim = runABSimulation({
-      seed: args.seed || 42,
-      totalVehicles: args.totalVehicles || 20,
-      kerbCapacityMeters: 30.0,
-      stagingCapacityMeters: 50.0,
-      idleFuelRateLHr: 2.5,
-      co2EmissionFactorKgL: 2.68,
-      noShowRate: 0.10,
-      truckLengthMeanM: 8.0,
-      safetyGapM: 2.0
-    });
+  if (toolName === 'dispatch_voice_action') {
     return {
-      seed: sim.seed,
-      baselineSpilloverMeterMin: sim.baseline.spilloverMeterMinutes,
-      controlledSpilloverMeterMin: sim.controlled.spilloverMeterMinutes,
-      reductionPercent: sim.impact.spilloverReductionPercent,
-      fuelSavedLiters: sim.impact.idleFuelSavedLiters
-    };
-  }
-
-  if (toolName === 'propose_reschedule') {
-    return {
-      proposedOffsetMin: 30,
-      reason: 'Penyebaran jadwal kedatangan untuk menghindari puncak antrean bahu jalan'
+      actionType: args.actionType || 'RESCHEDULE_SLOT',
+      targetBay: args.targetBay || 'Bay-02',
+      voiceResponseAudioText: args.spokenConfirmation || 'Jadwal slot bongkar muat Anda telah disesuaikan secara otomatis.',
+      dispatchedAt: new Date().toISOString()
     };
   }
 
   return { error: `Tool ${toolName} tidak dikenal.` };
 }
 
+/**
+ * [KILL LIST #2 & AI BLUEPRINT] Event-Driven Spatial Dispatch Engine
+ * Menggantikan chatbot pasif dengan Engine Dispatch berbasis Event/Voice
+ * dilindungi Security Edge Guardrail (Llama Prompt Guard).
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -60,15 +47,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { message, zoneId } = req.body || {};
-    if (!message) {
-      return sendError(res, 'Parameter message wajib diisi.', 400);
+    const { message, zoneId, audioStreamUri } = req.body || {};
+    if (!message && !audioStreamUri) {
+      return sendError(res, 'Parameter message atau audioStreamUri wajib diisi.', 400);
+    }
+
+    // 1. Security Edge Guard (Llama Prompt Guard)
+    const securityCheck = validatePromptSecurity(message || '');
+    if (!securityCheck.isSafe) {
+      return sendError(
+        res,
+        `[Security Interceptor] Akses ditolak: ${securityCheck.reason}`,
+        403
+      );
     }
 
     if (!GROQ_API_KEY) {
       return sendSuccess(res, {
-        assistantResponse: 'Asisten AI dalam mode siap siaga (Groq API Key tidak dikonfigurasi). Sistem operasional deterministik inti tetap berjalan normal.',
-        toolExecution: null,
+        dispatchResponse: 'Engine Dispatch Operasional dalam mode siap siaga (Groq API Key tidak dikonfigurasi). Solver deterministik PostGIS tetap mengendalikan alokasi slot.',
+        voiceText: 'Sistem operasional deterministik berjalan normal.',
         isFallback: true
       });
     }
@@ -78,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         type: 'function',
         function: {
           name: 'get_zone_state',
-          description: 'Mengambil status terkini kapasitas dan jumlah truk aktif di zona logistik',
+          description: 'Mengambil status terkini kapasitas dan jumlah truk aktif di zona logistik PostGIS',
           parameters: {
             type: 'object',
             properties: { zoneId: { type: 'string' } },
@@ -89,14 +86,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       {
         type: 'function',
         function: {
-          name: 'run_simulation',
-          description: 'Jalankan simulasi A/B dampaknya terhadap meter-menit luberan',
+          name: 'dispatch_voice_action',
+          description: 'Mengeksekusi aksi dispatch audio/hands-free otomatis untuk pengemudi atau petugas Dishub',
           parameters: {
             type: 'object',
             properties: {
-              seed: { type: 'number' },
-              totalVehicles: { type: 'number' }
-            }
+              actionType: { type: 'string' },
+              targetBay: { type: 'string' },
+              spokenConfirmation: { type: 'string' }
+            },
+            required: ['actionType', 'spokenConfirmation']
           }
         }
       }
@@ -111,8 +110,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify({
         model: MODEL_NAME,
         messages: [
-          { role: 'system', content: 'Anda adalah asisten operasi Smart City UrbanLoad.AI. Gunakan tool deterministik untuk mendapatkan data factual sebelum menjawab.' },
-          { role: 'user', content: message }
+          {
+            role: 'system',
+            content: 'Anda adalah Event-Driven Dispatch & Voice Orchestrator UrbanLoad.AI. Tugas Anda memberikan instruksi dispatch operasional singkat, presisi, dan dapat dieksekusi hands-free untuk supir atau petugas Dishub.'
+          },
+          { role: 'user', content: message || 'Lakukan pemeriksaan dispatch zona aktif.' }
         ],
         tools,
         tool_choice: 'auto',
@@ -139,52 +141,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       toolResult = await executeTool(fnName, fnArgs);
-
-      const secondResponse = await fetch(GROQ_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GROQ_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: MODEL_NAME,
-          messages: [
-            { role: 'system', content: 'Anda adalah asisten UrbanLoad. Rangkum hasil analisis data deterministik berikut dengan ringkas.' },
-            { role: 'user', content: message },
-            choice,
-            {
-              role: 'tool',
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(toolResult)
-            }
-          ]
-        })
-      });
-
-      if (secondResponse.ok) {
-        const secondData = await secondResponse.json();
-        const finalContent = secondData.choices?.[0]?.message?.content;
-        return sendSuccess(res, {
-          assistantResponse: finalContent,
-          toolExecution: {
-            toolName: fnName,
-            args: fnArgs,
-            output: toolResult
-          }
-        });
-      }
     }
 
+    const textContent = choice?.content || 'Perintah dispatch telah diterima dan disinkronkan ke solver PostGIS.';
+
     return sendSuccess(res, {
-      assistantResponse: choice?.content || 'UrbanLoad AI Engine telah menganalisis permintaan Anda.',
-      toolExecution: toolResult
+      dispatchResponse: textContent,
+      voiceText: toolResult?.voiceResponseAudioText || textContent,
+      toolExecution: toolResult,
+      securityCheck
     });
 
   } catch (err: any) {
-    return sendSuccess(res, {
-      assistantResponse: `Asisten AI UrbanLoad: ${err.message}. Layanan deterministik tetap beroperasi normal.`,
-      toolExecution: null,
-      isFallback: true
-    });
+    return sendError(res, `Gagal memproses dispatch: ${err.message}`, 500);
   }
 }

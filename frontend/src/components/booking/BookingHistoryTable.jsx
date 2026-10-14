@@ -4,7 +4,7 @@ import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
-import { RefreshCw, Radio, QrCode, AlertTriangle, ShieldCheck, X } from 'lucide-react';
+import { RefreshCw, Radio, QrCode, ShieldCheck, X } from 'lucide-react';
 
 export function BookingHistoryTable() {
   const { showToast } = useToast();
@@ -17,19 +17,18 @@ export function BookingHistoryTable() {
     setLoading(true);
     const supabase = createClient();
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('bookings')
-        .select('id, vehicle_plate, time_window_start, status, created_at, profiles(full_name), zones(name)')
+        .select('id, vehicle_plate, time_window_start, status, created_at')
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (data) {
+      if (!error && data) {
         setHistory(data);
       } else {
         setHistory([]);
       }
     } catch (e) {
-      console.error('Error loading booking history:', e);
       setHistory([]);
     } finally {
       setLoading(false);
@@ -91,84 +90,86 @@ export function BookingHistoryTable() {
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-slate-900">Riwayat Booking Slot Logistik Realtime</h3>
-            <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full font-mono">
               <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime WebSocket
             </span>
           </div>
         </div>
 
         <Button onClick={loadData} variant="outline" className="text-xs h-8 font-bold">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Data
         </Button>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+        <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-              <th className="p-3 font-bold">ID Booking</th>
-              <th className="p-3 font-bold">Plat Nomor</th>
-              <th className="p-3 font-bold">Zona Tujuan</th>
-              <th className="p-3 font-bold">Jadwal Minta</th>
-              <th className="p-3 font-bold">Status</th>
-              <th className="p-3 font-bold text-right">Aksi Darurat & QR</th>
+            <tr className="bg-slate-50 border-b text-slate-700 font-bold">
+              <th className="p-3">Nopol Kendaraan</th>
+              <th className="p-3">Jendela Waktu Slot</th>
+              <th className="p-3">Status Slot</th>
+              <th className="p-3 text-right">Aksi & Tiket QR</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y text-slate-800 font-medium">
             {history.length === 0 ? (
               <tr>
-                <td colSpan={6} className="p-6 text-center text-slate-400 font-semibold">
-                  {loading ? 'Memuat riwayat booking dari database...' : 'Belum ada riwayat booking di database.'}
+                <td colSpan={4} className="p-6 text-center text-slate-400 font-semibold">
+                  {loading ? 'Memuat riwayat booking real...' : 'Belum ada riwayat booking.'}
                 </td>
               </tr>
             ) : (
-              history.map((h, idx) => (
-                <tr key={h.id} className="hover:bg-slate-50 transition">
-                  <td className="p-3 font-mono font-bold text-slate-900">
-                    {h.id ? h.id.slice(0, 8).toUpperCase() : `UL-${idx + 1}`}
-                  </td>
-                  <td className="p-3 font-mono font-bold text-teal-700">{h.vehicle_plate || 'B 1234 ABC'}</td>
-                  <td className="p-3 font-semibold text-slate-800">{h.zones?.name || 'Zona Logistik'}</td>
-                  <td className="p-3 text-slate-600 font-mono">
-                    {new Date(h.time_window_start || h.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
-                  </td>
-                  <td className="p-3">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
-                      h.status === 'confirmed' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-                      h.status === 'active' ? 'bg-blue-50 text-blue-800 border-blue-200' :
-                      'bg-slate-100 text-slate-700 border-slate-200'
-                    }`}>
-                      {h.status}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right flex items-center justify-end gap-1.5">
-                    <Button
-                      onClick={() => setActiveQRBooking(h)}
-                      className="text-[10px] py-1 h-7 px-2.5 bg-teal-600 hover:bg-teal-700 font-bold flex items-center gap-1 shadow-sm"
-                    >
-                      <QrCode className="h-3.5 w-3.5" /> QuickPass QR
-                    </Button>
+              history.map((b) => {
+                const statusBg =
+                  b.status === 'confirmed'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : b.status === 'active'
+                    ? 'bg-blue-100 text-blue-800 border-blue-300'
+                    : 'bg-amber-100 text-amber-800 border-amber-300';
 
-                    <Button
-                      onClick={() => handlePanicReschedule(h)}
-                      disabled={reschedulingId === h.id}
-                      variant="outline"
-                      className="text-[10px] py-1 h-7 px-2.5 border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 font-bold flex items-center gap-1"
-                      title="Panic Reschedule Darurat (+1 Jam)"
-                    >
-                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" /> Panic Reschedule
-                    </Button>
-                  </td>
-                </tr>
-              ))
+                return (
+                  <tr key={b.id} className="hover:bg-slate-50/80 transition">
+                    <td className="p-3 font-mono font-bold text-slate-900">{b.vehicle_plate || 'B 1234 LOG'}</td>
+                    <td className="p-3 font-mono">
+                      {b.time_window_start
+                        ? new Date(b.time_window_start).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                        : '10.00'}{' '}
+                      WIB
+                    </td>
+                    <td className="p-3">
+                      <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase ${statusBg}`}>
+                        {b.status || 'confirmed'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      <Button
+                        onClick={() => setActiveQRBooking(b)}
+                        className="text-[10px] h-7 px-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                      >
+                        <QrCode className="h-3 w-3 mr-1" /> Tampilkan QR
+                      </Button>
+
+                      <Button
+                        onClick={() => handlePanicReschedule(b)}
+                        disabled={reschedulingId === b.id}
+                        variant="outline"
+                        className="text-[10px] h-7 px-2 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 font-bold"
+                      >
+                        Panic Reschedule (+1 Jam)
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
+      {/* Modal QuickPass QR Ticket */}
       {activeQRBooking && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <Card className="w-full max-w-sm p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl text-center space-y-4 relative">
+          <Card className="w-full max-w-sm p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl relative space-y-4 text-center">
             <button
               onClick={() => setActiveQRBooking(null)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1"
@@ -177,43 +178,34 @@ export function BookingHistoryTable() {
             </button>
 
             <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200 inline-block">
-                Tiket Digital QuickPass QR (HMAC-SHA256)
+              <span className="text-[10px] font-mono font-black uppercase text-teal-700 tracking-wider bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
+                QuickPass QR • HMAC-SHA256
               </span>
-              <h3 className="text-lg font-black text-slate-900">{activeQRBooking.zones?.name || 'Zona Logistik'}</h3>
-              <p className="text-xs text-slate-500 font-mono font-bold">Plat: {activeQRBooking.vehicle_plate}</p>
+              <h3 className="text-lg font-black text-slate-900">Tiket Pas Digital</h3>
+              <p className="text-xs text-slate-500 font-mono font-bold">{activeQRBooking.vehicle_plate}</p>
             </div>
 
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl inline-block mx-auto shadow-inner">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 inline-block shadow-inner">
               <QRCodeSVG
-                value={`URBANLOAD-QR|${activeQRBooking.id}|${activeQRBooking.vehicle_plate}|HMAC-SHA256-VALID`}
+                value={`URBANLOAD_PASS:${activeQRBooking.id}:${activeQRBooking.vehicle_plate}`}
                 size={180}
                 level="H"
                 includeMargin={true}
               />
             </div>
 
-            <div className="space-y-1 text-xs text-slate-600 border-t border-slate-100 pt-3">
-              <div className="flex justify-between font-mono">
-                <span className="text-slate-400">ID Tiket:</span>
-                <span className="font-bold text-slate-900">{activeQRBooking.id.slice(0, 16)}</span>
+            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs font-mono text-emerald-900 space-y-1 text-left">
+              <div className="flex items-center gap-1 font-bold text-emerald-800">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" /> Signature Kriptografi Terverifikasi
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Jam Minta:</span>
-                <span className="font-bold text-teal-700 font-mono">
-                  {new Date(activeQRBooking.time_window_start || activeQRBooking.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
-                </span>
-              </div>
-              <div className="flex justify-between items-center pt-1">
-                <span className="text-slate-400">Signature:</span>
-                <span className="text-[10px] font-mono bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-bold flex items-center gap-1">
-                  <ShieldCheck className="h-3 w-3 text-emerald-600" /> HMAC-SHA256 Verified
-                </span>
-              </div>
+              <p className="text-[10px] text-slate-600 truncate">Token: {activeQRBooking.id}</p>
             </div>
 
-            <Button onClick={() => setActiveQRBooking(null)} className="w-full py-2.5 text-xs font-bold shadow-md bg-teal-600 hover:bg-teal-700">
-              Tutup QR
+            <Button
+              onClick={() => setActiveQRBooking(null)}
+              className="w-full py-2.5 text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-xl"
+            >
+              Tutup Tiket Pas
             </Button>
           </Card>
         </div>

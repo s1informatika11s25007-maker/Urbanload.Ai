@@ -165,7 +165,7 @@ export default function Register() {
               <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
               <div>
                 <span className="font-bold text-slate-900 block">Registrasi Otomatis & Terverifikasi</span>
-                <span className="text-[11px] text-slate-500">Aktivasi Akun Instan & Terhubung Database Supabase</span>
+                <span className="text-[11px] text-slate-500">Aktivasi Akun Instan & Terhubung Database Realtime</span>
               </div>
             </div>
 

@@ -13,7 +13,6 @@ import {
   Cpu,
   Phone,
   Users,
-  CheckCircle2,
   ArrowRight,
   Eye,
   EyeOff,
@@ -326,13 +325,10 @@ export default function Login() {
                 <div>
                   <span className="text-xs font-black text-white block">Pilih Akun Per Role</span>
                   <span className="text-[10px] text-teal-300 font-mono">
-                    {dbAccounts.length} Role Terdaftar • 1 Akun Resmi Per Peran
+                    Pilih akun terdaftar per peran
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] font-mono font-extrabold bg-teal-500/20 text-teal-300 border border-teal-500/40 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                Live DB
-              </span>
             </div>
 
             {/* Select Input Dropdown */}
@@ -358,56 +354,12 @@ export default function Login() {
 
                   return (
                     <option key={acc.id} value={acc.id} className="bg-slate-900 text-white font-medium">
-                      [{roleLabel}] {acc.full_name} — No. HP: {acc.phone_number || '-'} ({acc.email || 'Tanpa Email'})
+                      {roleLabel}
                     </option>
                   );
                 })}
               </select>
             </div>
-
-            {/* Selected Account Profile Detail Card */}
-            {selectedAccountProfile && (
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-teal-700/60 backdrop-blur-md space-y-2.5 relative z-10 transition-all duration-200">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <div className="flex items-center gap-2.5">
-                    <div className="h-8 w-8 rounded-lg bg-teal-500/20 text-teal-300 border border-teal-500/40 flex items-center justify-center font-black text-xs">
-                      {selectedAccountProfile.full_name?.charAt(0) || 'A'}
-                    </div>
-                    <div>
-                      <span className="font-extrabold text-white text-xs flex items-center gap-1.5">
-                        {selectedAccountProfile.full_name}
-                        <CheckCircle2 className="h-3.5 w-3.5 text-teal-400" />
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-mono block">
-                        Terverifikasi di Supabase Auth & Profiles
-                      </span>
-                    </div>
-                  </div>
-
-                  <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-md bg-teal-500/20 text-teal-300 border border-teal-500/40">
-                    {selectedAccountProfile.role === 'city_admin'
-                      ? 'Admin Kota'
-                      : selectedAccountProfile.role === 'admin'
-                      ? 'System Admin'
-                      : selectedAccountProfile.role === 'dishub_officer'
-                      ? 'Petugas Dishub'
-                      : 'Kurir'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800 space-y-0.5">
-                    <span className="text-[9px] text-slate-400 block font-sans font-bold uppercase">No. Handphone</span>
-                    <span className="text-teal-200 font-bold block truncate">{selectedAccountProfile.phone_number || '-'}</span>
-                  </div>
-
-                  <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800 space-y-0.5">
-                    <span className="text-[9px] text-slate-400 block font-sans font-bold uppercase">Alamat Email</span>
-                    <span className="text-teal-200 font-bold block truncate">{selectedAccountProfile.email || '-'}</span>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Role Selector Tabs */}

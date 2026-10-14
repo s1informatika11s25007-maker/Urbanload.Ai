@@ -10,11 +10,24 @@ const supabaseAnonKey =
   import.meta.env.SUPABASE_ANON_KEY ||
   '';
 
+let clientInstance = null;
+
+/**
+ * Singleton Supabase Client Factory
+ * Guarantees a single GoTrueClient instance across the entire application runtime
+ * to prevent duplicate auth instance warnings in browser console.
+ */
 export function createClient() {
-  if (!supabaseAnonKey) {
-    console.error(
-      '[Supabase Client Error] Supabase Anon Key is missing. Ensure SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY is set in Vercel environment variables.'
-    );
+  if (!clientInstance) {
+    clientInstance = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    });
   }
-  return createSupabaseClient(supabaseUrl, supabaseAnonKey);
+  return clientInstance;
 }
+
+export const supabase = createClient();

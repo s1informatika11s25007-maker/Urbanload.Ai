@@ -7,6 +7,9 @@ import { predictUnloadingDuration } from '../../../src/engine/predictor';
 import { solveArrivalSlot, ExistingBooking, SolverInput } from '../../../src/engine/solver';
 import { createQuickPassQR } from '../../../src/engine/qr';
 
+/**
+ * [GAP ANALYSIS #2 & #3 FIX] Dynamic Solver Allocation with ODOL Gatekeeper & Pigovian Carbon Toll
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -30,6 +33,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!zoneId || !requestedStart) {
       return sendError(res, 'Parameter zoneId dan requestedStart wajib diisi.', 400);
+    }
+
+    // 1. ODOL (Over Dimension Over Loading) Gatekeeper Check
+    const weightKg = Number(truckDimension.weightKg) || 8000;
+    const lengthCm = Number(truckDimension.lengthCm) || 800;
+    const isODOL = weightKg > 15000 || lengthCm > 1200;
+
+    if (isODOL && !notes.toLowerCase().includes('priority_pass')) {
+      return sendError(
+        res,
+        `[AI-WIM Gatekeeper Intercept] Kendaraan Nopol ${vehiclePlate} terdeteksi Over Dimension Over Loading (${(weightKg/1000).toFixed(1)} Ton, ${(lengthCm/100).toFixed(1)}m). Akses bay ditolak. Silakan alihkan ke Staging Zone luar kota.`,
+        422
+      );
     }
 
     const zoneRows = await queryDb('SELECT * FROM public.zones WHERE id = $1', [zoneId]);
@@ -99,6 +115,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const slot = solverOutput.selectedSlot;
 
+    // 2. Dynamic Pigovian Carbon Toll Calculation
+    const reqHour = reqStartDate.getHours();
+    const isPeakHour = (reqHour >= 8 && reqHour <= 12) || (reqHour >= 16 && reqHour <= 19);
+    const isOffPeakNight = reqHour >= 22 || reqHour <= 5;
+    const isElectricVehicle = cargoType.toLowerCase().includes('ev') || notes.toLowerCase().includes('ev');
+
+    let basePigovianToll = isPeakHour ? 50000 : isOffPeakNight ? 0 : 15000;
+    let carbonDiscountPercent = isElectricVehicle ? 100 : isOffPeakNight ? 50 : 0;
+    let finalPigovianToll = Math.max(0, basePigovianToll * (1 - carbonDiscountPercent / 100));
+
     let activeUserId = userId;
     if (!activeUserId) {
       const activeProfiles = await queryDb('SELECT id FROM public.profiles ORDER BY created_at DESC LIMIT 1');
@@ -115,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         activeUserId,
         zoneId,
         slot.bayId,
-        JSON.stringify(truckDimension),
+        JSON.stringify({ ...truckDimension, pigovianTollAmount: finalPigovianToll, isEV: isElectricVehicle }),
         slot.assignedStart.toISOString(),
         slot.assignedEnd.toISOString(),
         vehiclePlate || 'B-9000-UL',
@@ -151,7 +177,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         zoneId,
         slot.bayId,
         solverOutput.status,
-        JSON.stringify({ requestedStart, requestedEnd, truckDimension, cargoType }),
+        JSON.stringify({ requestedStart, requestedEnd, truckDimension, cargoType, finalPigovianToll }),
         'v1.0.0-statistical-solver',
         JSON.stringify({ maxTimeoutMs, kerbCapacityMeters, p90DurationMin: pred.p90Minutes }),
         slot.objectiveScore,
@@ -174,6 +200,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         stagingReleaseTime: slot.stagingReleaseTime?.toISOString()
       },
       durationPrediction: pred,
+      pigovianPricing: {
+        isPeakHour,
+        isElectricVehicle,
+        baseTollRp: basePigovianToll,
+        carbonDiscountPercent,
+        finalTollRp: finalPigovianToll
+      },
       solver: {
         status: solverOutput.status,
         alternativesEvaluated: solverOutput.alternativesEvaluated,

@@ -3,17 +3,45 @@ import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { useToast } from '../components/ui/ToastNotification.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { ShieldAlert, MapPin, UploadCloud, AlertOctagon, CheckCircle2, Truck, Camera, ShieldCheck } from 'lucide-react';
+import { getDetailedDeviceLocation } from '../lib/location-helper.js';
+import { MapLocationPickerModal } from '../components/location/MapLocationPickerModal.jsx';
+import { ShieldAlert, UploadCloud, AlertOctagon, CheckCircle2, Navigation, Loader2, MapPin } from 'lucide-react';
 
 export default function PublicReportPage() {
   const { showToast } = useToast();
   const [violationType, setViolationType] = useState('parkir_bahu_jalan');
   const [vehiclePlate, setVehiclePlate] = useState('');
-  const [locationName, setLocationName] = useState('Pasar Tanah Abang - Bahu Jalan Cluster A');
+  const [locationName, setLocationName] = useState('Pasar Tanah Abang, Jakarta Pusat');
   const [description, setDescription] = useState('');
   const [photoPreview, setPhotoPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [submittedReport, setSubmittedReport] = useState(null);
+
+  // Map Picker Modal State
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
+  // "Lokasi Saya" Ultra-Fast & High-Accuracy GPS Handler
+  const handleGetCurrentLocation = async () => {
+    setLoadingLocation(true);
+    try {
+      const loc = await getDetailedDeviceLocation();
+      setLocationName(loc.formattedAddress);
+      showToast({
+        title: 'Lokasi Saya Ditemukan Presisi',
+        message: loc.formattedAddress,
+        type: 'success',
+      });
+    } catch (err) {
+      showToast({
+        title: 'Izin Lokasi Perlu Diaktifkan',
+        message: err.message || 'Klik ikon gembok/izin di sebelah kiri URL browser untuk mengizinkan Akses Lokasi.',
+        type: 'warning',
+      });
+    } finally {
+      setLoadingLocation(false);
+    }
+  };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
@@ -153,19 +181,44 @@ export default function PublicReportPage() {
                 />
               </div>
 
-              {/* Lokasi / Posisi GPS */}
+              {/* Lokasi / Posisi GPS - Clean Input + Pilih dari Peta Interaktif + Lokasi Saya */}
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-800 block">Lokasi Kejadiaan / Zona *</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    value={locationName}
-                    onChange={(e) => setLocationName(e.target.value)}
-                    className="w-full p-3 pl-9 bg-slate-50 border border-slate-200 rounded-2xl font-medium text-slate-900 outline-none focus:border-red-500 transition"
-                  />
-                  <MapPin className="h-4 w-4 text-red-500 absolute left-3 top-3.5" />
+                <div className="flex justify-between items-center">
+                  <label className="font-bold text-slate-800 block">Lokasi Kejadiaan / Zona *</label>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowMapPicker(true)}
+                      className="text-[11px] font-bold text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl border border-indigo-200 flex items-center gap-1 transition shadow-sm"
+                    >
+                      <MapPin className="h-3 w-3 text-indigo-600" />
+                      <span>Pilih Dari Peta</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleGetCurrentLocation}
+                      disabled={loadingLocation}
+                      className="text-[11px] font-bold text-teal-700 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-xl border border-teal-200 flex items-center gap-1 transition shadow-sm"
+                    >
+                      {loadingLocation ? (
+                        <Loader2 className="h-3 w-3 animate-spin text-teal-600" />
+                      ) : (
+                        <Navigation className="h-3 w-3 text-teal-600" />
+                      )}
+                      <span>Lokasi Saya</span>
+                    </button>
+                  </div>
                 </div>
+
+                <input
+                  type="text"
+                  required
+                  value={locationName}
+                  onChange={(e) => setLocationName(e.target.value)}
+                  placeholder="Ketik alamat/jalan manual atau pilih dari peta..."
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl font-medium text-slate-900 outline-none focus:border-red-500 transition"
+                />
               </div>
             </div>
 
@@ -217,6 +270,17 @@ export default function PublicReportPage() {
           </form>
         </Card>
       )}
+
+      {/* Map Location Picker Modal */}
+      <MapLocationPickerModal
+        isOpen={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        initialLocationName={locationName}
+        onSelectLocation={(selectedAddress) => {
+          setLocationName(selectedAddress);
+          showToast({ title: 'Lokasi Peta Dipilih', message: selectedAddress, type: 'success' });
+        }}
+      />
     </div>
   );
 }

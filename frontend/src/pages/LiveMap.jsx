@@ -2,7 +2,6 @@ import React, { Suspense, useEffect, useState, lazy } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Maximize2, Radio, Loader2, Eye, Shield, Building2, Truck, Cpu } from 'lucide-react';
 import { createClient } from '../lib/supabase/client.js';
-import { CityAdminPanel } from '../components/analytics/CityAdminPanel.jsx';
 
 const LiveMapHero = lazy(() => import('../components/livemap/LiveMapHero.jsx').then(m => ({ default: m.LiveMapHero })));
 const StatsSidebar = lazy(() => import('../components/livemap/StatsSidebar.jsx').then(m => ({ default: m.StatsSidebar })));
@@ -46,7 +45,7 @@ function LiveMapMainContent() {
             ) : userRole === 'city_admin' ? (
               <>
                 <Building2 className="h-4 w-4 text-teal-600 shrink-0" />
-                <span>Modul Admin Kota (`city_admin`) — Pemantauan Spasial Kota, Audit Log Keputusan Solver & Simulator Kebijakan What-If</span>
+                <span>Modul Admin Kota (`city_admin`) — Pemantauan Spasial Kota & Manajemen Zona Logistik</span>
               </>
             ) : userRole === 'admin' ? (
               <>
@@ -71,10 +70,10 @@ function LiveMapMainContent() {
         <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-xs shadow-sm">
           <div className="flex items-center gap-2 font-bold">
             <Eye className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>Mode Live Preview Publik — Tampilan Read-Only Kepadatan & Telemetri Teragregasi Kota untuk Pengunjung</span>
+            <span>Mode Live Map Publik — Tampilan Read-Only Kepadatan & Telemetri Teragregasi Kota</span>
           </div>
           <span className="bg-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold border border-emerald-200 text-emerald-800">
-            Tanpa Akun (Read-Only Spectator)
+            Akses Publik (Read-Only)
           </span>
         </div>
       )}
@@ -122,9 +121,6 @@ function LiveMapMainContent() {
       <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Feed Laporan Masyarakat...</div>}>
         <CitizenReportsFeed />
       </Suspense>
-
-      {/* Section 4: Executive Analytics, Decision Audit Logs, What-If, System Configs */}
-      <CityAdminPanel />
     </div>
   );
 }
