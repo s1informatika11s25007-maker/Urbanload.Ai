@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { useToast } from '../components/ui/ToastNotification.jsx';
-import { createClient } from '../lib/supabase/client.js';
+import { createCitizenReport, compressImage } from '../lib/api/reports.js';
 import { getDetailedDeviceLocation } from '../lib/location-helper.js';
 import { MapLocationPickerModal } from '../components/location/MapLocationPickerModal.jsx';
 import { ShieldAlert, UploadCloud, AlertOctagon, CheckCircle2, Navigation, Loader2, MapPin } from 'lucide-react';
@@ -44,14 +44,11 @@ export default function PublicReportPage() {
     }
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const compressedDataUrl = await compressImage(file);
+      setPhotoPreview(compressedDataUrl);
     }
   };
 
@@ -64,34 +61,29 @@ export default function PublicReportPage() {
       : violationType;
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.from('citizen_reports').insert({
-        violation_type: finalViolationType,
-        vehicle_plate: vehiclePlate ? vehiclePlate.toUpperCase() : null,
-        location_name: locationName || 'Bahu Jalan Perkotaan',
+      const res = await createCitizenReport({
+        violationType: finalViolationType,
+        vehiclePlate: vehiclePlate ? vehiclePlate.toUpperCase() : null,
+        locationName: locationName || 'Bahu Jalan Perkotaan',
         description: description || null,
-        photo_url: photoPreview || null,
-        status: 'pending',
-      }).select().single();
+        photoUrl: photoPreview || null,
+      });
 
-      if (!error && data) {
-        setSubmittedReport(data);
+      if (res && res.data) {
+        setSubmittedReport(res.data);
         showToast({
           title: 'Laporan Publik Berhasil Disimpan!',
-          message: `Tiket ID: ${data.id.slice(0, 8)}. Tim Petugas Dishub telah menerima laporan dan lokasi GPS.`,
-          type: 'success',
-        });
-      } else {
-        const fallbackId = `RPT-${Math.floor(100000 + Math.random() * 900000)}`;
-        setSubmittedReport({ id: fallbackId, location_name: locationName });
-        showToast({
-          title: 'Laporan Terkirim Ke Petugas Dishub',
-          message: 'Laporan Anda telah berhasil diteruskan ke Petugas Dishub Lapangan.',
+          message: `Tiket ID: ${res.data.id ? res.data.id.slice(0, 8) : 'DISPATCH'}. Tim Petugas Dishub telah menerima laporan dan lokasi GPS.`,
           type: 'success',
         });
       }
     } catch (err) {
       console.error('Error submitting report:', err);
+      showToast({
+        title: 'Gagal Menyimpan Laporan',
+        message: err.message || 'Terjadi kesalahan saat menghubungkan ke database.',
+        type: 'error',
+      });
     } finally {
       setSubmitting(false);
     }

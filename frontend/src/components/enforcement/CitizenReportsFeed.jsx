@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { useToast } from '../ui/ToastNotification.jsx';
+import { fetchCitizenReports, updateCitizenReportStatus } from '../../lib/api/reports.js';
 import { createClient } from '../../lib/supabase/client.js';
 import { Radio, RefreshCw, ShieldAlert, CheckCircle2, Clock, XCircle, MapPin, Eye, AlertOctagon } from 'lucide-react';
 
@@ -14,18 +15,8 @@ export function CitizenReportsFeed() {
   const loadReports = async () => {
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('citizen_reports')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (data) {
-        setReports(data);
-      } else {
-        setReports([]);
-      }
+      const data = await fetchCitizenReports();
+      setReports(data || []);
     } catch (e) {
       console.error('Error fetching citizen reports:', e);
       setReports([]);
@@ -51,13 +42,8 @@ export function CitizenReportsFeed() {
 
   const updateStatus = async (id, newStatus) => {
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('citizen_reports')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', id);
-
-      if (!error) {
+      const res = await updateCitizenReportStatus(id, newStatus);
+      if (res && res.success) {
         showToast({
           title: 'Status Laporan Diperbarui',
           message: `Laporan #${id.slice(0, 8)} kini berstatus "${newStatus.toUpperCase()}".`,
@@ -67,6 +53,11 @@ export function CitizenReportsFeed() {
       }
     } catch (e) {
       console.error('Error updating report status:', e);
+      showToast({
+        title: 'Gagal Memperbarui Status',
+        message: e.message || 'Terjadi kesalahan saat memperbarui database.',
+        type: 'error',
+      });
     }
   };
 

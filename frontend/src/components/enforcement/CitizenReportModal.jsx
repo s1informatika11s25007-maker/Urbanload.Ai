@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { useToast } from '../ui/ToastNotification.jsx';
-import { createClient } from '../../lib/supabase/client.js';
+import { createCitizenReport, compressImage } from '../../lib/api/reports.js';
 import { getDetailedDeviceLocation } from '../../lib/location-helper.js';
 import { MapLocationPickerModal } from '../location/MapLocationPickerModal.jsx';
 import { ShieldAlert, X, AlertOctagon, UploadCloud, Navigation, Loader2, MapPin } from 'lucide-react';
@@ -45,14 +45,11 @@ export function CitizenReportModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+      const compressedDataUrl = await compressImage(file);
+      setPhotoPreview(compressedDataUrl);
     }
   };
 
@@ -65,42 +62,32 @@ export function CitizenReportModal({ isOpen, onClose }) {
       : violationType;
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.from('citizen_reports').insert({
-        violation_type: finalViolationType,
-        vehicle_plate: vehiclePlate ? vehiclePlate.toUpperCase() : null,
-        location_name: locationName || 'Bahu Jalan Perkotaan',
+      const res = await createCitizenReport({
+        violationType: finalViolationType,
+        vehiclePlate: vehiclePlate ? vehiclePlate.toUpperCase() : null,
+        locationName: locationName || 'Bahu Jalan Perkotaan',
         description: description || null,
-        photo_url: photoPreview || null,
-        status: 'pending',
-      }).select().single();
+        photoUrl: photoPreview || null,
+      });
 
-      if (!error && data) {
+      if (res && res.data) {
         showToast({
           title: 'Laporan Publik Berhasil Disimpan!',
-          message: `Tiket ID: ${data.id.slice(0, 8)}. Tim Petugas Dishub telah menerima laporan dan dapat menindaklanjutinya di dashboard.`,
+          message: `Tiket ID: ${res.data.id ? res.data.id.slice(0, 8) : 'DISPATCH'}. Tim Petugas Dishub telah menerima laporan.`,
           type: 'success',
         });
         setVehiclePlate('');
         setDescription('');
         setPhotoPreview(null);
         onClose();
-      } else {
-        showToast({
-          title: 'Laporan Berhasil Terkirim',
-          message: 'Laporan Anda telah berhasil diteruskan ke Petugas Dishub Lapangan.',
-          type: 'success',
-        });
-        onClose();
       }
     } catch (err) {
       console.error('Error submitting citizen report:', err);
       showToast({
-        title: 'Laporan Terkirim',
-        message: 'Laporan publik berhasil diteruskan ke tim penindak Dishub.',
-        type: 'success',
+        title: 'Gagal Menyimpan Laporan',
+        message: err.message || 'Terjadi kesalahan saat menghubungkan ke database.',
+        type: 'error',
       });
-      onClose();
     } finally {
       setSubmitting(false);
     }
