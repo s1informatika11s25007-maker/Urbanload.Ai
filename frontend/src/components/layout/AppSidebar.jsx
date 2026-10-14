@@ -400,58 +400,15 @@ export function AppSidebar() {
         )}
       </div>
 
-      {/* BAWAH KIRI POJOK: User Profile Card & Sign Out Popover Menu */}
-      <div className="p-3 border-t border-slate-800/80 relative" ref={popupRef}>
-        {/* User Account Popover Menu */}
-        {showUserPopup && (
-          <div className="absolute bottom-full left-3 mb-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl p-3.5 shadow-2xl space-y-3 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono font-bold text-teal-400 uppercase tracking-wider block">
-                Akun Terhubung
-              </span>
-              <p className="font-bold text-xs text-white truncate">{userProfile.name}</p>
-              <p className="text-[11px] text-slate-400 font-mono truncate">{userProfile.email || 'User Account'}</p>
-            </div>
-
-            <div className="flex items-center justify-between text-[10px] font-mono pt-2 border-t border-slate-800">
-              <span className="text-slate-400 uppercase font-bold">Role Terdaftar:</span>
-              <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 px-2 py-0.5 rounded font-bold uppercase">
-                {roleConfig.roleLabel}
-              </span>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="w-full py-2 px-3 rounded-xl bg-rose-900/60 hover:bg-rose-800 text-rose-200 font-bold text-xs transition border border-rose-700/50 flex items-center justify-center gap-1.5 shadow-sm mt-1"
-            >
-              <LogOut className="h-3.5 w-3.5" /> Keluar Akun
-            </button>
-          </div>
-        )}
-
-        {/* User Profile Card Button */}
+      {/* BAWAH KIRI POJOK: Tombol Keluar Akun Langsung (Bersih & Profesional Tanpa Duplikasi Profil Header) */}
+      <div className="p-3 border-t border-slate-800/80">
         <button
-          onClick={() => setShowUserPopup(!showUserPopup)}
-          className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 transition text-left group"
-          title="Kelola Akun & Keluar"
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/70 text-rose-300 border border-rose-800/50 font-bold text-xs transition shadow-sm group"
+          title="Keluar Akun"
         >
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="h-8 w-8 rounded-xl bg-teal-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow-sm">
-              {userProfile.initial}
-            </div>
-            {!collapsed && (
-              <div className="truncate text-xs leading-tight">
-                <span className="font-bold text-white block truncate">{userProfile.name}</span>
-                <span className="text-[10px] text-teal-300/90 font-mono block uppercase font-bold truncate">
-                  {roleConfig.roleLabel}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {!collapsed && (
-            <ChevronUp className={`h-4 w-4 text-slate-400 group-hover:text-white transition-transform duration-200 ${showUserPopup ? 'rotate-180 text-teal-400' : ''}`} />
-          )}
+          <LogOut className="h-4 w-4 text-rose-400 group-hover:scale-110 transition-transform" />
+          {!collapsed && <span>Keluar Akun</span>}
         </button>
       </div>
     </aside>
