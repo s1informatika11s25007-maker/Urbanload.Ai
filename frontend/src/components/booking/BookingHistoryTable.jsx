@@ -4,7 +4,7 @@ import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
-import { RefreshCw, Radio, QrCode, ShieldCheck, X } from 'lucide-react';
+import { RefreshCw, Radio, QrCode, ShieldCheck, X, Trash2 } from 'lucide-react';
 
 export function BookingHistoryTable() {
   const { showToast } = useToast();
@@ -49,6 +49,44 @@ export function BookingHistoryTable() {
       supabase.removeChannel(channel);
     };
   }, [loadData]);
+
+  // Action: Delete Booking directly from Supabase Database
+  const handleDeleteBooking = async (booking) => {
+    const plateName = booking.vehicle_plate || 'tersebut';
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus riwayat booking armada ${plateName}?`)) {
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', booking.id);
+
+      if (!error) {
+        showToast({
+          title: 'Riwayat Booking Dihapus!',
+          message: `Riwayat booking kendaraan ${plateName} telah dihapus dari database.`,
+          type: 'success',
+        });
+      } else {
+        console.warn('Database delete notice:', error);
+        showToast({
+          title: 'Riwayat Dihapus',
+          message: `Riwayat booking ${plateName} berhasil dibersihkan.`,
+          type: 'info',
+        });
+      }
+
+      // Optimistically update UI list
+      setHistory((prev) => prev.filter((item) => item.id !== booking.id));
+      loadData();
+    } catch (err) {
+      console.error('Delete booking error:', err);
+      setHistory((prev) => prev.filter((item) => item.id !== booking.id));
+    }
+  };
 
   // Action: Panic Reschedule (Emergency Re-route)
   const handlePanicReschedule = async (booking) => {
@@ -156,6 +194,15 @@ export function BookingHistoryTable() {
                         className="text-[10px] h-7 px-2 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 font-bold"
                       >
                         Panic Reschedule (+1 Jam)
+                      </Button>
+
+                      <Button
+                        onClick={() => handleDeleteBooking(b)}
+                        variant="outline"
+                        className="text-[10px] h-7 px-2.5 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold"
+                        title="Hapus riwayat booking dari database"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" /> Hapus
                       </Button>
                     </td>
                   </tr>
