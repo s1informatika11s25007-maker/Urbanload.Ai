@@ -517,9 +517,9 @@ export function LiveMapHero() {
 
     if (!showTrucks) return;
 
-    // Guaranteed operational truck list if database has no active bookings
+    // Guaranteed operational truck list filtered out of completed bookings
     const activeTrucksList = (realBookings && realBookings.length > 0)
-      ? realBookings
+      ? realBookings.filter((b) => b.status !== 'completed' && b.status !== 'dismissed')
       : [
           { id: 'trk-1', vehicle_plate: 'B 9234 UAI', status: 'confirmed', cargo_type: 'Sembako & Logistik', profiles: { full_name: 'Sutrisno (Kurir)' }, zones: { id: 'z1', name: 'Zona A - Pasar Tanah Abang' }, lng: 106.8150, lat: -6.1820 },
           { id: 'trk-2', vehicle_plate: 'B 9182 LOG', status: 'active', cargo_type: 'Kargo Kontainer 20ft', profiles: { full_name: 'Budi Santoso (Kurir)' }, zones: { id: 'z2', name: 'Zona B - Pelabuhan Priok' }, lng: 106.8820, lat: -6.1150 },
