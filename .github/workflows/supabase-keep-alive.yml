@@ -1,0 +1,45 @@
+name: Supabase Keep-Alive Ping
+
+on:
+  schedule:
+    # Runs every 2 days at 06:00 UTC to prevent Supabase Free Tier auto-pause/sleep
+    - cron: '0 6 */2 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+  push:
+    branches: [ main, master ]
+    paths:
+      - '.github/workflows/supabase-keep-alive.yml'
+
+jobs:
+  keep-alive:
+    name: Ping Supabase REST API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Lightweight Healthcheck Query
+        run: |
+          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
+          SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+
+          # Fallback values if GitHub Secrets are not configured in repository settings
+          if [ -z "$SUPABASE_URL" ]; then
+            SUPABASE_URL="https://gzxoodmqqrweknwghnzz.supabase.co"
+          fi
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6eG9vZG1xcXJ3ZWtud2dobnp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjg0MzUsImV4cCI6MjEwNTYwNDQzNX0.X9JGfp9wuiGTOiT1Boaooa8tB4kE2YpkrdYJ0G6EBss"
+          fi
+
+          echo "Pinging Supabase at $SUPABASE_URL..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/zones?select=id&limit=1")
+
+          echo "HTTP Response Status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ Supabase is active and awake! Inactivity timer reset successfully."
+            exit 0
+          else
+            echo "⚠️ Warning: Received HTTP status $HTTP_STATUS"
+            exit 1
+          fi
