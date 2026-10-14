@@ -10,6 +10,7 @@ import { ShieldAlert, UploadCloud, AlertOctagon, CheckCircle2, Navigation, Loade
 export default function PublicReportPage() {
   const { showToast } = useToast();
   const [violationType, setViolationType] = useState('parkir_bahu_jalan');
+  const [customViolationType, setCustomViolationType] = useState('');
   const [vehiclePlate, setVehiclePlate] = useState('');
   const [locationName, setLocationName] = useState('Pasar Tanah Abang, Jakarta Pusat');
   const [description, setDescription] = useState('');
@@ -58,10 +59,14 @@ export default function PublicReportPage() {
     e.preventDefault();
     setSubmitting(true);
 
+    const finalViolationType = (violationType === 'lainnya' && customViolationType.trim())
+      ? customViolationType.trim()
+      : violationType;
+
     try {
       const supabase = createClient();
       const { data, error } = await supabase.from('citizen_reports').insert({
-        violation_type: violationType,
+        violation_type: finalViolationType,
         vehicle_plate: vehiclePlate ? vehiclePlate.toUpperCase() : null,
         location_name: locationName || 'Bahu Jalan Perkotaan',
         description: description || null,
@@ -165,7 +170,19 @@ export default function PublicReportPage() {
                 <option value="blokir_bay">Truk Mengisi Bay Tanpa Reservasi (Tanpa QR / QR Palsu)</option>
                 <option value="overtime">Durasi Bongkar Muat Melebihi Batas Slot (Overtime)</option>
                 <option value="overdimension">Truk Melebihi Kapasitas Dimensi Zona (ODOL)</option>
+                <option value="lainnya">Lainnya (Ketik / Tulis Sendiri)</option>
               </select>
+
+              {violationType === 'lainnya' && (
+                <input
+                  type="text"
+                  required
+                  placeholder="Ketikkan kategori pelanggaran kustom Anda di sini..."
+                  value={customViolationType}
+                  onChange={(e) => setCustomViolationType(e.target.value)}
+                  className="w-full mt-2 p-3 bg-slate-50 border border-red-300 rounded-2xl font-bold text-slate-900 placeholder-slate-400 outline-none focus:border-red-500 transition animate-in fade-in duration-200"
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
