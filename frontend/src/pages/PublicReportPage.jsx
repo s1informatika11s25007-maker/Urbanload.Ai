@@ -93,23 +93,23 @@ export default function PublicReportPage() {
   };
 
   return (
-    <div className="min-h-[85vh] bg-slate-50 py-8 px-4 sm:px-6 max-w-4xl mx-auto space-y-6">
-      {/* Header Banner Halaman Publik */}
-      <div className="bg-gradient-to-r from-slate-900 via-red-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl space-y-3 relative overflow-hidden border border-red-900/40">
+    <div className="min-h-[85vh] bg-slate-50 py-8 px-4 sm:px-8 lg:px-12 w-full max-w-7xl mx-auto space-y-6">
+      {/* Header Banner Halaman Publik — Full Width Edge-to-Edge Responsif */}
+      <div className="bg-gradient-to-r from-slate-950 via-red-950 to-slate-950 text-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl space-y-3 relative overflow-hidden border border-red-900/50">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-red-600/30 border border-red-400/30 rounded-2xl text-red-400 shadow-inner">
+          <div className="p-3 bg-red-600/30 border border-red-400/30 rounded-2xl text-red-400 shadow-inner shrink-0">
             <ShieldAlert className="h-7 w-7 text-red-400 animate-pulse" />
           </div>
           <div>
             <span className="text-[10px] font-mono font-bold uppercase text-red-400 tracking-widest block">
-              CitizenReport Platform • Tanpa Persyaratan Login
+              CitizenReport Platform • Akses Publik Bebas Login
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-white">
+            <h1 className="text-xl sm:text-3xl font-black text-white">
               Portal Laporan Warga — Parkir Liar & Pemblokiran Bahu Jalan
             </h1>
           </div>
         </div>
-        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl font-medium">
+        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-3xl font-medium">
           Partisipasi publik melaporkan truk tanpa reservasi, parkir liar di bahu jalan, atau pemblokiran akses bongkar muat. Laporan Anda langsung diteruskan secara real-time ke Petugas Dishub Lapangan.
         </p>
       </div>
