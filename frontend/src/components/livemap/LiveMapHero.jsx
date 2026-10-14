@@ -145,7 +145,7 @@ export function LiveMapHero() {
   const watchPositionIdRef = useRef(null);
 
   // Control States
-  const [mapMode, setMapMode] = useState('street'); // 'street' | 'satellite' | 'dark'
+  const [mapMode, setMapMode] = useState('dark'); // Default Dark Container (#0B0F19) for Futuristic Command Center Map Twin
   const [is3D, setIs3D] = useState(true);
   const [autoRotate, setAutoRotate] = useState(false);
   const [showZones, setShowZones] = useState(true);

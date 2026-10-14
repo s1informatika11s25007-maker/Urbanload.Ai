@@ -160,9 +160,9 @@ function HeaderNavContent() {
         </nav>
       )}
 
-      {/* Kanan: Masuk / Daftar jika Belum Login */}
+      {/* Kanan: Realtime Bell & Profil jika Logged In / Publik Links jika Belum Login */}
       <div className="flex items-center gap-3">
-        {isPublicPage && (
+        {isPublicPage ? (
           <div className="flex items-center gap-2">
             <Link to="/login">
               <Button variant="outline" className="text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold">
@@ -174,6 +174,39 @@ function HeaderNavContent() {
                 <UserPlus className="h-3.5 w-3.5" /> Daftar
               </Button>
             </Link>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            {/* Realtime Database Sync Dot */}
+            <RealtimeStatusDot />
+
+            {/* Notification Bell */}
+            <NotificationBell />
+
+            {/* CitizenReport Alert Link Badge */}
+            <Link
+              to="/dishub/reports"
+              className="hidden sm:flex items-center gap-1.5 bg-rose-50 text-rose-800 border border-rose-200 px-2.5 py-1 rounded-xl text-xs font-extrabold hover:bg-rose-100 transition shadow-sm"
+              title="Pusat Laporan Pelanggaran CitizenReport"
+            >
+              <ShieldAlert className="h-3.5 w-3.5 text-rose-600 animate-pulse" />
+              <span>CitizenReport</span>
+            </Link>
+
+            {/* User Profile Badge */}
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
+              <div className="h-8 w-8 rounded-xl bg-teal-600 text-white font-black flex items-center justify-center text-xs shadow-sm">
+                {userProfile.initial}
+              </div>
+              <div className="hidden sm:block text-left leading-tight">
+                <span className="font-bold text-xs text-slate-900 block truncate max-w-[120px]">
+                  {userProfile.name}
+                </span>
+                <span className="text-[10px] text-teal-700 font-mono font-bold block uppercase">
+                  {userProfile.roleLabel}
+                </span>
+              </div>
+            </div>
           </div>
         )}
       </div>

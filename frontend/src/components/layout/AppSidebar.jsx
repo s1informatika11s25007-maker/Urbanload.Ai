@@ -272,7 +272,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col justify-between border-r border-slate-800 bg-slate-950 text-white transition-all duration-300 z-40 sticky top-0 h-screen shrink-0 ${
+      className={`hidden lg:flex flex-col justify-between border-r border-slate-800 bg-[#0F172A] text-slate-100 transition-all duration-300 z-40 sticky top-0 h-screen shrink-0 ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
@@ -297,7 +297,7 @@ export function AppSidebar() {
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition"
+            className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700/80 transition"
             title={collapsed ? 'Perluas Sidebar' : 'Menciutkan Sidebar'}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -307,7 +307,7 @@ export function AppSidebar() {
         {/* ROLE PERSPECTIVE BADGE HEADER */}
         {!collapsed && (
           <div className="px-3 pt-3 pb-1">
-            <div className={`p-2 rounded-xl border flex items-center justify-between text-xs font-mono ${roleConfig.badgeClass}`}>
+            <div className={`p-2 rounded-xl border flex items-center justify-between text-xs font-mono bg-slate-800/80 ${roleConfig.badgeClass}`}>
               <div className="flex items-center gap-1.5 truncate">
                 <span className="h-2 w-2 rounded-full bg-teal-400 animate-ping"></span>
                 <span className="font-extrabold uppercase text-[10px] tracking-wider truncate">{roleConfig.perspectiveBadge}</span>
@@ -322,17 +322,17 @@ export function AppSidebar() {
         {loadingProfile ? (
           <div className="space-y-3 p-1 animate-pulse">
             <div className="h-3 bg-slate-800/80 rounded w-20 mb-2"></div>
-            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
-            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
-            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+            <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
+            <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
+            <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
             <div className="h-3 bg-slate-800/80 rounded w-16 my-2"></div>
-            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+            <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
           </div>
         ) : (
           roleConfig.sections.map((section, idx) => (
             <div key={idx} className="space-y-1">
               {!collapsed && (
-                <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider px-3 block mb-1">
+                <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider px-3 block mb-1">
                   {section.title}
                 </span>
               )}
@@ -349,7 +349,7 @@ export function AppSidebar() {
                       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
                         isActive
                           ? 'bg-teal-600 text-white border-teal-500 shadow-md'
-                          : 'bg-gradient-to-r from-teal-900/60 to-emerald-900/60 hover:from-teal-800/80 hover:to-emerald-800/80 text-teal-200 border-teal-700/50'
+                          : 'bg-slate-800/90 hover:bg-slate-800 text-teal-200 border-teal-700/50'
                       }`}
                       title={item.label}
                     >
@@ -357,7 +357,7 @@ export function AppSidebar() {
                       {!collapsed && (
                         <div className="truncate">
                           <span className="block truncate">{item.label}</span>
-                          <span className="text-[9px] text-teal-300/70 font-mono block font-normal truncate">{item.desc}</span>
+                          <span className="text-[9px] text-teal-300/80 font-mono block font-normal truncate">{item.desc}</span>
                         </div>
                       )}
                     </Link>
@@ -370,25 +370,25 @@ export function AppSidebar() {
                     to={item.to}
                     className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
                       isActive
-                        ? roleConfig.activeBg
-                        : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+                        ? 'bg-teal-600 text-white shadow-md shadow-teal-900/40 border-r-4 border-teal-300'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                     }`}
                     title={item.label}
                   >
                     <div className="flex items-center gap-3 truncate">
-                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : roleConfig.iconColor}`} />
+                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                       {!collapsed && (
                         <div className="truncate">
                           <span className="block truncate">{item.label}</span>
                           {item.desc && !isActive && (
-                            <span className="text-[9px] text-slate-500 font-normal block truncate">{item.desc}</span>
+                            <span className="text-[9px] text-slate-400 font-normal block truncate">{item.desc}</span>
                           )}
                         </div>
                       )}
                     </div>
 
                     {!collapsed && item.badge && (
-                      <span className="text-[9px] bg-slate-800/90 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
+                      <span className="text-[9px] bg-slate-800 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
                         {item.badge}
                       </span>
                     )}
@@ -432,7 +432,7 @@ export function AppSidebar() {
         {/* User Profile Card Button */}
         <button
           onClick={() => setShowUserPopup(!showUserPopup)}
-          className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800/80 transition text-left group"
+          className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 transition text-left group"
           title="Kelola Akun & Keluar"
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
