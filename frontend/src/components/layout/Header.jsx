@@ -95,7 +95,7 @@ function HeaderNavContent() {
   const breadcrumb = getBreadcrumbTitle();
 
   return (
-    <header className="sticky top-0 z-30 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 backdrop-blur-md text-slate-800 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-[64px] w-full items-center justify-between border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 backdrop-blur-md text-slate-800 shadow-sm relative">
       {/* Kiri: Mobile Brand (atau Page Title Breadcrumb jika logged in) */}
       <div className="flex items-center gap-3">
         <Link
@@ -119,20 +119,42 @@ function HeaderNavContent() {
         )}
       </div>
 
-      {/* Tengah: Navigasi Khusus Publik */}
+      {/* Tengah: Navigasi Khusus Publik (Presisi Tepat di Tengah Halaman) */}
       {isPublicPage && (
-        <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
-          <Link to="/" className={`hover:text-teal-600 transition ${pathname === '/' ? 'text-teal-600' : ''}`}>
+        <nav className="hidden md:flex items-center gap-7 text-xs font-bold text-slate-600 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+          <Link
+            to="/"
+            className={`hover:text-teal-600 transition-colors py-1 border-b-2 ${
+              pathname === '/' ? 'text-teal-600 border-teal-600 font-extrabold' : 'border-transparent hover:border-slate-300'
+            }`}
+          >
             Beranda
           </Link>
-          <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-extrabold">
+          <Link
+            to="/city/livemap?preview=public"
+            className={`hover:text-teal-600 transition-colors py-1 border-b-2 flex items-center gap-1.5 font-extrabold ${
+              isPublicPreviewMap ? 'text-teal-700 border-teal-600' : 'text-teal-700/90 border-transparent hover:border-teal-300'
+            }`}
+          >
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Live Map Publik
           </Link>
-          <Link to="/tentang" className={`hover:text-teal-600 transition ${pathname === '/tentang' ? 'text-teal-600' : ''}`}>
+          <Link
+            to="/tentang"
+            className={`hover:text-teal-600 transition-colors py-1 border-b-2 ${
+              pathname === '/tentang' ? 'text-teal-600 border-teal-600 font-extrabold' : 'border-transparent hover:border-slate-300'
+            }`}
+          >
             Tentang Tim
           </Link>
-          <Link to="/lapor" className={`hover:text-teal-600 transition ${pathname === '/lapor' ? 'text-teal-600' : ''}`}>
+          <Link
+            to="/lapor"
+            className={`hover:text-teal-600 transition-colors py-1 border-b-2 ${
+              pathname === '/lapor' || pathname.startsWith('/lapor')
+                ? 'text-rose-600 border-rose-600 font-extrabold'
+                : 'border-transparent hover:border-slate-300'
+            }`}
+          >
             Lapor Pelanggaran
           </Link>
         </nav>
