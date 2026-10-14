@@ -2,20 +2,18 @@ name: Supabase Keep-Alive Ping
 
 on:
   schedule:
-    # Runs every 2 days at 06:00 UTC to prevent Supabase Free Tier auto-pause/sleep
-    - cron: '0 6 */2 * *'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+    # Runs every single day at 00:00 UTC (Daily Healthcheck) to prevent Supabase Free Tier auto-pause/sleep
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual 1-click trigger from GitHub Actions UI anytime
   push:
-    branches: [ main, master ]
-    paths:
-      - '.github/workflows/supabase-keep-alive.yml'
+    branches: [ main, master ] # Pings Supabase automatically on every push to main
 
 jobs:
   keep-alive:
-    name: Ping Supabase REST API
+    name: Ping Supabase REST API & Database
     runs-on: ubuntu-latest
     steps:
-      - name: Send Lightweight Healthcheck Query
+      - name: Send Daily Healthcheck Queries to Keep Supabase Awake
         run: |
           SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
           SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
@@ -28,18 +26,27 @@ jobs:
             SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6eG9vZG1xcXJ3ZWtud2dobnp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjg0MzUsImV4cCI6MjEwNTYwNDQzNX0.X9JGfp9wuiGTOiT1Boaooa8tB4kE2YpkrdYJ0G6EBss"
           fi
 
-          echo "Pinging Supabase at $SUPABASE_URL..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+          echo "Pinging Supabase REST API at $SUPABASE_URL..."
+
+          # Ping 1: Zones Table
+          HTTP_STATUS_ZONES=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
             "$SUPABASE_URL/rest/v1/zones?select=id&limit=1")
 
-          echo "HTTP Response Status: $HTTP_STATUS"
+          # Ping 2: Bookings Table
+          HTTP_STATUS_BOOKINGS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/bookings?select=id&limit=1")
 
-          if [ "$HTTP_STATUS" -eq 200 ]; then
-            echo "✅ Supabase is active and awake! Inactivity timer reset successfully."
+          echo "HTTP Response Status (Zones): $HTTP_STATUS_ZONES"
+          echo "HTTP Response Status (Bookings): $HTTP_STATUS_BOOKINGS"
+
+          if [ "$HTTP_STATUS_ZONES" -eq 200 ] || [ "$HTTP_STATUS_BOOKINGS" -eq 200 ]; then
+            echo "✅ Supabase is active, healthy, and awake! Inactivity timer reset successfully."
             exit 0
           else
-            echo "⚠️ Warning: Received HTTP status $HTTP_STATUS"
+            echo "⚠️ Warning: Received HTTP status $HTTP_STATUS_ZONES / $HTTP_STATUS_BOOKINGS"
             exit 1
           fi
