@@ -14,16 +14,19 @@ import {
   Activity,
   Map,
   ChevronRight,
-  Database
+  Database,
+  ShieldAlert
 } from 'lucide-react';
 import { Button } from '../ui/button.jsx';
 import { createClient } from '../../lib/supabase/client.js';
+import { CitizenReportModal } from '../enforcement/CitizenReportModal.jsx';
 
 function HeaderNavContent() {
   const { pathname } = useLocation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const [showReportModal, setShowReportModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState({
     name: 'Pengguna',
@@ -65,8 +68,7 @@ function HeaderNavContent() {
 
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
 
-  const isPublicPage = !currentUser && (
-    pathname === '/' ||
+  const isPublicPage = pathname === '/' || pathname === '/lapor' || pathname.startsWith('/lapor') || (!currentUser && (
     pathname.startsWith('/fitur') ||
     pathname.startsWith('/cara-kerja') ||
     pathname.startsWith('/tentang') ||
@@ -76,7 +78,7 @@ function HeaderNavContent() {
     pathname === '/login' ||
     pathname === '/register' ||
     isPublicPreviewMap
-  );
+  ));
 
   const role = userProfile.role;
 
@@ -117,25 +119,28 @@ function HeaderNavContent() {
         )}
       </div>
 
-      {/* Tengah: Navigasi Khusus Publik (Hanya muncul jika belum login) */}
+      {/* Tengah: Navigasi Khusus Publik */}
       {isPublicPage && (
         <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
-          <Link to="/" className="hover:text-teal-600 transition">
+          <Link to="/" className={`hover:text-teal-600 transition ${pathname === '/' ? 'text-teal-600' : ''}`}>
             Beranda
           </Link>
           <Link to="/city/livemap?preview=public" className="hover:text-teal-600 transition flex items-center gap-1.5 text-teal-700 font-extrabold">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Live Preview (Public Spectator)
           </Link>
-          <Link to="/tentang" className="hover:text-teal-600 transition">
+          <Link to="/tentang" className={`hover:text-teal-600 transition ${pathname === '/tentang' ? 'text-teal-600' : ''}`}>
             Tentang Tim
+          </Link>
+          <Link to="/lapor" className={`hover:text-teal-600 transition ${pathname === '/lapor' ? 'text-teal-600' : ''}`}>
+            Lapor Pelanggaran
           </Link>
         </nav>
       )}
 
-      {/* Kanan: Profile & Role Badge (Terpusat) */}
+      {/* Kanan: Masuk / Daftar jika Belum Login */}
       <div className="flex items-center gap-3">
-        {isPublicPage ? (
+        {isPublicPage && (
           <div className="flex items-center gap-2">
             <Link to="/login">
               <Button variant="outline" className="text-xs py-1.5 px-3 flex items-center gap-1.5 font-bold">
@@ -148,38 +153,6 @@ function HeaderNavContent() {
               </Button>
             </Link>
           </div>
-        ) : (
-          <>
-            <NotificationBell />
-            <RealtimeStatusDot />
-
-            <div className="flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50/70 px-3 py-1 shadow-sm">
-              <div className="h-6 w-6 rounded-full bg-teal-600 flex items-center justify-center text-xs font-black text-white uppercase">
-                {userProfile.initial}
-              </div>
-              <div className="text-left leading-tight hidden sm:block">
-                <span className="text-xs font-bold text-slate-900 block truncate max-w-[120px]">
-                  {userProfile.name}
-                </span>
-                <span className="text-[10px] font-black uppercase text-teal-800 tracking-wider block">
-                  {userProfile.roleLabel}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={async () => {
-                const supabase = createClient();
-                await supabase.auth.signOut();
-                setCurrentUser(null);
-                navigate('/login');
-              }}
-              className="lg:hidden text-slate-400 hover:text-rose-600 transition p-1"
-              title="Keluar dari Akun"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </>
         )}
       </div>
     </header>

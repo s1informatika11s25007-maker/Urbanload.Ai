@@ -1,25 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Truck,
   Building2,
   Shield,
   Activity,
-  Map,
   Calendar,
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Database,
-  Users,
-  BarChart3,
-  Cpu,
-  Radio,
-  SlidersHorizontal
+  ChevronUp,
+  ShieldAlert,
+  Bot,
+  Sparkles,
+  UserCheck
 } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 import { RealtimeStatusDot } from './RealtimeStatusDot.jsx';
-import { NotificationBell } from './NotificationBell.jsx';
 
 export function AppSidebar() {
   const { pathname } = useLocation();
@@ -27,6 +24,8 @@ export function AppSidebar() {
   const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState(false);
+  const [showUserPopup, setShowUserPopup] = useState(false);
+
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState({
     name: 'Pengguna',
@@ -35,6 +34,8 @@ export function AppSidebar() {
     initial: 'K',
     email: ''
   });
+
+  const popupRef = useRef(null);
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -68,23 +69,35 @@ export function AppSidebar() {
     loadUserProfile();
   }, [pathname]);
 
+  // Click Outside Listener to close User Popup
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (popupRef.current && !popupRef.current.contains(event.target)) {
+        setShowUserPopup(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
-  const isPublicPage = pathname === '/' || (
+  const isPublicPage = pathname === '/' || pathname === '/lapor' || pathname.startsWith('/lapor') || (
     !currentUser && (
       pathname.startsWith('/fitur') ||
       pathname.startsWith('/tentang') ||
+      pathname.startsWith('/lapor') ||
       pathname === '/login' ||
       pathname === '/register' ||
       isPublicPreviewMap
     )
   );
 
-  // If public page (home, login, register), sidebar is hidden
-  if (isPublicPage) return null;
+  if (isPublicPage || pathname === '/lapor' || pathname.startsWith('/lapor')) return null;
 
   const role = userProfile.role;
 
   const handleLogout = async () => {
+    setShowUserPopup(false);
     const supabase = createClient();
     await supabase.auth.signOut();
     setCurrentUser(null);
@@ -93,14 +106,14 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col justify-between border-r border-slate-200/90 bg-slate-900 text-white transition-all duration-300 z-40 sticky top-0 h-screen shrink-0 ${
+      className={`hidden lg:flex flex-col justify-between border-r border-slate-800 bg-slate-950 text-white transition-all duration-300 z-40 sticky top-0 h-screen shrink-0 ${
         collapsed ? 'w-20' : 'w-64'
       }`}
     >
       {/* ATAS: Logo Brand & Sidebar Collapse Toggle */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-600 text-white shadow-lg shadow-teal-600/30">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg shadow-teal-600/30">
             <Truck className="h-5 w-5" />
           </div>
           {!collapsed && (
@@ -117,93 +130,62 @@ export function AppSidebar() {
 
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+          className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800 transition"
           title={collapsed ? 'Perluas Sidebar' : 'Menciutkan Sidebar'}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
 
-      {/* TENGAH: User Profile Card & Role Navigation Links */}
+      {/* TENGAH: Menu Navigasi Per Role */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
-        {/* User Profile Badge Card */}
-        {!collapsed ? (
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-teal-950/80 to-slate-950 border border-teal-800/60 text-xs space-y-1.5 shadow-md">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-teal-600 text-white font-black flex items-center justify-center text-xs">
-                  {userProfile.initial}
-                </div>
-                <div className="truncate max-w-[110px]">
-                  <span className="font-bold text-white block truncate">{userProfile.name}</span>
-                  <span className="text-[10px] text-teal-300 font-mono block truncate">{userProfile.email || 'Role User'}</span>
-                </div>
-              </div>
-              <RealtimeStatusDot />
-            </div>
-
-            <div className="pt-1 border-t border-teal-800/40 flex items-center justify-between text-[10px] font-mono">
-              <span className="text-slate-400 font-sans uppercase font-bold">Role Aktif:</span>
-              <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 px-2 py-0.5 rounded-md font-bold uppercase">
-                {userProfile.roleLabel}
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center py-2">
-            <div className="h-9 w-9 rounded-xl bg-teal-600 text-white font-black flex items-center justify-center text-sm shadow-md" title={userProfile.name}>
-              {userProfile.initial}
-            </div>
-          </div>
-        )}
-
-        {/* NAVIGASI UTAMA BERDASARKAN ROLE */}
         <div className="space-y-1">
           {!collapsed && (
-            <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider px-3 block mb-1">
-              Menu Navigasi
+            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider px-3 block mb-1">
+              Menu Utama
             </span>
           )}
 
-          {/* MENU UNTUK KURIR LOGISTIK (rider / admin) */}
+          {/* 1. Dashboard Kurir (rider / admin) */}
           {(role === 'rider' || role === 'admin') && (
-            <>
-              <Link
-                to="/rider/dashboard"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
-                  pathname === '/rider/dashboard'
-                    ? 'bg-teal-600 text-white shadow-md'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-                title="Dashboard Kurir"
-              >
-                <Truck className="h-4 w-4 shrink-0 text-teal-400" />
-                {!collapsed && <span>Dashboard Kurir</span>}
-              </Link>
-
-              <Link
-                to="/rider/bookings/new"
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
-                  pathname === '/rider/bookings/new'
-                    ? 'bg-teal-600 text-white shadow-md'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-                title="SmartSlot Booking"
-              >
-                <Calendar className="h-4 w-4 shrink-0 text-teal-400" />
-                {!collapsed && <span>SmartSlot Booking AI</span>}
-              </Link>
-            </>
+            <Link
+              to="/rider/dashboard"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                pathname === '/rider/dashboard'
+                  ? 'bg-teal-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+              }`}
+              title="Dashboard Kurir"
+            >
+              <Truck className="h-4 w-4 shrink-0 text-teal-400" />
+              {!collapsed && <span>Dashboard Kurir</span>}
+            </Link>
           )}
 
-          {/* MENU UNTUK ADMIN KOTA (city_admin / admin) */}
+          {/* 2. SmartSlot Booking AI (rider / admin) */}
+          {(role === 'rider' || role === 'admin') && (
+            <Link
+              to="/rider/bookings/new"
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                pathname === '/rider/bookings/new'
+                  ? 'bg-teal-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+              }`}
+              title="SmartSlot Booking"
+            >
+              <Calendar className="h-4 w-4 shrink-0 text-teal-400" />
+              {!collapsed && <span>SmartSlot Booking AI</span>}
+            </Link>
+          )}
+
+          {/* 3. Editor Zona PostGIS (city_admin / admin) */}
           {(role === 'city_admin' || role === 'admin') && (
             <Link
               to="/city/zones"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
                 pathname === '/city/zones'
                   ? 'bg-teal-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  : 'text-slate-300 hover:bg-slate-900 hover:text-white'
               }`}
               title="Editor Zona PostGIS"
             >
@@ -212,45 +194,43 @@ export function AppSidebar() {
             </Link>
           )}
 
-          {/* MENU UNTUK PETUGAS DISHUB (dishub_officer / admin) */}
-          {(role === 'dishub_officer' || role === 'admin') && (
+          {/* 4. LiveMap Spasial 3D / Telemetri (Semua Role) */}
+          <Link
+            to="/city/livemap"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+              pathname === '/city/livemap'
+                ? 'bg-teal-600 text-white shadow-md'
+                : 'text-slate-300 hover:bg-slate-900 hover:text-white'
+            }`}
+            title="Telemetri & LiveMap 3D"
+          >
+            <Shield className="h-4 w-4 shrink-0 text-indigo-400" />
+            {!collapsed && <span>Telemetri & LiveMap 3D</span>}
+          </Link>
+
+          {/* 5. Laporan Warga CitizenReport (dishub_officer / city_admin / admin) */}
+          {(role === 'dishub_officer' || role === 'city_admin' || role === 'admin') && (
             <Link
-              to="/city/livemap"
+              to="/dishub/reports"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
-                pathname === '/city/livemap'
-                  ? 'bg-teal-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                pathname === '/dishub/reports'
+                  ? 'bg-red-600 text-white shadow-md'
+                  : 'text-slate-300 hover:bg-slate-900 hover:text-white'
               }`}
-              title="Telemetri & Geofence"
+              title="Laporan Warga (CitizenReport)"
             >
-              <Shield className="h-4 w-4 shrink-0 text-indigo-400" />
-              {!collapsed && <span>Telemetri & Geofence</span>}
+              <ShieldAlert className="h-4 w-4 shrink-0 text-red-400" />
+              {!collapsed && <span>Laporan Warga (Citizen)</span>}
             </Link>
           )}
 
-          {/* LIVEMAP SPASIAL 3D (KURIR & ADMIN KOTA) */}
-          {role !== 'dishub_officer' && (
-            <Link
-              to="/city/livemap"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
-                pathname === '/city/livemap'
-                  ? 'bg-teal-600 text-white shadow-md'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-              title="Peta Spasial LiveMap"
-            >
-              <Map className="h-4 w-4 shrink-0 text-teal-400" />
-              {!collapsed && <span>LiveMap Spasial 3D</span>}
-            </Link>
-          )}
-
-          {/* TREN SKOR KEPADATAN */}
+          {/* 6. Skor Kepadatan AI (Semua Role) */}
           <Link
             to="/rider/congestion"
             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition ${
               pathname === '/rider/congestion'
                 ? 'bg-teal-600 text-white shadow-md'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                : 'text-slate-300 hover:bg-slate-900 hover:text-white'
             }`}
             title="Skor Kepadatan AI"
           >
@@ -258,26 +238,88 @@ export function AppSidebar() {
             {!collapsed && <span>Skor Kepadatan AI</span>}
           </Link>
         </div>
-      </div>
 
-      {/* BAWAH: Notification Bell & Logout Button */}
-      <div className="p-3 border-t border-slate-800 space-y-2">
-        <div className="flex items-center justify-between">
-          <NotificationBell />
+        {/* ASISTEN AI & TOOLS */}
+        <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
           {!collapsed && (
-            <span className="text-[10px] font-mono text-teal-400 font-bold bg-teal-950/80 px-2 py-0.5 rounded-full border border-teal-800">
-              Live DB Supabase
+            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider px-3 block mb-1">
+              Asisten AI LogiTalk
             </span>
           )}
-        </div>
 
+          {/* LogiTalk AI Assistant Link Page */}
+          <Link
+            to="/logitalk"
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
+              pathname === '/logitalk'
+                ? 'bg-teal-600 text-white border-teal-500 shadow-md'
+                : 'bg-gradient-to-r from-teal-900/60 to-emerald-900/60 hover:from-teal-800/80 hover:to-emerald-800/80 text-teal-200 border-teal-700/50'
+            }`}
+            title="LogiTalk AI Assistant"
+          >
+            <Bot className="h-4 w-4 shrink-0 text-teal-300 animate-pulse" />
+            {!collapsed && (
+              <span className="flex items-center justify-between w-full">
+                <span>LogiTalk AI Assistant</span>
+                <Sparkles className="h-3 w-3 text-amber-400" />
+              </span>
+            )}
+          </Link>
+        </div>
+      </div>
+
+      {/* BAWAH KIRI POJOK: User Profile Card & Sign Out Popover Menu */}
+      <div className="p-3 border-t border-slate-800/80 relative" ref={popupRef}>
+        {/* User Account Popover Menu */}
+        {showUserPopup && (
+          <div className="absolute bottom-full left-3 mb-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl p-3 shadow-2xl space-y-3 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono font-bold text-teal-400 uppercase tracking-wider block">
+                Akun Terhubung
+              </span>
+              <p className="font-bold text-xs text-white truncate">{userProfile.name}</p>
+              <p className="text-[11px] text-slate-400 font-mono truncate">{userProfile.email || 'User Account'}</p>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] font-mono pt-1.5 border-t border-slate-800">
+              <span className="text-slate-400 uppercase font-bold">Role Hak Akses:</span>
+              <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 px-2 py-0.5 rounded font-bold uppercase">
+                {userProfile.roleLabel}
+              </span>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-full py-2 px-3 rounded-xl bg-rose-900/60 hover:bg-rose-800 text-rose-200 font-bold text-xs transition border border-rose-700/50 flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Keluar Akun
+            </button>
+          </div>
+        )}
+
+        {/* User Profile Card Button */}
         <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-slate-800 hover:bg-rose-900/80 text-rose-300 font-bold text-xs transition border border-rose-800/40"
-          title="Keluar dari Akun"
+          onClick={() => setShowUserPopup(!showUserPopup)}
+          className="w-full flex items-center justify-between p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800/80 transition text-left group"
+          title="Kelola Akun & Keluar"
         >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && <span>Keluar Akun</span>}
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="h-8 w-8 rounded-xl bg-teal-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow-sm">
+              {userProfile.initial}
+            </div>
+            {!collapsed && (
+              <div className="truncate text-xs leading-tight">
+                <span className="font-bold text-white block truncate">{userProfile.name}</span>
+                <span className="text-[10px] text-teal-300/90 font-mono block uppercase font-bold truncate">
+                  {userProfile.roleLabel}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {!collapsed && (
+            <ChevronUp className={`h-4 w-4 text-slate-400 group-hover:text-white transition-transform duration-200 ${showUserPopup ? 'rotate-180 text-teal-400' : ''}`} />
+          )}
         </button>
       </div>
     </aside>

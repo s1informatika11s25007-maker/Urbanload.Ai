@@ -1,7 +1,31 @@
-import React from 'react';
-import { Truck, ShieldCheck, Database, Cpu, Globe } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { createClient } from '../../lib/supabase/client.js';
+import { Truck, ShieldCheck, Database, Cpu } from 'lucide-react';
 
 export function Footer() {
+  const { pathname } = useLocation();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+    }
+    checkAuth();
+  }, [pathname]);
+
+  // Sembunyikan Footer jika pengguna sudah Login atau berada di Halaman Operasional
+  const isOperationalPage =
+    pathname.startsWith('/rider') ||
+    pathname.startsWith('/city') ||
+    pathname.startsWith('/dishub');
+
+  if (isLoggedIn || isOperationalPage) {
+    return null;
+  }
+
   return (
     <footer className="bg-white border-t border-slate-200 py-8 px-4 sm:px-8 text-xs text-slate-600 font-medium">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">

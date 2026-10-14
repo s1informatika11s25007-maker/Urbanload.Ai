@@ -7,6 +7,7 @@ import { CityAdminPanel } from '../components/analytics/CityAdminPanel.jsx';
 const LiveMapHero = lazy(() => import('../components/livemap/LiveMapHero.jsx').then(m => ({ default: m.LiveMapHero })));
 const StatsSidebar = lazy(() => import('../components/livemap/StatsSidebar.jsx').then(m => ({ default: m.StatsSidebar })));
 const LiveActivityTable = lazy(() => import('../components/livemap/LiveActivityTable.jsx').then(m => ({ default: m.LiveActivityTable })));
+const CitizenReportsFeed = lazy(() => import('../components/enforcement/CitizenReportsFeed.jsx').then(m => ({ default: m.CitizenReportsFeed })));
 
 function LiveMapMainContent() {
   const [searchParams] = useSearchParams();
@@ -117,7 +118,12 @@ function LiveMapMainContent() {
         </div>
       </div>
 
-      {/* Section 3: Executive Analytics, Decision Audit Logs, What-If, System Configs */}
+      {/* Section 3: CitizenReport Live Feed for Dishub Officers & City Admins */}
+      <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Feed Laporan Masyarakat...</div>}>
+        <CitizenReportsFeed />
+      </Suspense>
+
+      {/* Section 4: Executive Analytics, Decision Audit Logs, What-If, System Configs */}
       <CityAdminPanel />
     </div>
   );

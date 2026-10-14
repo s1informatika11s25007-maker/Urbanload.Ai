@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Map, Building2, Shield, Activity } from 'lucide-react';
+import { LayoutDashboard, Calendar, Map, Building2, Shield, Activity, ShieldAlert } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 
 export function MobileTabBar() {
@@ -67,13 +67,23 @@ export function MobileTabBar() {
 
       {/* ROLE PETUGAS DISHUB (dishub_officer) */}
       {(role === 'dishub_officer' || role === 'admin') && (
-        <Link
-          to="/city/livemap"
-          className={`flex flex-col items-center gap-0.5 ${pathname === '/city/livemap' ? 'text-teal-600 font-black' : 'text-slate-500'}`}
-        >
-          <Shield size={18} />
-          <span className="text-[10px]">Telemetri</span>
-        </Link>
+        <>
+          <Link
+            to="/city/livemap"
+            className={`flex flex-col items-center gap-0.5 ${pathname === '/city/livemap' ? 'text-indigo-600 font-black' : 'text-slate-500'}`}
+          >
+            <Shield size={18} />
+            <span className="text-[10px]">Telemetri</span>
+          </Link>
+
+          <Link
+            to="/dishub/reports"
+            className={`flex flex-col items-center gap-0.5 ${pathname === '/dishub/reports' ? 'text-red-600 font-black' : 'text-slate-500'}`}
+          >
+            <ShieldAlert size={18} />
+            <span className="text-[10px]">Laporan</span>
+          </Link>
+        </>
       )}
 
       {/* LIVEMAP PETA */}

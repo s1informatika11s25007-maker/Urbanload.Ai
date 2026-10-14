@@ -92,6 +92,19 @@ CREATE TABLE IF NOT EXISTS public.congestion_scores (
   calculated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
+-- 6. CITIZEN REPORTS TABLE (TrustGuard Enforcement)
+CREATE TABLE IF NOT EXISTS public.citizen_reports (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  violation_type TEXT NOT NULL,
+  vehicle_plate TEXT,
+  location_name TEXT NOT NULL,
+  description TEXT,
+  photo_url TEXT,
+  status TEXT DEFAULT 'pending' NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
+);
+
 -- ========================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
 -- ========================================================
@@ -100,6 +113,17 @@ ALTER TABLE public.zones ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.qr_tokens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.congestion_scores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.citizen_reports ENABLE ROW LEVEL SECURITY;
+
+-- Citizen Reports Policies
+DROP POLICY IF EXISTS "Citizen reports viewable by everyone" ON public.citizen_reports;
+CREATE POLICY "Citizen reports viewable by everyone" ON public.citizen_reports FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Citizen reports insertable by everyone" ON public.citizen_reports;
+CREATE POLICY "Citizen reports insertable by everyone" ON public.citizen_reports FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Citizen reports updatable by everyone" ON public.citizen_reports;
+CREATE POLICY "Citizen reports updatable by everyone" ON public.citizen_reports FOR UPDATE USING (true);
 
 -- Profiles Policies
 DROP POLICY IF EXISTS "Profiles viewable by everyone" ON public.profiles;

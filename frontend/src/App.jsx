@@ -20,6 +20,9 @@ const VerifyOtp = lazy(() => import('./pages/VerifyOtp.jsx'));
 const Tentang = lazy(() => import('./pages/Tentang.jsx'));
 const FeatureCongestion = lazy(() => import('./pages/FeatureCongestion.jsx'));
 const FeatureGeofence = lazy(() => import('./pages/FeatureGeofence.jsx'));
+const DishubReportsPage = lazy(() => import('./pages/DishubReportsPage.jsx'));
+const LogiTalkPage = lazy(() => import('./pages/LogiTalkPage.jsx'));
+const PublicReportPage = lazy(() => import('./pages/PublicReportPage.jsx'));
 
 function PageFallback() {
   return (
@@ -56,6 +59,9 @@ function App() {
                   <Route path="/rider/congestion" element={<RiderCongestion />} />
                   <Route path="/city/zones" element={<CityZones />} />
                   <Route path="/city/livemap" element={<LiveMap />} />
+                  <Route path="/dishub/reports" element={<DishubReportsPage />} />
+                  <Route path="/logitalk" element={<LogiTalkPage />} />
+                  <Route path="/lapor" element={<PublicReportPage />} />
                   <Route path="/fitur/congestion" element={<FeatureCongestion />} />
                   <Route path="/fitur/geofence" element={<FeatureGeofence />} />
                 </Routes>
