@@ -75,7 +75,7 @@ const ROLE_SIDEBAR_CONFIG = {
       {
         title: 'Keamanan & Intelligence',
         items: [
-          { to: '/security/prompt-guard', label: 'Zero-Trust Edge Security', icon: Lock, badge: 'Guard', desc: 'Proteksi Prompt & API' },
+          { to: '/security/prompt-guard', label: 'Proteksi & Anti-Fraud GPS', icon: Lock, badge: 'Guard', desc: 'Siber & Anti-Spoofing' },
           { to: '/logitalk', label: 'LogiTalk Governance AI', icon: Bot, isAi: true, desc: 'Analisa Kebijakan Kota' },
         ],
       },
@@ -125,7 +125,7 @@ const ROLE_SIDEBAR_CONFIG = {
         title: 'Modul Tata Kota PostGIS',
         items: [
           { to: '/city/zones', label: 'Editor Zona PostGIS', icon: Building2, desc: 'Geofence Boundaries' },
-          { to: '/security/prompt-guard', label: 'Zero-Trust Edge Security', icon: Lock, desc: 'Prompt Guard Shield' },
+          { to: '/security/prompt-guard', label: 'Proteksi & Anti-Fraud GPS', icon: Lock, desc: 'Siber & Anti-Spoofing' },
         ],
       },
       {

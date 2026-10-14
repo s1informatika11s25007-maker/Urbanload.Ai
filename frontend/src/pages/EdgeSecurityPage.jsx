@@ -88,10 +88,10 @@ export default function EdgeSecurityPage() {
       {/* Header Halaman */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
         <div>
-          <div className="text-xs text-slate-500 mb-1">Keamanan Siber / Anti-Spoofing</div>
-          <h1 className="text-2xl font-black text-slate-900">Zero-Trust Edge Prompt Guard & GPS Spoofing Interceptor</h1>
+          <div className="text-xs text-slate-500 mb-1">Keamanan Siber / Anti-Fraud GPS</div>
+          <h1 className="text-2xl font-black text-slate-900">Proteksi Siber & Anti-Fraud GPS</h1>
           <p className="text-xs text-slate-500 mt-1">
-            Penapis ancaman di gateway untuk menolak manipulasi perintah dan memverifikasi kecepatan spasial GPS kurir (ST_Speed).
+            Penapis ancaman di gateway untuk menolak manipulasi perintah AI dan memverifikasi lokasi fisik kurir.
           </p>
         </div>
       </div>
