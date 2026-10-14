@@ -551,18 +551,31 @@ export function LiveMapHero() {
       }
 
       const el = document.createElement('div');
-      el.className = 'group relative cursor-pointer';
+      el.className = 'group relative cursor-pointer z-10';
 
       const statusColor = b.status === 'confirmed' ? '#10b981' : b.status === 'active' ? '#3b82f6' : '#f59e0b';
 
       el.innerHTML = `
-        <div class="flex items-center gap-1.5 bg-slate-900/95 text-white px-2.5 py-1.5 rounded-2xl border-2 border-teal-400 shadow-2xl backdrop-blur-md transition-transform duration-200 hover:scale-125">
-          <span class="text-sm">🚚</span>
-          <div class="flex flex-col text-left leading-none">
-            <span class="text-[10px] font-black font-mono text-teal-300">${b.vehicle_plate || 'TRUK REAL'}</span>
-            <span class="text-[8px] text-slate-300 font-semibold truncate max-w-[70px]">${b.profiles?.full_name || 'Kurir Logistik'}</span>
+        <div class="group relative flex items-center">
+          <div class="flex items-center gap-1.5 bg-slate-950/90 text-white px-2 py-1 rounded-full border border-teal-500/80 shadow-md backdrop-blur-md transition-all duration-200 hover:scale-110 hover:border-teal-400 hover:bg-slate-900 hover:z-50">
+            <div class="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal-500 text-slate-950 font-black">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                <path d="M15 18h2a1 1 0 0 0 1-1v-4.343a1 1 0 0 0-.293-.707l-2.68-2.68A1 1 0 0 0 14.32 10H14"/>
+                <circle cx="7" cy="18" r="2"/>
+                <circle cx="17" cy="18" r="2"/>
+              </svg>
+            </div>
+            <span class="text-[10px] font-extrabold font-mono text-slate-100 tracking-tight leading-none">${b.vehicle_plate || 'TRUK REAL'}</span>
+            <span class="h-1.5 w-1.5 rounded-full shrink-0 ml-0.5 shadow-sm" style="background-color: ${statusColor}"></span>
           </div>
-          <span class="h-2 w-2 rounded-full animate-ping ml-0.5" style="background-color: ${statusColor}"></span>
+
+          <!-- SLEEK HOVER TOOLTIP CARD (Non-Intrusive) -->
+          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col bg-slate-950/95 text-white border border-slate-700/80 rounded-xl px-2.5 py-1.5 shadow-2xl text-[9px] whitespace-nowrap z-50 pointer-events-none animate-in fade-in duration-150">
+            <span class="font-extrabold text-teal-300 font-mono">${b.vehicle_plate || 'Armada Logistik'}</span>
+            <span class="text-slate-300 font-medium">${b.profiles?.full_name || 'Kurir Logistik'}</span>
+            <span class="text-slate-400 text-[8px]">${b.cargo_type || 'Kargo Logistik'}</span>
+          </div>
         </div>
       `;
 
