@@ -17,11 +17,12 @@ import {
   AlertOctagon,
   UploadCloud,
   CheckCircle2,
-  Navigation
+  Navigation,
+  ExternalLink
 } from 'lucide-react';
 
 export default function Home() {
-  const [zonesCount, setZonesCount] = useState(12);
+  const [zonesCount, setZonesCount] = useState(5);
 
   useEffect(() => {
     async function loadStats() {
@@ -48,7 +49,7 @@ export default function Home() {
               [Pilar: Smart Mobility]
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-100/90 border border-sky-300 text-sky-900 font-extrabold text-[11px] shadow-sm">
-              [Kategori: Smart Governance & Eco-Environment]
+              [Kategori: Smart Governance &amp; Eco-Environment]
             </span>
           </div>
 
@@ -70,7 +71,7 @@ export default function Home() {
 
             <Link to="/city/livemap?preview=public">
               <Button variant="outline" className="py-3.5 px-6 text-xs sm:text-sm font-bold border-slate-300 bg-white text-slate-800 hover:bg-slate-50 rounded-xl flex items-center gap-2 shadow-sm">
-                <Globe className="h-4 w-4 text-teal-600" /> Pantau Peta Live Publik
+                <Globe className="h-4 w-4 text-teal-600" /> Pantau Peta Live Publik 📊
               </Button>
             </Link>
           </div>
@@ -95,22 +96,112 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Technology Badges with Functional Descriptions */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-xs font-mono font-bold text-slate-700">
-            <span className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center gap-1.5" title="Standardisasi Data Spasial Geografis Nasional">
-              <Database className="h-3.5 w-3.5 text-teal-600" /> PostGIS WGS84 <span className="text-[10px] font-normal text-slate-500">(Data Spasial Nasional)</span>
+          {/* Technology Badges with Functional Descriptions (Grayscale Style) */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600">
+            <span className="px-3 py-1.5 rounded-xl bg-slate-100/90 border border-slate-200 shadow-sm flex items-center gap-1.5" title="Standardisasi Data Spasial Geografis Nasional">
+              <Database className="h-3.5 w-3.5 text-slate-600" /> PostGIS WGS84 <span className="text-[10px] font-normal text-slate-500">(Data Spasial Nasional)</span>
             </span>
-            <span className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5" title="Akselerasi Visualisasi Digital Twin Kota Real-Time">
-              <Globe className="h-3.5 w-3.5 text-teal-600" /> MapLibre GL 3D <span className="text-[10px] font-normal text-slate-500">(Digital Twin Kota 3D)</span>
+            <span className="px-3 py-1.5 rounded-lg bg-slate-100/90 border border-slate-200 shadow-sm flex items-center gap-1.5" title="Akselerasi Visualisasi Digital Twin Kota Real-Time">
+              <Globe className="h-3.5 w-3.5 text-slate-600" /> MapLibre GL 3D <span className="text-[10px] font-normal text-slate-500">(Digital Twin Kota 3D)</span>
             </span>
-            <span className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 shadow-sm flex items-center gap-1.5" title="Kriptografi Keamanan Tinggi Melindungi Data Logistik Kota">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Ed25519 QuickPass <span className="text-[10px] font-normal text-slate-500">(Kriptografi HMAC)</span>
+            <span className="px-3 py-1.5 rounded-lg bg-slate-100/90 border border-slate-200 shadow-sm flex items-center gap-1.5" title="Kriptografi Keamanan Tinggi Melindungi Data Logistik Kota">
+              <ShieldCheck className="h-3.5 w-3.5 text-slate-600" /> Ed25519 QuickPass <span className="text-[10px] font-normal text-slate-500">(Kriptografi Keamanan Tinggi)</span>
             </span>
           </div>
         </div>
       </section>
 
-      {/* 2. SOLUSI UTAMA (3 PILAR ELEGANT - CITY GOVERNANCE FOCUS) */}
+      {/* 2. [POSISI BARU] URGENSI TATA KELOLA & VALIDASI MASALAH (PROBLEM URGENCY) */}
+      <section className="w-full relative overflow-hidden bg-slate-100/70 py-16 sm:py-20 px-4 sm:px-8 lg:px-12 border-y border-slate-200/80 shadow-inner">
+        <div className="max-w-7xl mx-auto space-y-8 relative z-10">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="text-xs font-extrabold text-rose-800 uppercase tracking-wider bg-rose-100 px-3.5 py-1 rounded-full border border-rose-200">
+              Validasi Urgensi Masalah Lapangan
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
+              Urgensi Tata Kelola Logistik Perkotaan Saat Ini
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              Kondisi riil penumpukan armada logistik yang membebani ruang publik dan infrastruktur jalan kota.
+            </p>
+          </div>
+
+          {/* Grid 3 Kartu Berita Media Nasional (Minimalis Grayscale) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
+            {/* Kartu 1: Isu Kemacetan (Kompas.com) */}
+            <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-black font-mono text-slate-700 uppercase tracking-wider">KOMPAS.com</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Berita Utama Perkotaan</span>
+                </div>
+                <p className="text-xs font-bold text-slate-800 leading-relaxed italic">
+                  "Truk Bongkar Muat Parkir Liar, Jalur Protokol Kota Mengalami Kemacetan Parah Setiap Pagi."
+                </p>
+              </div>
+              <a
+                href="https://www.kompas.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline pt-2 border-t border-slate-100"
+              >
+                <span>Baca Berita Asli ↗</span>
+              </a>
+            </div>
+
+            {/* Kartu 2: Isu Kendala Lapangan (Antara News) */}
+            <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-black font-mono text-slate-700 uppercase tracking-wider">ANTARA News</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Laporan Pengawasan Kerb</span>
+                </div>
+                <p className="text-xs font-bold text-slate-800 leading-relaxed italic">
+                  "Dishub Kesulitan Awasi Durasi Kontainer di Loading Bay Karena Keterbatasan Personil Lapangan."
+                </p>
+              </div>
+              <a
+                href="https://www.antaranews.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline pt-2 border-t border-slate-100"
+              >
+                <span>Baca Berita Asli ↗</span>
+              </a>
+            </div>
+
+            {/* Kartu 3: Isu Emisi (CNBC Indonesia) */}
+            <div className="p-5 bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-black font-mono text-slate-700 uppercase tracking-wider">CNBC Indonesia</span>
+                  <span className="text-[10px] text-slate-400 font-mono">Laporan Isu Lingkungan</span>
+                </div>
+                <p className="text-xs font-bold text-slate-800 leading-relaxed italic">
+                  "Polusi Udara di Kawasan Pusat Bisnis Meningkat Akibat Antrean Mesin Truk Logistik yang Idle."
+                </p>
+              </div>
+              <a
+                href="https://www.cnbcindonesia.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline pt-2 border-t border-slate-100"
+              >
+                <span>Baca Berita Asli ↗</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Kalimat Jembatan / Bridge Statement */}
+          <div className="p-4 bg-teal-900 text-white rounded-2xl border border-teal-800 text-center max-w-3xl mx-auto shadow-md">
+            <p className="text-xs sm:text-sm font-bold leading-relaxed">
+              💡 "Menjawab tantangan ruang kerb ini, <span className="text-teal-300 underline font-extrabold">UrbanLoad.AI</span> hadir sebagai platform spasial pintar pengendali logistik perkotaan untuk mengurai kemacetan kota."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. ARSITEKTUR TATA KELOLA KOTA CERDAS (CORE PILLARS) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 space-y-6">
         <div className="text-center space-y-2 max-w-xl mx-auto">
           <span className="text-xs font-extrabold text-teal-800 uppercase tracking-wider bg-teal-100 px-3 py-1 rounded-full border border-teal-200">
@@ -134,7 +225,7 @@ export default function Home() {
               <h3 className="font-bold text-base text-slate-900">1. SmartSlot AI Booking (Smart Mobility)</h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Bukan sekadar mencegah truk bentrok, tetapi mengalokasikan jadwal secara terprediksi untuk menjaga Level of Service (LoS) jalan utama kota tetap pada zona hijau.
+              Integrasi Tata Ruang Jalan. Bukan sekadar mencegah truk bentrok, tetapi mengalokasikan jadwal secara terprediksi untuk menjaga Level of Service (LoS) jalan utama kota tetap pada zona hijau.
             </p>
           </Card>
 
@@ -147,7 +238,7 @@ export default function Home() {
               <h3 className="font-bold text-base text-slate-900">2. Pas Digital QuickPass (Smart Governance)</h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Menggantikan manifest kertas konvensional dengan paperless encrypted pass Ed25519 untuk mempermudah audit kinerja dan efisiensi petugas Dishub.
+              Digitalisasi Birokrasi Paperless. Menggantikan manifest kertas konvensional dengan paperless encrypted pass Ed25519 untuk mempermudah audit kinerja dan efisiensi petugas Dishub.
             </p>
           </Card>
 
@@ -160,13 +251,13 @@ export default function Home() {
               <h3 className="font-bold text-base text-slate-900">3. Validasi GeoFence Spasial (Smart Enforcement)</h3>
             </div>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Validasi otomatis berbasis koordinat PostGIS WGS84 untuk memangkas celah pungli di lapangan dan memastikan transparansi penalti ruang parkir logistik.
+              Penegakan Hukum Berbasis Data. Validasi otomatis berbasis koordinat PostGIS WGS84 untuk memangkas celah pungli di lapangan dan memastikan transparansi penalti ruang parkir logistik.
             </p>
           </Card>
         </div>
       </section>
 
-      {/* 3. FITUR UTAMA: LAPORAN PELANGGARAN WARGA (CITIZENREPORT) WITH FEEDBACK LOOP */}
+      {/* 4. CITIZENREPORT & SIMULASI LAPANGAN (SMART PEOPLE & PUBLIC ACCOUNTABILITY) */}
       <section className="w-full relative overflow-hidden bg-gradient-to-b from-white via-red-50/40 to-slate-50 py-16 sm:py-20 px-4 sm:px-8 lg:px-12 border-y border-red-200/80 shadow-sm">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
           {/* Sisi Kiri: Deskripsi & Akses Publik */}
@@ -186,7 +277,7 @@ export default function Home() {
 
             {/* Transparansi Feedback Loop Status Lapor */}
             <div className="p-3.5 bg-white border border-red-200 rounded-2xl shadow-sm space-y-2">
-              <span className="text-[10px] font-mono font-bold text-red-700 uppercase block">Transparansi Status Laporan Warga (Akuntabilitas Public):</span>
+              <span className="text-[10px] font-mono font-bold text-red-700 uppercase block">Alur Akuntabilitas Publik:</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] font-bold text-center">
                 <span className="p-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">1. Diajukan</span>
                 <span className="p-1.5 rounded-lg bg-blue-50 text-blue-800 border border-blue-200">2. GeoFence Verified</span>
@@ -249,7 +340,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4. SEBELUM VS SESUDAH URBANLOAD — SIDE-BY-SIDE COMPARISON TABLE */}
+      {/* 5. TABEL KOMPARASI DAMPAK OPERASIONAL (EVIDENCE OF IMPACT) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
         <div className="p-6 sm:p-8 rounded-3xl bg-white text-slate-900 border border-slate-200 shadow-md space-y-6">
           <div className="text-center space-y-1.5 max-w-xl mx-auto">
@@ -299,7 +390,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. CALL TO ACTION DEMO */}
+      {/* 6. FINAL CALL TO ACTION (CTA) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
         <div className="p-8 sm:p-10 rounded-3xl bg-white border border-slate-200 shadow-md text-center space-y-4 max-w-3xl mx-auto">
           <div className="space-y-1.5">
@@ -313,7 +404,7 @@ export default function Home() {
 
           <div className="pt-2 flex justify-center">
             <Link to="/login">
-              <Button className="py-3 px-7 text-xs sm:text-sm font-bold bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center gap-2 shadow-md">
+              <Button className="py-3 px-8 text-xs sm:text-sm font-black bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center gap-2 shadow-lg hover:scale-105 transition-all">
                 <UserCheck className="h-4 w-4" /> Masuk Ke Sistem / Simulator <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
