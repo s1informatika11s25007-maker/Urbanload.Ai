@@ -1,8 +1,19 @@
 {
   "version": 2,
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|favicon.ico|.*\\.(?:js|css|png|jpg|jpeg|svg|ico|json|woff2?)).*)",
       "destination": "/index.html"
     }
   ]

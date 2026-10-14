@@ -7,24 +7,47 @@ import { MobileTabBar } from './components/layout/MobileTabBar.jsx';
 import { ToastProvider } from './components/ui/ToastNotification.jsx';
 import { Loader2 } from 'lucide-react';
 
-// Code-split pages for high performance & fast initial load under heavy traffic
-const Home = lazy(() => import('./pages/Home.jsx'));
-const Login = lazy(() => import('./pages/Login.jsx'));
-const Register = lazy(() => import('./pages/Register.jsx'));
-const RiderDashboard = lazy(() => import('./pages/RiderDashboard.jsx'));
-const RiderCongestion = lazy(() => import('./pages/RiderCongestion.jsx'));
-const CityZones = lazy(() => import('./pages/CityZones.jsx'));
-const LiveMap = lazy(() => import('./pages/LiveMap.jsx'));
-const NewBooking = lazy(() => import('./pages/NewBooking.jsx'));
-const VerifyOtp = lazy(() => import('./pages/VerifyOtp.jsx'));
-const Tentang = lazy(() => import('./pages/Tentang.jsx'));
-const FeatureCongestion = lazy(() => import('./pages/FeatureCongestion.jsx'));
-const FeatureGeofence = lazy(() => import('./pages/FeatureGeofence.jsx'));
-const DishubReportsPage = lazy(() => import('./pages/DishubReportsPage.jsx'));
-const LogiTalkPage = lazy(() => import('./pages/LogiTalkPage.jsx'));
-const PublicReportPage = lazy(() => import('./pages/PublicReportPage.jsx'));
-const VoiceDispatchPage = lazy(() => import('./pages/VoiceDispatchPage.jsx'));
-const EdgeSecurityPage = lazy(() => import('./pages/EdgeSecurityPage.jsx'));
+/**
+ * Smart lazy loader with automatic reload recovery for stale asset chunk deployment errors
+ */
+function lazyWithRetry(componentImport) {
+  return lazy(async () => {
+    const pageHasAlreadyBeenReloaded = JSON.parse(
+      sessionStorage.getItem('urbanload_chunk_reloaded') || 'false'
+    );
+
+    try {
+      const component = await componentImport();
+      sessionStorage.removeItem('urbanload_chunk_reloaded');
+      return component;
+    } catch (error) {
+      if (!pageHasAlreadyBeenReloaded) {
+        sessionStorage.setItem('urbanload_chunk_reloaded', 'true');
+        window.location.reload();
+      }
+      throw error;
+    }
+  });
+}
+
+// Code-split pages with automatic stale chunk reload recovery
+const Home = lazyWithRetry(() => import('./pages/Home.jsx'));
+const Login = lazyWithRetry(() => import('./pages/Login.jsx'));
+const Register = lazyWithRetry(() => import('./pages/Register.jsx'));
+const RiderDashboard = lazyWithRetry(() => import('./pages/RiderDashboard.jsx'));
+const RiderCongestion = lazyWithRetry(() => import('./pages/RiderCongestion.jsx'));
+const CityZones = lazyWithRetry(() => import('./pages/CityZones.jsx'));
+const LiveMap = lazyWithRetry(() => import('./pages/LiveMap.jsx'));
+const NewBooking = lazyWithRetry(() => import('./pages/NewBooking.jsx'));
+const VerifyOtp = lazyWithRetry(() => import('./pages/VerifyOtp.jsx'));
+const Tentang = lazyWithRetry(() => import('./pages/Tentang.jsx'));
+const FeatureCongestion = lazyWithRetry(() => import('./pages/FeatureCongestion.jsx'));
+const FeatureGeofence = lazyWithRetry(() => import('./pages/FeatureGeofence.jsx'));
+const DishubReportsPage = lazyWithRetry(() => import('./pages/DishubReportsPage.jsx'));
+const LogiTalkPage = lazyWithRetry(() => import('./pages/LogiTalkPage.jsx'));
+const PublicReportPage = lazyWithRetry(() => import('./pages/PublicReportPage.jsx'));
+const VoiceDispatchPage = lazyWithRetry(() => import('./pages/VoiceDispatchPage.jsx'));
+const EdgeSecurityPage = lazyWithRetry(() => import('./pages/EdgeSecurityPage.jsx'));
 
 function PageFallback() {
   return (
