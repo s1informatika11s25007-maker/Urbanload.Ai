@@ -71,7 +71,7 @@ export default function Home() {
 
             <Link to="/city/livemap?preview=public">
               <Button variant="outline" className="py-3.5 px-6 text-xs sm:text-sm font-bold border-slate-300 bg-white text-slate-800 hover:bg-slate-50 rounded-xl flex items-center gap-2 shadow-sm">
-                <Globe className="h-4 w-4 text-teal-600" /> Pantau Peta Live Publik 📊
+                <Globe className="h-4 w-4 text-teal-600" /> Pantau Peta Live Publik
               </Button>
             </Link>
           </div>
