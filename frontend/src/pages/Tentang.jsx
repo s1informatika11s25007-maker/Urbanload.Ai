@@ -29,9 +29,9 @@ export default function Tentang() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-12 space-y-10 px-4">
+    <div className="w-full max-w-7xl mx-auto py-12 space-y-10 px-4 sm:px-8 lg:px-12">
       {/* Header */}
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
+      <div className="text-center space-y-3 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-xs font-bold">
           <Users className="h-4 w-4 text-teal-600" /> Tim Pengembang
         </div>
