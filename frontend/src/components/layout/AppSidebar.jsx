@@ -155,6 +155,7 @@ export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [showUserPopup, setShowUserPopup] = useState(false);
 
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   const [userProfile, setUserProfile] = useState({
     name: 'Pengguna',
@@ -167,35 +168,66 @@ export function AppSidebar() {
   const popupRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
+    const supabase = createClient();
+
     async function loadUserProfile() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      if (isMounted) setLoadingProfile(true);
 
-      if (user) {
-        setCurrentUser(user);
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, role, email')
-          .eq('id', user.id)
-          .maybeSingle();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-        const name = profile?.full_name || user.user_metadata?.full_name || 'Pengguna';
-        const role = profile?.role || user.user_metadata?.role || 'rider';
-        const email = profile?.email || user.email || '';
+        if (user && isMounted) {
+          setCurrentUser(user);
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, role, email')
+            .eq('id', user.id)
+            .maybeSingle();
 
-        let roleLabel = 'Kurir Logistik';
-        if (role === 'city_admin') roleLabel = 'Admin Kota';
-        else if (role === 'dishub_officer') roleLabel = 'Petugas Dishub';
-        else if (role === 'admin') roleLabel = 'System Admin';
+          if (isMounted) {
+            const name = profile?.full_name || user.user_metadata?.full_name || 'Pengguna';
+            const role = profile?.role || user.user_metadata?.role || 'rider';
+            const email = profile?.email || user.email || '';
 
-        const initial = name.charAt(0).toUpperCase() || 'K';
-        setUserProfile({ name, role, roleLabel, initial, email });
-      } else {
-        setCurrentUser(null);
+            let roleLabel = 'Kurir Logistik';
+            if (role === 'city_admin') roleLabel = 'Admin Kota';
+            else if (role === 'dishub_officer') roleLabel = 'Petugas Dishub';
+            else if (role === 'admin') roleLabel = 'System Admin';
+
+            const initial = name.charAt(0).toUpperCase() || 'K';
+            setUserProfile({ name, role, roleLabel, initial, email });
+          }
+        } else if (isMounted) {
+          setCurrentUser(null);
+        }
+      } catch (err) {
+        console.warn('Sidebar profile fetch notice:', err);
+      } finally {
+        if (isMounted) {
+          setLoadingProfile(false);
+        }
       }
     }
 
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        if (isMounted) {
+          setCurrentUser(null);
+          setUserProfile({ name: 'Pengguna', role: 'rider', roleLabel: 'Kurir Logistik', initial: 'K', email: '' });
+          setLoadingProfile(false);
+        }
+      } else {
+        loadUserProfile();
+      }
+    });
+
     loadUserProfile();
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
   }, [pathname]);
 
   // Click Outside Listener to close User Popup
@@ -228,9 +260,12 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     setShowUserPopup(false);
+    setLoadingProfile(true);
+    setCurrentUser(null);
+    setUserProfile({ name: 'Pengguna', role: 'rider', roleLabel: 'Kurir Logistik', initial: 'K', email: '' });
+
     const supabase = createClient();
     await supabase.auth.signOut();
-    setCurrentUser(null);
     const { performCleanLogout } = await import('../../lib/auth-logout.js');
     await performCleanLogout(navigate);
   };
@@ -284,74 +319,85 @@ export function AppSidebar() {
 
       {/* TENGAH: Menu Navigasi Per Role */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
-        {roleConfig.sections.map((section, idx) => (
-          <div key={idx} className="space-y-1">
-            {!collapsed && (
-              <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider px-3 block mb-1">
-                {section.title}
-              </span>
-            )}
+        {loadingProfile ? (
+          <div className="space-y-3 p-1 animate-pulse">
+            <div className="h-3 bg-slate-800/80 rounded w-20 mb-2"></div>
+            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+            <div className="h-3 bg-slate-800/80 rounded w-16 my-2"></div>
+            <div className="h-9 bg-slate-900/90 rounded-xl border border-slate-800/60"></div>
+          </div>
+        ) : (
+          roleConfig.sections.map((section, idx) => (
+            <div key={idx} className="space-y-1">
+              {!collapsed && (
+                <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider px-3 block mb-1">
+                  {section.title}
+                </span>
+              )}
 
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.to;
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.to;
 
-              if (item.isAi) {
+                if (item.isAi) {
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
+                        isActive
+                          ? 'bg-teal-600 text-white border-teal-500 shadow-md'
+                          : 'bg-gradient-to-r from-teal-900/60 to-emerald-900/60 hover:from-teal-800/80 hover:to-emerald-800/80 text-teal-200 border-teal-700/50'
+                      }`}
+                      title={item.label}
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-teal-300 animate-pulse" />
+                      {!collapsed && (
+                        <div className="truncate">
+                          <span className="block truncate">{item.label}</span>
+                          <span className="text-[9px] text-teal-300/70 font-mono block font-normal truncate">{item.desc}</span>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                }
+
                 return (
                   <Link
                     key={item.to}
                     to={item.to}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
                       isActive
-                        ? 'bg-teal-600 text-white border-teal-500 shadow-md'
-                        : 'bg-gradient-to-r from-teal-900/60 to-emerald-900/60 hover:from-teal-800/80 hover:to-emerald-800/80 text-teal-200 border-teal-700/50'
+                        ? roleConfig.activeBg
+                        : 'text-slate-300 hover:bg-slate-900 hover:text-white'
                     }`}
                     title={item.label}
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-teal-300 animate-pulse" />
-                    {!collapsed && (
-                      <div className="truncate">
-                        <span className="block truncate">{item.label}</span>
-                        <span className="text-[9px] text-teal-300/70 font-mono block font-normal truncate">{item.desc}</span>
-                      </div>
+                    <div className="flex items-center gap-3 truncate">
+                      <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : roleConfig.iconColor}`} />
+                      {!collapsed && (
+                        <div className="truncate">
+                          <span className="block truncate">{item.label}</span>
+                          {item.desc && !isActive && (
+                            <span className="text-[9px] text-slate-500 font-normal block truncate">{item.desc}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {!collapsed && item.badge && (
+                      <span className="text-[9px] bg-slate-800/90 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
+                        {item.badge}
+                      </span>
                     )}
                   </Link>
                 );
-              }
-
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
-                    isActive
-                      ? roleConfig.activeBg
-                      : 'text-slate-300 hover:bg-slate-900 hover:text-white'
-                  }`}
-                  title={item.label}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : roleConfig.iconColor}`} />
-                    {!collapsed && (
-                      <div className="truncate">
-                        <span className="block truncate">{item.label}</span>
-                        {item.desc && !isActive && (
-                          <span className="text-[9px] text-slate-500 font-normal block truncate">{item.desc}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {!collapsed && item.badge && (
-                    <span className="text-[9px] bg-slate-800/90 text-teal-300 border border-teal-500/30 px-1.5 py-0.5 rounded font-mono font-bold shrink-0">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
+              })}
+            </div>
+          ))
+        )}
       </div>
 
       {/* BAWAH KIRI POJOK: User Profile Card & Sign Out Popover Menu */}
