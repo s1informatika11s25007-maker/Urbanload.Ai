@@ -278,8 +278,8 @@ export function AppSidebar() {
     >
       {/* ATAS: Logo Brand & Sidebar Collapse Toggle */}
       <div>
-        <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 overflow-hidden">
+        <div className={`p-3 border-b border-slate-800/80 flex items-center ${collapsed ? 'flex-col gap-2 justify-center py-4' : 'justify-between p-4'}`}>
+          <Link to="/" className="flex items-center gap-2.5 overflow-hidden" title="UrbanLoad.AI Logistics OS">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg shadow-teal-600/30">
               <Truck className="h-5 w-5" />
             </div>
@@ -297,7 +297,7 @@ export function AppSidebar() {
 
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700/80 transition"
+            className="p-1.5 rounded-xl bg-slate-800/90 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700/80 transition shadow-sm"
             title={collapsed ? 'Perluas Sidebar' : 'Menciutkan Sidebar'}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -325,17 +325,17 @@ export function AppSidebar() {
             <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
             <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
             <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
-            <div className="h-3 bg-slate-800/80 rounded w-16 my-2"></div>
-            <div className="h-9 bg-slate-800/90 rounded-xl border border-slate-700/60"></div>
           </div>
         ) : (
           roleConfig.sections.map((section, idx) => (
             <div key={idx} className="space-y-1">
-              {!collapsed && (
+              {!collapsed ? (
                 <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider px-3 block mb-1">
                   {section.title}
                 </span>
-              )}
+              ) : idx > 0 ? (
+                <div className="my-2 border-t border-slate-800/80" />
+              ) : null}
 
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -346,12 +346,14 @@ export function AppSidebar() {
                     <Link
                       key={item.to}
                       to={item.to}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
+                      className={`w-full flex items-center gap-3 py-2.5 rounded-xl text-xs font-bold transition border shadow-sm ${
+                        collapsed ? 'justify-center px-0' : 'px-3'
+                      } ${
                         isActive
                           ? 'bg-teal-600 text-white border-teal-500 shadow-md'
                           : 'bg-slate-800/90 hover:bg-slate-800 text-teal-200 border-teal-700/50'
                       }`}
-                      title={item.label}
+                      title={collapsed ? `${item.label} (${item.desc})` : item.label}
                     >
                       <Icon className="h-4 w-4 shrink-0 text-teal-300 animate-pulse" />
                       {!collapsed && (
@@ -368,14 +370,16 @@ export function AppSidebar() {
                   <Link
                     key={item.to}
                     to={item.to}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                    className={`flex items-center py-2.5 rounded-xl text-xs font-bold transition ${
+                      collapsed ? 'justify-center px-0' : 'justify-between px-3'
+                    } ${
                       isActive
                         ? 'bg-teal-600 text-white shadow-md shadow-teal-900/40 border-r-4 border-teal-300'
                         : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
                     }`}
-                    title={item.label}
+                    title={collapsed ? `${item.label}${item.desc ? ` - ${item.desc}` : ''}` : item.label}
                   >
-                    <div className="flex items-center gap-3 truncate">
+                    <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : 'truncate'}`}>
                       <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                       {!collapsed && (
                         <div className="truncate">
@@ -404,10 +408,12 @@ export function AppSidebar() {
       <div className="p-3 border-t border-slate-800/80">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/70 text-rose-300 border border-rose-800/50 font-bold text-xs transition shadow-sm group"
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/70 text-rose-300 border border-rose-800/50 font-bold text-xs transition shadow-sm group ${
+            collapsed ? 'px-0' : 'px-3'
+          }`}
           title="Keluar Akun"
         >
-          <LogOut className="h-4 w-4 text-rose-400 group-hover:scale-110 transition-transform" />
+          <LogOut className="h-4 w-4 text-rose-400 group-hover:scale-110 transition-transform shrink-0" />
           {!collapsed && <span>Keluar Akun</span>}
         </button>
       </div>
