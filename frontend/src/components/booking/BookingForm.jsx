@@ -45,10 +45,28 @@ export function BookingForm({ onCheckSlot }) {
         return;
       }
 
+      // 2. Single Active Booking Guard: Verify vehicle does not already have an active/confirmed booking
+      const cleanPlate = vehicle.trim().toUpperCase();
+      const supabase = createClient();
+
+      const { data: existingActiveBookings } = await supabase
+        .from('bookings')
+        .select('id, vehicle_plate, status')
+        .ilike('vehicle_plate', cleanPlate)
+        .in('status', ['confirmed', 'active', 'pending']);
+
+      if (existingActiveBookings && existingActiveBookings.length > 0) {
+        const activeStatus = existingActiveBookings[0].status.toUpperCase();
+        setGuardError(
+          `Kendaraan ${cleanPlate} masih memiliki booking aktif (Status: ${activeStatus}). Satu kendaraan hanya dapat memiliki 1 booking aktif hingga proses bongkar muat selesai.`
+        );
+        setLoadingAI(false);
+        return;
+      }
+
       const selectedZoneObj = zones.find((z) => z.id === zoneId);
 
       // Query real count of active bookings for this zone
-      const supabase = createClient();
       const { count: realActiveCount } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })

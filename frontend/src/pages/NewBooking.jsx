@@ -37,6 +37,21 @@ export default function NewBooking() {
       }
 
       const user_id = user.id;
+      const cleanPlate = formData.vehicle.trim().toUpperCase();
+
+      // Double check active booking per vehicle before final insert
+      const { data: existingActive } = await supabase
+        .from('bookings')
+        .select('id, status')
+        .ilike('vehicle_plate', cleanPlate)
+        .in('status', ['confirmed', 'active', 'pending']);
+
+      if (existingActive && existingActive.length > 0) {
+        alert(`Kendaraan ${cleanPlate} masih memiliki booking aktif (Status: ${existingActive[0].status.toUpperCase()}). Harap selesaikan bongkar muat terlebih dahulu.`);
+        setSubmitting(false);
+        return;
+      }
+
       const slotTime = formData.aiResult?.recommendedSlotTime || formData.requestedTime || '10.00';
 
       const now = new Date();
