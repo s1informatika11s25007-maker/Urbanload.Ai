@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Loader2,
   AtSign,
-  Activity,
   MapPin,
   Cpu,
   Phone,
@@ -298,22 +297,6 @@ export default function Login() {
               <p className="text-[11px] text-slate-500">Verifikasi digital Ed25519 Dishub</p>
             </div>
           </div>
-        </div>
-
-        <div className="relative z-10 p-4 rounded-2xl bg-white border border-teal-200 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-teal-100 text-teal-800 border border-teal-200 flex items-center justify-center font-black">
-              99.4%
-            </div>
-            <div>
-              <span className="text-xs font-bold text-slate-900 block">Efisiensi Bongkar Muat</span>
-              <span className="text-[10px] text-slate-500 block">Terintegrasi dengan Pemprov & Dishub DKI</span>
-            </div>
-          </div>
-
-          <span className="text-[10px] font-mono bg-teal-50 text-teal-800 px-2.5 py-1 rounded-full border border-teal-200 flex items-center gap-1 font-bold">
-            <Activity className="h-3 w-3 text-teal-600 animate-pulse" /> Live DB
-          </span>
         </div>
       </div>
 

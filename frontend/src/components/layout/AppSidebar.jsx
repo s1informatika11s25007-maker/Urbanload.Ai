@@ -266,7 +266,7 @@ export function AppSidebar() {
           <NotificationBell />
           {!collapsed && (
             <span className="text-[10px] font-mono text-teal-400 font-bold bg-teal-950/80 px-2 py-0.5 rounded-full border border-teal-800">
-              Live DB Supabase
+              Realtime Connected
             </span>
           )}
         </div>
