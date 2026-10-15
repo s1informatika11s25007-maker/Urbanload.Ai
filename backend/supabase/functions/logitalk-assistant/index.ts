@@ -8,7 +8,7 @@ const corsHeaders = {
 
 /**
  * LOGITALK AI MODEL MATRIX & ARCHITECTURE
- * 1. qwen/qwen3.8-27b             : Primary Fast Spatial Reasoning Engine (<1s execution)
+ * 1. qwen-2.5-32b                 : Primary Fast Spatial Reasoning Engine (<1s execution)
  * 2. llama-3.3-70b-versatile     : High-Performance Reasoning Model on Groq API
  * 3. llama-3.1-8b-instant        : Low-Latency High-Concurrency Model (<300ms)
  * 4. meta-llama/llama-prompt-guard-2-86m : Fast Security & Jailbreak Guardrail (86M params)

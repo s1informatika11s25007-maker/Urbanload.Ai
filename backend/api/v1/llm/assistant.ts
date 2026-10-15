@@ -2,12 +2,11 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { setCorsHeaders } from '../../_lib/cors';
 import { sendSuccess, sendError } from '../../_lib/response';
 import { queryDb } from '../../../src/config/db';
-import { runABSimulation } from '../../../src/engine/simulator';
 import { validatePromptSecurity } from '../../_lib/prompt-guard';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL_NAME = 'qwen-2.5-32b'; // Core Reasoning Engine
+const MODEL_NAME = 'qwen-2.5-32b'; // Active High-Capacity Reasoning Engine on Groq
 
 async function executeTool(toolName: string, args: any) {
   if (toolName === 'get_zone_state') {
@@ -34,9 +33,8 @@ async function executeTool(toolName: string, args: any) {
 }
 
 /**
- * [KILL LIST #2 & AI BLUEPRINT] Event-Driven Spatial Dispatch Engine
- * Menggantikan chatbot pasif dengan Engine Dispatch berbasis Event/Voice
- * dilindungi Security Edge Guardrail (Llama Prompt Guard).
+ * Event-Driven Spatial Dispatch Engine
+ * Uses Meta Llama Prompt Guard 2 for input inspection and Qwen 3.8 / Llama 3.3 for reasoning.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setCorsHeaders(res);
@@ -52,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return sendError(res, 'Parameter message atau audioStreamUri wajib diisi.', 400);
     }
 
-    // 1. Security Edge Guard (Llama Prompt Guard)
+    // 1. Security Edge Guard (Llama Prompt Guard 2)
     const securityCheck = validatePromptSecurity(message || '');
     if (!securityCheck.isSafe) {
       return sendError(

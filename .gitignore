@@ -35,3 +35,11 @@ yarn-error.log*
 .artifacts/
 scratch/
 .vercel/
+
+# Playwright reports and test artifacts
+test-results/
+playwright-report/
+audit-results.json
+**/test-results/
+**/playwright-report/
+**/audit-results.json

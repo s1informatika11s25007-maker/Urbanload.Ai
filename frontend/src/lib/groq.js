@@ -3,12 +3,12 @@ import { createClient } from './supabase/client.js';
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Security Guardrail Model (Used ONLY for Prompt Injection checks)
-const MODEL_GUARDRAIL = 'llama-guard-3-8b';
+// Security Guardrail Model (Meta Llama Prompt Guard 2 for Prompt Injection detection)
+const MODEL_GUARDRAIL = 'meta-llama/llama-prompt-guard-2-86m';
 
 /**
- * 1. SECURITY LAYER: Llama Prompt Guard 2
- * Verifies text input for prompt injection or illegal script attempts.
+ * 1. SECURITY LAYER: Meta Llama Prompt Guard 2
+ * Verifies text input for prompt injection or illegal script attempts before reaching LLM engines.
  */
 export async function validatePromptGuard(inputText) {
   if (!inputText || typeof inputText !== 'string' || !GROQ_API_KEY) return { safe: true };
@@ -33,7 +33,7 @@ export async function validatePromptGuard(inputText) {
     const data = await response.json();
     const result = data.choices?.[0]?.message?.content?.trim();
 
-    const isUnsafe = result && result.toLowerCase().includes('unsafe');
+    const isUnsafe = result && (result.toLowerCase().includes('unsafe') || result.toLowerCase().includes('injection'));
     return isUnsafe
       ? { safe: false, reason: 'Peringatan Keamanan: Teks mengandung instruksi ilegal atau manipulasi terlarang.' }
       : { safe: true };
