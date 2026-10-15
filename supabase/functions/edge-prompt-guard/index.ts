@@ -86,7 +86,7 @@ serve(async (req) => {
         isSafe: true,
         isGPSSpoofed: false,
         calculatedSpeedKmh: velocityResult.speedKmh,
-        message: 'Permintaan terverifikasi aman oleh Supabase Edge Function Guard.'
+        message: 'Permintaan terverifikasi aman oleh Database Edge Security Guard.'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
