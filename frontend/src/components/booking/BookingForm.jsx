@@ -3,7 +3,7 @@ import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import { useRealtimeZones } from '../../hooks/useRealtimeZones.js';
 import { createClient } from '../../lib/supabase/client.js';
-import { validatePromptGuard, runGroqLogixOptimization } from '../../lib/groq.js';
+import { validatePromptGuard, runDeterministicSlotSolver } from '../../lib/groq.js';
 import { TruckDimensionInput } from './TruckDimensionInput.jsx';
 import { Truck, MapPin, Clock, ShieldCheck, Cpu, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -22,7 +22,7 @@ export function BookingForm({ onCheckSlot }) {
     weightTon: 5.0,
   });
 
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [loadingSolver, setLoadingSolver] = useState(false);
   const [guardError, setGuardError] = useState(null);
 
   const handleDimensionChange = (fields) => {
@@ -34,14 +34,14 @@ export function BookingForm({ onCheckSlot }) {
     setGuardError(null);
     if (!zoneId || !vehicle) return;
 
-    setLoadingAI(true);
+    setLoadingSolver(true);
 
     try {
-      // 1. Security Layer: Llama Prompt Guard 2 Check
+      // 1. Security Layer: Llama Prompt Guard Check
       const guardResult = await validatePromptGuard(vehicle);
       if (!guardResult.safe) {
         setGuardError(guardResult.reason);
-        setLoadingAI(false);
+        setLoadingSolver(false);
         return;
       }
 
@@ -60,7 +60,7 @@ export function BookingForm({ onCheckSlot }) {
         setGuardError(
           `Kendaraan ${cleanPlate} masih memiliki booking aktif (Status: ${activeStatus}). Satu kendaraan hanya dapat memiliki 1 booking aktif hingga proses bongkar muat selesai.`
         );
-        setLoadingAI(false);
+        setLoadingSolver(false);
         return;
       }
 
@@ -73,8 +73,8 @@ export function BookingForm({ onCheckSlot }) {
         .eq('zone_id', zoneId)
         .in('status', ['confirmed', 'active', 'pending']);
 
-      // 2. Tahap 1: Perencanaan & Optimalisasi AI (GroqLogix Engine: CongestionScore AI & LoadBalancer AI)
-      const aiResult = await runGroqLogixOptimization({
+      // 3. DETERMINISTIC BACKEND SLOT SOLVER ENGINE (No LLM / Zero Hallucination)
+      const solverResult = await runDeterministicSlotSolver({
         zoneId,
         zoneName: selectedZoneObj?.name || 'Zona Logistik',
         requestedTime,
@@ -90,12 +90,12 @@ export function BookingForm({ onCheckSlot }) {
         vehicle,
         requestedTime,
         truckDimensions,
-        aiResult,
+        aiResult: solverResult,
       });
     } catch (err) {
-      console.error('Error running GroqLogix AI booking optimization:', err);
+      console.error('Error running Backend Deterministic Slot Solver:', err);
     } finally {
-      setLoadingAI(false);
+      setLoadingSolver(false);
     }
   };
 
@@ -103,10 +103,10 @@ export function BookingForm({ onCheckSlot }) {
     <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
         <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking — UrbanLoad AI Engine
+          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking — Backend Deterministic Solver Engine
         </h3>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-800 border border-teal-200 px-3 py-1 rounded-full">
-          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> UrbanLoad Smart Optimization Engine (Inferensi Real-Time)
+          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> Solver Backend Deterministik (100% Akurat, Tanpa Hallucination LLM)
         </span>
       </div>
 
@@ -184,18 +184,18 @@ export function BookingForm({ onCheckSlot }) {
 
         <Button
           type="submit"
-          disabled={!zoneId || !vehicle || loadingAI}
+          disabled={!zoneId || !vehicle || loadingSolver}
           className="w-full py-3 text-xs font-bold shadow-md flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700"
         >
-          {loadingAI ? (
+          {loadingSolver ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-white" />
-              <span>Memproses LoadBalancer AI & CongestionScore AI...</span>
+              <span>Memproses Solver Backend Deterministik...</span>
             </>
           ) : (
             <>
               <ShieldCheck className="h-4 w-4" />
-              <span>Jalankan Optimalisasi SmartSlot AI</span>
+              <span>Hitung Slot (Backend Solver Deterministik)</span>
             </>
           )}
         </Button>
