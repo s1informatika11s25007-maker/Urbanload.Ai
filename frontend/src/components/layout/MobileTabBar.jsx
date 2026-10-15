@@ -1,38 +1,77 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, Calendar, Map, Building2, Shield, Activity, ShieldAlert, Mic, Bot, Lock } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 
 export function MobileTabBar() {
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
+  const [currentUser, setCurrentUser] = useState(null);
   const [role, setRole] = useState('rider');
 
   useEffect(() => {
-    async function loadRole() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    let isMounted = true;
+    const supabase = createClient();
 
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
+    async function checkAuthAndRole() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-        if (profile?.role) {
-          setRole(profile.role);
+        if (user && isMounted) {
+          setCurrentUser(user);
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (profile?.role && isMounted) {
+            setRole(profile.role);
+          }
+        } else if (isMounted) {
+          setCurrentUser(null);
         }
+      } catch (err) {
+        console.warn('MobileTabBar auth check notice:', err);
       }
     }
-    loadRole();
+
+    checkAuthAndRole();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user && isMounted) {
+        setCurrentUser(session.user);
+      } else if (isMounted) {
+        setCurrentUser(null);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
   }, [pathname]);
 
-  if (pathname === '/' || pathname === '/login' || pathname === '/register' || pathname === '/lapor' || pathname.startsWith('/lapor')) {
+  const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
+
+  // Do NOT render Mobile Bottom Tab Bar if user is NOT logged in or on public landing/auth pages
+  const isPublicPage =
+    !currentUser ||
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname === '/tentang' ||
+    pathname === '/lapor' ||
+    pathname.startsWith('/lapor') ||
+    pathname.startsWith('/fitur') ||
+    isPublicPreviewMap;
+
+  if (isPublicPage) {
     return null;
   }
 
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-950/95 border-t border-slate-800/90 flex items-center justify-around px-2 z-40 backdrop-blur-md text-[11px] font-bold text-slate-400">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-slate-950/95 border-t border-slate-800/90 flex items-center justify-around px-2 z-40 backdrop-blur-md text-[11px] font-bold text-slate-400 shadow-2xl">
       {/* 1. ROLE KURIR LOGISTIK (rider) */}
       {role === 'rider' && (
         <>
@@ -215,4 +254,3 @@ export function MobileTabBar() {
     </div>
   );
 }
-

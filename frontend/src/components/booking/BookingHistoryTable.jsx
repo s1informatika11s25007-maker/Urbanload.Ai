@@ -5,7 +5,7 @@ import { Button } from '../ui/button.jsx';
 import { fetchBookings, deleteBooking } from '../../lib/api/bookings.js';
 import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
-import { RefreshCw, Radio, QrCode, ShieldCheck, X, Trash2 } from 'lucide-react';
+import { Radio, QrCode, ShieldCheck, X, Trash2, Clock, Truck } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY = 'urbanload_bookings_history_cache_v1';
 
@@ -113,19 +113,90 @@ export function BookingHistoryTable() {
   };
 
   return (
-    <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4">
+    <Card className="p-3.5 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-3.5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-slate-900">Riwayat Booking Slot Logistik Realtime</h3>
-            <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-0.5 rounded-full font-mono">
-              <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime WebSocket
+            <h3 className="text-sm sm:text-base font-bold text-slate-900">Riwayat Booking Slot Logistik Realtime</h3>
+            <span className="flex items-center gap-1 text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 px-2 py-0.5 rounded-full font-mono">
+              <Radio className="h-3 w-3 text-teal-600 animate-pulse" /> Realtime
             </span>
           </div>
         </div>
       </div>
 
-      <div className="overflow-x-auto border border-slate-200 rounded-xl">
+      {/* MOBILE ANDROID VIEW: Sleek Touch Cards */}
+      <div className="block sm:hidden space-y-3">
+        {history.length === 0 ? (
+          <div className="p-6 text-center text-xs text-slate-400 font-semibold bg-slate-50 rounded-2xl border border-dashed">
+            {loading ? 'Memuat riwayat booking...' : 'Belum ada riwayat booking.'}
+          </div>
+        ) : (
+          history.map((b) => {
+            const statusBg =
+              b.status === 'confirmed'
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : b.status === 'active'
+                ? 'bg-blue-100 text-blue-800 border-blue-300'
+                : 'bg-amber-100 text-amber-800 border-amber-300';
+
+            const timeStr = b.time_window_start
+              ? new Date(b.time_window_start).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+              : '10.00';
+
+            return (
+              <div key={b.id} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 shadow-sm">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-teal-100 text-teal-800 rounded-lg">
+                      <Truck className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-mono font-black text-sm text-slate-900 block">{b.vehicle_plate || 'B 1234 LOG'}</span>
+                      <span className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-teal-600" /> Jam {timeStr} WIB
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className={`px-2 py-0.5 rounded-full border text-[9px] font-black uppercase ${statusBg}`}>
+                    {b.status || 'confirmed'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-200">
+                  <Button
+                    onClick={() => setActiveQRBooking(b)}
+                    className="text-[10px] h-8 px-2 bg-teal-600 hover:bg-teal-700 text-white font-bold flex items-center justify-center gap-1 rounded-xl"
+                  >
+                    <QrCode className="h-3 w-3" /> Tiket QR
+                  </Button>
+
+                  <Button
+                    onClick={() => handlePanicReschedule(b)}
+                    disabled={reschedulingId === b.id}
+                    variant="outline"
+                    className="text-[9px] h-8 px-1.5 bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 font-bold flex items-center justify-center rounded-xl"
+                  >
+                    Panic +1 Jam
+                  </Button>
+
+                  <Button
+                    onClick={() => handleDeleteBooking(b)}
+                    variant="outline"
+                    className="text-[10px] h-8 px-2 bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100 font-bold flex items-center justify-center gap-1 rounded-xl"
+                  >
+                    <Trash2 className="h-3 w-3" /> Hapus
+                  </Button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* DESKTOP TABLE VIEW */}
+      <div className="hidden sm:block overflow-x-auto border border-slate-200 rounded-xl">
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-slate-50 border-b text-slate-700 font-bold">
