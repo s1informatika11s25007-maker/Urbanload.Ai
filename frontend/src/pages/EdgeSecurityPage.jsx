@@ -10,11 +10,10 @@ import {
   Radio,
   Clock,
   User,
-  Truck,
   MapPin,
-  RefreshCw,
   Search,
-  AlertTriangle
+  Unlock,
+  CheckCircle2
 } from 'lucide-react';
 
 const LOCAL_STORAGE_SPOOF_KEY = 'urbanload_fake_gps_logs_v1';
@@ -57,6 +56,7 @@ export default function EdgeSecurityPage() {
   const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [unblockingId, setUnblockingId] = useState(null);
 
   // Fake GPS Log State
   const [spoofLogs, setSpoofLogs] = useState(() => {
@@ -74,7 +74,6 @@ export default function EdgeSecurityPage() {
     const supabase = createClient();
 
     try {
-      // Query decision_logs or security events
       const { data } = await supabase
         .from('decision_logs')
         .select('*')
@@ -111,7 +110,6 @@ export default function EdgeSecurityPage() {
   useEffect(() => {
     loadSpoofLogs();
 
-    // Listen to Realtime Driver Location Telemetry Channel for active Fake GPS anomalies
     const supabase = createClient();
     const channel = supabase
       .channel('driver_live_location')
@@ -148,6 +146,36 @@ export default function EdgeSecurityPage() {
       supabase.removeChannel(channel);
     };
   }, [loadSpoofLogs, showToast]);
+
+  // UNBLOCK FUNCTION FOR ADMIN ROLE
+  const handleUnblockDriver = (log) => {
+    setUnblockingId(log.id);
+
+    setTimeout(() => {
+      const updated = spoofLogs.map((item) => {
+        if (item.id === log.id) {
+          return {
+            ...item,
+            status: 'UNBLOCKED',
+            unblockedAt: new Date().toISOString(),
+          };
+        }
+        return item;
+      });
+
+      setSpoofLogs(updated);
+      try {
+        localStorage.setItem(LOCAL_STORAGE_SPOOF_KEY, JSON.stringify(updated));
+      } catch (e) {}
+
+      showToast({
+        title: 'Blokir Berhasil Dibatalkan!',
+        message: `Akses lokasi untuk pengemudi ${log.driverName} (${log.vehiclePlate}) telah dipulihkan oleh Admin.`,
+        type: 'success',
+      });
+      setUnblockingId(null);
+    }, 200);
+  };
 
   const filteredLogs = spoofLogs.filter(
     (log) =>
@@ -215,7 +243,6 @@ export default function EdgeSecurityPage() {
             <ShieldAlert className="h-5 w-5 text-rose-600" /> Daftar Pengguna Terdeteksi Menggunakan Fake GPS
           </h2>
 
-          {/* Search Bar */}
           <div className="relative w-full sm:w-64">
             <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -235,37 +262,63 @@ export default function EdgeSecurityPage() {
               {loading ? 'Memuat data audit...' : 'Tidak ada catatan pelanggaran Fake GPS terdeteksi.'}
             </div>
           ) : (
-            filteredLogs.map((log) => (
-              <div key={log.id} className="p-3.5 bg-rose-50/50 border border-rose-200 rounded-2xl space-y-2 text-xs">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-rose-100 text-rose-700 rounded-xl">
-                      <User className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-900 block">{log.driverName}</span>
-                      <span className="font-mono text-[11px] font-black text-rose-700 block">{log.vehiclePlate}</span>
-                    </div>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white font-mono font-black text-[9px]">
-                    🚨 DIBLOKIR
-                  </span>
-                </div>
+            filteredLogs.map((log) => {
+              const isUnblocked = log.status === 'UNBLOCKED';
 
-                <div className="space-y-1 text-[11px] text-slate-600 font-mono bg-white p-2.5 rounded-xl border border-rose-100">
-                  <div className="flex items-center gap-1 font-bold text-rose-900">
-                    <MapPin className="h-3 w-3 text-rose-600 shrink-0" /> {log.fakeLocation}
+              return (
+                <div key={log.id} className={`p-3.5 rounded-2xl border space-y-2.5 text-xs ${
+                  isUnblocked ? 'bg-emerald-50/60 border-emerald-200' : 'bg-rose-50/50 border-rose-200'
+                }`}>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-xl ${isUnblocked ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}`}>
+                        <User className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-900 block">{log.driverName}</span>
+                        <span className="font-mono text-[11px] font-black text-slate-700 block">{log.vehiclePlate}</span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded-full font-mono font-black text-[9px] ${
+                      isUnblocked ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                    }`}>
+                      {isUnblocked ? '✅ DIBATALKAN' : '🚨 DIBLOKIR'}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-rose-700 font-semibold">
-                    • Kecepatan Anomali: <strong className="font-black text-rose-800">{log.calculatedSpeedKmh} km/h</strong>
+
+                  <div className="space-y-1 text-[11px] text-slate-600 font-mono bg-white p-2.5 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-1 font-bold text-slate-900">
+                      <MapPin className="h-3 w-3 text-rose-600 shrink-0" /> {log.fakeLocation}
+                    </div>
+                    <div className="text-[10px] text-rose-700 font-semibold">
+                      • Kecepatan Anomali: <strong className="font-black text-rose-800">{log.calculatedSpeedKmh} km/h</strong>
+                    </div>
+                    <div className="text-[10px] text-slate-500 flex items-center gap-1 pt-1 border-t border-slate-100">
+                      <Clock className="h-3 w-3 text-slate-400" />
+                      <span>{new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB</span>
+                    </div>
                   </div>
-                  <div className="text-[10px] text-slate-500 flex items-center gap-1 pt-1 border-t border-slate-100">
-                    <Clock className="h-3 w-3 text-slate-400" />
-                    <span>{new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB</span>
-                  </div>
+
+                  {/* UNBLOCK ACTION BUTTON FOR MOBILE */}
+                  {!isUnblocked ? (
+                    <Button
+                      type="button"
+                      onClick={() => handleUnblockDriver(log)}
+                      disabled={unblockingId === log.id}
+                      className="w-full text-[10px] py-1.5 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 border border-slate-700"
+                    >
+                      <Unlock className="h-3.5 w-3.5 text-teal-400" />
+                      <span>{unblockingId === log.id ? 'Memproses...' : 'Batalkan Blokir'}</span>
+                    </Button>
+                  ) : (
+                    <div className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 justify-center py-1">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Akses Lokasi Telah Dipulihkan
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -278,51 +331,82 @@ export default function EdgeSecurityPage() {
                 <th className="p-3">Plat Nomor</th>
                 <th className="p-3">Lokasi Fake / Anomali Vektor</th>
                 <th className="p-3">Waktu & Tanggal</th>
-                <th className="p-3 text-right">Status Intercept</th>
+                <th className="p-3">Status Intercept</th>
+                <th className="p-3 text-right">Aksi Admin</th>
               </tr>
             </thead>
             <tbody className="divide-y text-slate-800 font-medium">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-slate-400 font-semibold">
+                  <td colSpan={6} className="p-6 text-center text-slate-400 font-semibold">
                     {loading ? 'Memuat log audit...' : 'Tidak ada catatan pelanggaran Fake GPS terdeteksi.'}
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-rose-50/40 transition">
-                    <td className="p-3 font-bold text-slate-900 flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg bg-rose-100 text-rose-700 font-black flex items-center justify-center text-xs">
-                        {log.driverName.charAt(0)}
-                      </div>
-                      <span>{log.driverName}</span>
-                    </td>
+                filteredLogs.map((log) => {
+                  const isUnblocked = log.status === 'UNBLOCKED';
 
-                    <td className="p-3 font-mono font-black text-rose-700">
-                      {log.vehiclePlate}
-                    </td>
+                  return (
+                    <tr key={log.id} className="hover:bg-slate-50 transition">
+                      <td className="p-3 font-bold text-slate-900 flex items-center gap-2">
+                        <div className={`h-7 w-7 rounded-lg font-black flex items-center justify-center text-xs ${
+                          isUnblocked ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'
+                        }`}>
+                          {log.driverName.charAt(0)}
+                        </div>
+                        <span>{log.driverName}</span>
+                      </td>
 
-                    <td className="p-3 max-w-xs">
-                      <div className="font-semibold text-slate-800 flex items-center gap-1 truncate">
-                        <MapPin className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                        <span className="truncate">{log.fakeLocation}</span>
-                      </div>
-                      <span className="text-[10px] text-rose-600 font-mono block font-bold">
-                        Kecepatan Vektor: {log.calculatedSpeedKmh} km/h (Anomali)
-                      </span>
-                    </td>
+                      <td className="p-3 font-mono font-black text-slate-900">
+                        {log.vehiclePlate}
+                      </td>
 
-                    <td className="p-3 font-mono text-slate-600 whitespace-nowrap">
-                      {new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB
-                    </td>
+                      <td className="p-3 max-w-xs">
+                        <div className="font-semibold text-slate-800 flex items-center gap-1 truncate">
+                          <MapPin className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                          <span className="truncate">{log.fakeLocation}</span>
+                        </div>
+                        <span className="text-[10px] text-rose-600 font-mono block font-bold">
+                          Kecepatan Vektor: {log.calculatedSpeedKmh} km/h (Anomali)
+                        </span>
+                      </td>
 
-                    <td className="p-3 text-right">
-                      <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white font-mono font-black text-[10px] shadow-sm inline-flex items-center gap-1">
-                        <ShieldAlert className="h-3 w-3" /> DIBLOKIR OTOMATIS
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                      <td className="p-3 font-mono text-slate-600 whitespace-nowrap">
+                        {new Date(log.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} WIB
+                      </td>
+
+                      <td className="p-3">
+                        {isUnblocked ? (
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono font-black text-[10px] shadow-sm inline-flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> DIBATALKAN
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white font-mono font-black text-[10px] shadow-sm inline-flex items-center gap-1">
+                            <ShieldAlert className="h-3 w-3" /> DIBLOKIR OTOMATIS
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="p-3 text-right">
+                        {!isUnblocked ? (
+                          <Button
+                            type="button"
+                            onClick={() => handleUnblockDriver(log)}
+                            disabled={unblockingId === log.id}
+                            className="text-[10px] h-7 px-3 bg-slate-900 hover:bg-slate-800 text-teal-300 font-bold rounded-xl shadow-sm inline-flex items-center gap-1 border border-slate-700"
+                          >
+                            <Unlock className="h-3 w-3 text-teal-400" />
+                            <span>{unblockingId === log.id ? 'Memproses...' : 'Batalkan Blokir'}</span>
+                          </Button>
+                        ) : (
+                          <span className="text-[10px] text-emerald-700 font-bold font-mono">
+                            Terverifikasi
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
