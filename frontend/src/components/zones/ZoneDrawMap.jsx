@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { createClient } from '../../lib/supabase/client.js';
@@ -71,7 +71,7 @@ const VECTORDARK_STYLE = {
   ],
 };
 
-// Preset WGS84 Logistics Corridor Polygons centered around Jakarta
+// Preset WGS84 Logistics Corridor Polygons centered around Jakarta (Zero-Fail Fallbacks)
 const PRESET_CORRIDORS = [
   // Zona A: Tanah Abang
   [[106.8100, -6.1800], [106.8250, -6.1800], [106.8250, -6.1920], [106.8100, -6.1920], [106.8100, -6.1800]],
@@ -85,23 +85,124 @@ const PRESET_CORRIDORS = [
   [[106.7680, -6.1820], [106.7850, -6.1820], [106.7850, -6.1960], [106.7680, -6.1960], [106.7680, -6.1820]],
 ];
 
-function parseBoundaryPolygon(poly, zoneId, zoneIndex = 0) {
-  if (poly && typeof poly === 'object' && poly.type === 'Polygon' && Array.isArray(poly.coordinates)) {
-    return poly.coordinates;
-  }
+function parseEWKBHex(cleanHex) {
+  try {
+    const bytes = new Uint8Array(cleanHex.length / 2);
+    for (let i = 0; i < cleanHex.length; i += 2) {
+      bytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
+    }
+    const view = new DataView(bytes.buffer);
+    const isLittleEndian = bytes[0] === 1;
+    let offset = 1;
 
-  if (typeof poly === 'string' && poly.toUpperCase().includes('POLYGON')) {
-    const match = poly.match(/\(\((.*?)\)\)/);
-    if (match && match[1]) {
-      const coords = match[1].split(',').map((pair) => {
-        const [lng, lat] = pair.trim().split(/\s+/).map(Number);
-        return [lng, lat];
-      });
-      if (coords.length >= 3) return [coords];
+    let geomType = isLittleEndian ? view.getUint32(offset, true) : view.getUint32(offset, false);
+    offset += 4;
+
+    const hasSRID = (geomType & 0x20000000) !== 0;
+    const hasZ = (geomType & 0x80000000) !== 0 || (geomType >= 1000 && geomType < 2000) || (geomType >= 3000 && geomType < 4000);
+    const hasM = (geomType & 0x40000000) !== 0 || (geomType >= 2000 && geomType < 3000) || (geomType >= 3000 && geomType < 4000);
+
+    geomType = geomType & 0x0fffffff;
+    if (geomType >= 1000) geomType = geomType % 1000;
+
+    if (hasSRID) offset += 4;
+
+    let numRings = 0;
+    if (geomType === 3) {
+      numRings = isLittleEndian ? view.getUint32(offset, true) : view.getUint32(offset, false);
+      offset += 4;
+    } else if (geomType === 6) {
+      const numPolys = isLittleEndian ? view.getUint32(offset, true) : view.getUint32(offset, false);
+      offset += 4;
+      if (numPolys > 0) {
+        offset += 5;
+        if (hasSRID) offset += 4;
+        numRings = isLittleEndian ? view.getUint32(offset, true) : view.getUint32(offset, false);
+        offset += 4;
+      }
+    }
+
+    if (numRings <= 0) return null;
+
+    const rings = [];
+    for (let r = 0; r < numRings; r++) {
+      const numPoints = isLittleEndian ? view.getUint32(offset, true) : view.getUint32(offset, false);
+      offset += 4;
+      const ring = [];
+      for (let p = 0; p < numPoints; p++) {
+        if (offset + 16 > view.byteLength) break;
+        const lng = isLittleEndian ? view.getFloat64(offset, true) : view.getFloat64(offset, false);
+        offset += 8;
+        const lat = isLittleEndian ? view.getFloat64(offset, true) : view.getFloat64(offset, false);
+        offset += 8;
+
+        if (hasZ) offset += 8;
+        if (hasM) offset += 8;
+
+        if (!isNaN(lng) && !isNaN(lat) && lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90) {
+          ring.push([lng, lat]);
+        }
+      }
+      if (ring.length >= 3) {
+        rings.push(ring);
+      }
+    }
+    return rings.length > 0 ? rings : null;
+  } catch (err) {
+    console.warn('EWKB parse warning, using fallback:', err);
+    return null;
+  }
+}
+
+function parseBoundaryPolygon(poly, fallbackIndex = 0) {
+  if (!poly) return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
+
+  if (typeof poly === 'object') {
+    if (poly.type === 'Polygon' && Array.isArray(poly.coordinates)) {
+      return poly.coordinates;
+    }
+    if (poly.type === 'MultiPolygon' && Array.isArray(poly.coordinates) && poly.coordinates[0]) {
+      return poly.coordinates[0];
     }
   }
 
-  return [PRESET_CORRIDORS[zoneIndex % PRESET_CORRIDORS.length]];
+  if (typeof poly === 'string') {
+    const trimmed = poly.trim();
+
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed.type === 'Polygon' && Array.isArray(parsed.coordinates)) return parsed.coordinates;
+        if (parsed.type === 'MultiPolygon' && Array.isArray(parsed.coordinates) && parsed.coordinates[0]) return parsed.coordinates[0];
+        if (Array.isArray(parsed) && Array.isArray(parsed[0])) return parsed;
+      } catch (e) {
+        // Continue
+      }
+    }
+
+    const cleanHex = trimmed.replace(/^(\\x|0x)/i, '');
+    if (/^[0-9a-fA-F]{30,}$/.test(cleanHex)) {
+      const ewkbRings = parseEWKBHex(cleanHex);
+      if (ewkbRings && ewkbRings.length > 0) return ewkbRings;
+    }
+
+    const wktUpper = trimmed.toUpperCase();
+    if (wktUpper.includes('POLYGON')) {
+      const match = trimmed.match(/\(\((.*?)\)\)/) || trimmed.match(/\((.*?)\)/);
+      if (match && match[1]) {
+        const coords = match[1]
+          .split(',')
+          .map((pair) => {
+            const parts = pair.trim().split(/\s+/).map(Number);
+            return [parts[0], parts[1]];
+          })
+          .filter(([lng, lat]) => !isNaN(lng) && !isNaN(lat) && lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90);
+        if (coords.length >= 3) return [coords];
+      }
+    }
+  }
+
+  return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 }
 
 /**
@@ -119,7 +220,7 @@ export function ZoneDrawMap() {
   const [selectedZone, setSelectedZone] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loadRealZones = async () => {
+  const loadRealZones = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
     try {
@@ -139,45 +240,13 @@ export function ZoneDrawMap() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current) return;
-
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: VECTORSTREET_STYLE,
-      center: [106.83, -6.18],
-      zoom: 11.5,
-      pitch: 50,
-      bearing: -15,
-      antialias: true,
-      dragRotate: true,
-      pitchWithRotate: true,
-    });
-
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
-
-    map.on('load', () => {
-      loadRealZones();
-    });
-
-    mapRef.current = map;
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
   }, []);
 
   // Render Zone Polygons and Interactive Zone Center Pin Badges
-  const renderZoneLayers = () => {
+  const renderZoneLayers = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !realZones.length) return;
+    if (!map || !map.isStyleLoaded() || !realZones.length) return;
 
-    // Clear old pin markers
     zonePinMarkersRef.current.forEach((m) => m.remove());
     zonePinMarkersRef.current = [];
 
@@ -185,7 +254,7 @@ export function ZoneDrawMap() {
 
     const zoneFeatures = realZones
       .map((z, idx) => {
-        const coords = parseBoundaryPolygon(z.boundary_polygon, z.id, idx);
+        const coords = parseBoundaryPolygon(z.boundary_polygon, idx);
         if (!coords || !coords[0]) return null;
 
         const ring = coords[0];
@@ -195,14 +264,13 @@ export function ZoneDrawMap() {
           }
         });
 
-        const centerLng = (ring[0][0] + ring[2][0]) / 2;
-        const centerLat = (ring[0][1] + ring[2][1]) / 2;
+        const centerLng = ring.reduce((acc, p) => acc + p[0], 0) / ring.length;
+        const centerLat = ring.reduce((acc, p) => acc + p[1], 0) / ring.length;
 
         const zoneColor = idx % 4 === 0 ? '#10b981' : idx % 4 === 1 ? '#06b6d4' : idx % 4 === 2 ? '#f59e0b' : '#3b82f6';
 
-        // Add prominent HTML pin badge for each zone
         const el = document.createElement('div');
-        el.className = 'group cursor-pointer';
+        el.className = 'group cursor-pointer z-20';
         el.innerHTML = `
           <div class="flex items-center gap-1.5 bg-slate-900/95 text-white px-3 py-1.5 rounded-2xl border-2 border-teal-400 shadow-2xl backdrop-blur-md hover:scale-125 transition-transform">
             <span class="text-sm">🏢</span>
@@ -249,45 +317,74 @@ export function ZoneDrawMap() {
 
     const geojson = { type: 'FeatureCollection', features: zoneFeatures };
 
-    // Remove old layers & source if re-adding on style load
-    if (map.getLayer('draw-zones-extrusion')) map.removeLayer('draw-zones-extrusion');
-    if (map.getLayer('draw-zones-line')) map.removeLayer('draw-zones-line');
-    if (map.getLayer('draw-zones-fill')) map.removeLayer('draw-zones-fill');
-    if (map.getSource('draw-zones-source')) map.removeSource('draw-zones-source');
+    if (map.getSource('draw-zones-source')) {
+      map.getSource('draw-zones-source').setData(geojson);
+    } else {
+      map.addSource('draw-zones-source', { type: 'geojson', data: geojson });
 
-    map.addSource('draw-zones-source', { type: 'geojson', data: geojson });
+      map.addLayer({
+        id: 'draw-zones-fill',
+        type: 'fill',
+        source: 'draw-zones-source',
+        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.45 },
+      });
 
-    map.addLayer({
-      id: 'draw-zones-fill',
-      type: 'fill',
-      source: 'draw-zones-source',
-      paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.45 },
-    });
+      map.addLayer({
+        id: 'draw-zones-line',
+        type: 'line',
+        source: 'draw-zones-source',
+        paint: { 'line-color': ['get', 'color'], 'line-width': 4.0 },
+      });
 
-    map.addLayer({
-      id: 'draw-zones-line',
-      type: 'line',
-      source: 'draw-zones-source',
-      paint: { 'line-color': ['get', 'color'], 'line-width': 4.0 },
-    });
+      map.addLayer({
+        id: 'draw-zones-extrusion',
+        type: 'fill-extrusion',
+        source: 'draw-zones-source',
+        paint: {
+          'fill-extrusion-color': ['get', 'color'],
+          'fill-extrusion-height': ['get', 'height'],
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0.65,
+        },
+      });
+    }
 
-    map.addLayer({
-      id: 'draw-zones-extrusion',
-      type: 'fill-extrusion',
-      source: 'draw-zones-source',
-      paint: {
-        'fill-extrusion-color': ['get', 'color'],
-        'fill-extrusion-height': ['get', 'height'],
-        'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.65,
-      },
-    });
-
-    // Auto fit map camera bounds to show ALL zones on screen
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 1000 });
     }
-  };
+  }, [realZones]);
+
+  useEffect(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
+
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: VECTORSTREET_STYLE,
+      center: [106.83, -6.18],
+      zoom: 11.5,
+      pitch: 50,
+      bearing: -15,
+      antialias: true,
+      dragRotate: true,
+      pitchWithRotate: true,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
+
+    map.on('load', () => {
+      loadRealZones();
+    });
+
+    mapRef.current = map;
+
+    return () => {
+      zonePinMarkersRef.current.forEach((m) => m.remove());
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [loadRealZones]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -296,20 +393,35 @@ export function ZoneDrawMap() {
     if (map.isStyleLoaded()) {
       renderZoneLayers();
     } else {
-      map.once('styledata', renderZoneLayers);
+      map.once('style.load', renderZoneLayers);
     }
-  }, [realZones]);
+  }, [realZones, renderZoneLayers]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
     let targetStyle = VECTORSTREET_STYLE;
     if (mapMode === 'satellite') targetStyle = SATELLITE_STYLE;
     else if (mapMode === 'dark') targetStyle = VECTORDARK_STYLE;
 
     map.setStyle(targetStyle);
-    map.once('styledata', renderZoneLayers);
-  }, [mapMode]);
+
+    if (map.isStyleLoaded()) {
+      renderZoneLayers();
+    } else {
+      map.once('style.load', renderZoneLayers);
+    }
+  }, [mapMode, renderZoneLayers]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (map.getLayer('draw-zones-extrusion')) {
+      map.setLayoutProperty('draw-zones-extrusion', 'visibility', is3D ? 'visible' : 'none');
+    }
+  }, [is3D]);
 
   return (
     <Card className="p-0 h-[420px] sm:h-[500px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
