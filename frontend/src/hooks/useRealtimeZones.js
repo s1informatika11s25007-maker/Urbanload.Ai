@@ -18,7 +18,7 @@ try {
   // Ignore storage errors
 }
 
-function updateGlobalZones(newZones) {
+export function updateGlobalZones(newZones) {
   globalZonesCache = newZones;
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newZones));
@@ -28,7 +28,7 @@ function updateGlobalZones(newZones) {
   globalZonesListeners.forEach((listener) => listener(newZones));
 }
 
-async function silentSyncZones() {
+export async function silentSyncZones() {
   try {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -44,6 +44,8 @@ async function silentSyncZones() {
   }
 }
 
+export const triggerZonesRefresh = silentSyncZones;
+
 function initZonesRealtimeChannel() {
   if (isRealtimeSubscribed) return;
   isRealtimeSubscribed = true;
@@ -51,8 +53,21 @@ function initZonesRealtimeChannel() {
   const supabase = createClient();
   supabase
     .channel('global_zones_realtime_channel')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => {
-      // Background silent sync when DB changes occur
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, (payload) => {
+      // Immediate realtime WebSocket update
+      if (payload.eventType === 'INSERT' && payload.new) {
+        if (globalZonesCache) {
+          updateGlobalZones([payload.new, ...globalZonesCache.filter(z => z.id !== payload.new.id)]);
+        }
+      } else if (payload.eventType === 'UPDATE' && payload.new) {
+        if (globalZonesCache) {
+          updateGlobalZones(globalZonesCache.map(z => z.id === payload.new.id ? payload.new : z));
+        }
+      } else if (payload.eventType === 'DELETE' && payload.old) {
+        if (globalZonesCache) {
+          updateGlobalZones(globalZonesCache.filter(z => z.id !== payload.old.id));
+        }
+      }
       silentSyncZones();
     })
     .subscribe();
@@ -63,25 +78,21 @@ export function useRealtimeZones() {
   const [loading, setLoading] = useState(!globalZonesCache || globalZonesCache.length === 0);
 
   useEffect(() => {
-    // 1. Register component listener for global cache updates
     const listener = (newZones) => {
       setZones(newZones);
       setLoading(false);
     };
     globalZonesListeners.add(listener);
 
-    // 2. If global cache is present, instantly supply it (0ms load - NO SPINNER)
     if (globalZonesCache && globalZonesCache.length > 0) {
       setZones(globalZonesCache);
       setLoading(false);
     }
 
-    // 3. Trigger silent background revalidation without blocking UI
     silentSyncZones().then(() => {
       setLoading(false);
     });
 
-    // 4. Ensure single shared realtime channel
     initZonesRealtimeChannel();
 
     return () => {

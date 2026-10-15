@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
 import { useToast } from '../components/ui/ToastNotification.jsx';
+import { triggerZonesRefresh, useRealtimeZones } from '../hooks/useRealtimeZones.js';
 
 const ZoneDrawMap = lazy(() => import('../components/zones/ZoneDrawMap.jsx').then((mod) => ({ default: mod.ZoneDrawMap })));
 const ZoneListTable = lazy(() => import('../components/zones/ZoneListTable.jsx').then((mod) => ({ default: mod.ZoneListTable })));
@@ -35,9 +36,10 @@ const CITY_CORRIDOR_PRESETS = [
 
 export default function CityZones() {
   const { showToast } = useToast();
+  const { zones: dbZones } = useRealtimeZones();
+
   const [showManageModal, setShowManageModal] = useState(false);
   const [manageTab, setManageTab] = useState('add');
-  const [dbZones, setDbZones] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Elegant Delete Confirmation Card Modal State
@@ -51,21 +53,7 @@ export default function CityZones() {
   const [priorityLevel, setPriorityLevel] = useState('normal');
   const [selectedWKT, setSelectedWKT] = useState('POLYGON((106.820 -6.180, 106.830 -6.180, 106.830 -6.190, 106.820 -6.190, 106.820 -6.180))');
 
-  // Load Zones from Supabase
-  const loadDbZones = async () => {
-    const supabase = createClient();
-    try {
-      const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
-      if (data) setDbZones(data);
-    } catch (e) {
-      console.error('Error fetching DB zones:', e);
-    }
-  };
-
-  useEffect(() => {
-    loadDbZones();
-  }, [showManageModal]);
-
+  // Handle Edit Zone Selection
   const handleSelectZoneForEdit = (zoneId) => {
     setSelectedZoneId(zoneId);
     const z = dbZones.find((item) => item.id === zoneId);
@@ -78,6 +66,7 @@ export default function CityZones() {
     }
   };
 
+  // Receive Polygon WKT from Interactive Map Editor Pins
   const handleSelectNewZoneWKT = (wktString) => {
     setSelectedWKT(wktString);
     showToast({
@@ -96,6 +85,7 @@ export default function CityZones() {
     showToast({ title: 'Preset Koridor Diterapkan', message: preset.name, type: 'info' });
   };
 
+  // Create New Zone with Instant Realtime Broadcast
   const handleCreateZone = async (e) => {
     e.preventDefault();
     if (!zoneName) return;
@@ -103,7 +93,7 @@ export default function CityZones() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.from('zones').insert({
+      const { data, error } = await supabase.from('zones').insert({
         name: zoneName,
         max_truck_capacity: Number(maxCapacity),
         zone_type: zoneType,
@@ -111,17 +101,17 @@ export default function CityZones() {
         boundary_polygon: selectedWKT,
         operating_hours_start: '06:00',
         operating_hours_end: '22:00',
-      });
+      }).select().single();
 
       if (!error) {
         showToast({
-          title: 'Zona Baru Ditambahkan',
-          message: `${zoneName} disimpan ke database.`,
+          title: 'Zona Baru Ditambahkan!',
+          message: `${zoneName} disimpan ke database dan peta otomatis ter-refresh.`,
           type: 'success',
         });
         setZoneName('');
         setShowManageModal(false);
-        loadDbZones();
+        triggerZonesRefresh();
       } else {
         showToast({ title: 'Gagal Menambah Zona', message: error.message, type: 'error' });
       }
@@ -132,6 +122,7 @@ export default function CityZones() {
     }
   };
 
+  // Update Existing Zone with Instant Realtime Broadcast
   const handleUpdateZone = async (e) => {
     e.preventDefault();
     if (!selectedZoneId || !zoneName) return;
@@ -153,12 +144,12 @@ export default function CityZones() {
 
       if (!error) {
         showToast({
-          title: 'Zona Berhasil Diperbarui',
-          message: `${zoneName} telah di-update di database.`,
+          title: 'Zona Berhasil Diperbarui!',
+          message: `${zoneName} di-update di database dan peta otomatis ter-refresh.`,
           type: 'success',
         });
         setShowManageModal(false);
-        loadDbZones();
+        triggerZonesRefresh();
       } else {
         showToast({ title: 'Gagal Memperbarui Zona', message: error.message, type: 'error' });
       }
@@ -179,7 +170,7 @@ export default function CityZones() {
     }
   };
 
-  // Execute Permanent Delete from Supabase
+  // Execute Permanent Delete from Supabase with Instant Realtime Broadcast
   const executeDeleteZone = async () => {
     if (!deleteConfirmZone) return;
 
@@ -190,14 +181,14 @@ export default function CityZones() {
 
       if (!error) {
         showToast({
-          title: 'Zona Berhasil Dihapus',
-          message: `Zona ${deleteConfirmZone.name} telah dihapus dari database.`,
+          title: 'Zona Berhasil Dihapus!',
+          message: `Zona ${deleteConfirmZone.name} telah dihapus dan peta otomatis ter-refresh.`,
           type: 'success',
         });
         setSelectedZoneId('');
         setDeleteConfirmZone(null);
         setShowManageModal(false);
-        loadDbZones();
+        triggerZonesRefresh();
       } else {
         showToast({ title: 'Gagal Menghapus Zona', message: error.message, type: 'error' });
       }
@@ -463,7 +454,7 @@ export default function CityZones() {
                     required
                   >
                     <option value="">-- Pilih Zona Existing --</option>
-                    {dbZones.map((z) => (
+                    {(dbZones || []).map((z) => (
                       <option key={z.id} value={z.id}>{z.name} (Cap: {z.max_truck_capacity})</option>
                     ))}
                   </select>
@@ -544,7 +535,7 @@ export default function CityZones() {
                     required
                   >
                     <option value="">-- Pilih Zona untuk Dihapus --</option>
-                    {dbZones.map((z) => (
+                    {(dbZones || []).map((z) => (
                       <option key={z.id} value={z.id}>{z.name} (ID: {z.id.slice(0, 8)}...)</option>
                     ))}
                   </select>

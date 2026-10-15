@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { createClient } from '../../lib/supabase/client.js';
+import { useRealtimeZones } from '../../hooks/useRealtimeZones.js';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
 import {
@@ -225,11 +225,6 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
   return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 }
 
-/**
- * ZoneDrawMap Component
- * @param {boolean} readOnly - If true, map is in View-Only mode for initial dashboard display.
- *                             If false, enables interactive Multi-Pin / Radius zone drawing editor.
- */
 export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -239,34 +234,15 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
   const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
 
-  // INTERACTIVE DRAWING STATES (Only active when readOnly = false)
-  const [drawMode, setDrawMode] = useState('pins'); // 'pins' or 'radius'
+  // AUTOMATIC REALTIME ZONES HOOK
+  const { zones: realZones } = useRealtimeZones();
+
+  // INTERACTIVE DRAWING STATES
+  const [drawMode, setDrawMode] = useState('pins');
   const [placedPins, setPlacedPins] = useState([]);
   const [zoneRadiusMeters, setZoneRadiusMeters] = useState(300);
   const [currentCreatedWKT, setCurrentCreatedWKT] = useState('');
-
-  // INSTANT 0ms RENDER FROM LOCALSTORAGE CACHE
-  const [realZones, setRealZones] = useState(() => {
-    try {
-      const saved = localStorage.getItem('urbanload_zones_cache_v1');
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) { return []; }
-  });
-
   const [selectedZone, setSelectedZone] = useState(null);
-
-  const loadRealZones = useCallback(async () => {
-    const supabase = createClient();
-    try {
-      const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
-      if (data && data.length > 0) {
-        setRealZones(data);
-        try { localStorage.setItem('urbanload_zones_cache_v1', JSON.stringify(data)); } catch (e) {}
-      }
-    } catch (e) {
-      console.error('Error fetching zones from database:', e);
-    }
-  }, []);
 
   const updateCustomDrawLayer = useCallback(() => {
     if (readOnly) return;
@@ -368,7 +344,7 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
 
   const renderZoneLayers = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded() || !realZones.length) return;
+    if (!map || !map.isStyleLoaded() || !realZones || !realZones.length) return;
 
     zonePinMarkersRef.current.forEach((m) => m.remove());
     zonePinMarkersRef.current = [];
@@ -494,10 +470,6 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
 
-    map.on('load', () => {
-      loadRealZones(true);
-    });
-
     if (!readOnly) {
       map.on('click', handleMapClick);
     }
@@ -512,7 +484,7 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
         mapRef.current = null;
       }
     };
-  }, [loadRealZones, handleMapClick, readOnly]);
+  }, [handleMapClick, readOnly]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -576,7 +548,7 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
     <Card className="p-0 h-[420px] sm:h-[520px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
       <div ref={mapContainerRef} className={`w-full h-full bg-slate-950 ${readOnly ? '' : 'cursor-crosshair'}`} />
 
-      {/* FLOATING MULTI-PIN & RADIUS INTERACTIVE EDITOR CONTROLS OVERLAY (Only visible when readOnly = false) */}
+      {/* FLOATING MULTI-PIN & RADIUS INTERACTIVE EDITOR CONTROLS OVERLAY */}
       {!readOnly && (
         <div className="absolute top-3 left-3 right-3 sm:left-4 sm:right-auto z-20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-900/95 p-2 sm:p-2.5 rounded-2xl border border-teal-500/40 backdrop-blur-md shadow-2xl text-xs text-white max-w-full sm:max-w-2xl">
           <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl shrink-0">
@@ -685,7 +657,7 @@ export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
         {readOnly ? (
           <>
             <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span>Tampilan Peta Spasial PostGIS ({realZones.length} Zona Aktif) — Klik 'Manage Zona' untuk Edit/Tambah/Hapus</span>
+            <span>Tampilan Peta Spasial PostGIS ({(realZones || []).length} Zona Aktif) — Klik 'Manage Zona' untuk Edit/Tambah/Hapus</span>
           </>
         ) : (
           <>
