@@ -114,7 +114,6 @@ const ROLE_SIDEBAR_CONFIG = {
           { to: '/security/prompt-guard', label: 'Proteksi & Anti-Fraud GPS', icon: Lock, badge: 'Guard', desc: 'Siber & Anti-Spoofing' },
           { to: '/dishub/reports', label: 'Pusat Laporan Pelanggaran', icon: ShieldAlert, badge: 'Audit', desc: 'Laporan & Enforcement' },
           { to: '/city/livemap', label: 'Telemetri & LiveMap 3D', icon: Shield, desc: 'Full City Spatial Map' },
-          { to: '/rider/congestion', label: 'Analisis Kepadatan Kota', icon: Activity, desc: 'Physics Kerbside Model' },
         ],
       },
       {
