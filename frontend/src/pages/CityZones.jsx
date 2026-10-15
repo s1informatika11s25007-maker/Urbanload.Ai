@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Download, Settings, Loader2, X, MapPin, Sparkles, Trash2, Edit3, Plus, ShieldCheck } from 'lucide-react';
+import { Download, Settings, Loader2, X, MapPin, Sparkles, Trash2, Edit3, Plus } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
@@ -36,9 +36,12 @@ const CITY_CORRIDOR_PRESETS = [
 export default function CityZones() {
   const { showToast } = useToast();
   const [showManageModal, setShowManageModal] = useState(false);
-  const [manageTab, setManageTab] = useState('add'); // 'add' | 'edit' | 'delete'
+  const [manageTab, setManageTab] = useState('add');
   const [dbZones, setDbZones] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Elegant Delete Confirmation Card Modal State
+  const [deleteConfirmZone, setDeleteConfirmZone] = useState(null);
 
   // Form States for Add / Edit
   const [selectedZoneId, setSelectedZoneId] = useState('');
@@ -63,7 +66,6 @@ export default function CityZones() {
     loadDbZones();
   }, [showManageModal]);
 
-  // Handle Edit Zone Selection
   const handleSelectZoneForEdit = (zoneId) => {
     setSelectedZoneId(zoneId);
     const z = dbZones.find((item) => item.id === zoneId);
@@ -76,7 +78,6 @@ export default function CityZones() {
     }
   };
 
-  // Receive Polygon WKT from Interactive Map Editor Pins/Radius
   const handleSelectNewZoneWKT = (wktString) => {
     setSelectedWKT(wktString);
     showToast({
@@ -95,7 +96,6 @@ export default function CityZones() {
     showToast({ title: 'Preset Koridor Diterapkan', message: preset.name, type: 'info' });
   };
 
-  // Create New Zone
   const handleCreateZone = async (e) => {
     e.preventDefault();
     if (!zoneName) return;
@@ -132,7 +132,6 @@ export default function CityZones() {
     }
   };
 
-  // Update Existing Zone
   const handleUpdateZone = async (e) => {
     e.preventDefault();
     if (!selectedZoneId || !zoneName) return;
@@ -170,26 +169,33 @@ export default function CityZones() {
     }
   };
 
-  // Delete Existing Zone
-  const handleDeleteZone = async (e) => {
+  // Open Elegant Delete Confirmation Card Modal
+  const handleRequestDeleteZone = (e) => {
     e.preventDefault();
     if (!selectedZoneId) return;
-
     const matched = dbZones.find((z) => z.id === selectedZoneId);
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus zona ${matched?.name || 'ini'}?`)) return;
+    if (matched) {
+      setDeleteConfirmZone(matched);
+    }
+  };
+
+  // Execute Permanent Delete from Supabase
+  const executeDeleteZone = async () => {
+    if (!deleteConfirmZone) return;
 
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.from('zones').delete().eq('id', selectedZoneId);
+      const { error } = await supabase.from('zones').delete().eq('id', deleteConfirmZone.id);
 
       if (!error) {
         showToast({
-          title: 'Zona Dihapus',
-          message: `Zona telah dihapus dari database.`,
+          title: 'Zona Berhasil Dihapus',
+          message: `Zona ${deleteConfirmZone.name} telah dihapus dari database.`,
           type: 'success',
         });
         setSelectedZoneId('');
+        setDeleteConfirmZone(null);
         setShowManageModal(false);
         loadDbZones();
       } else {
@@ -289,7 +295,7 @@ export default function CityZones() {
         <GeofenceValidator />
       </Suspense>
 
-      {/* MANAGE ZONA FULL SUITE MODAL (Tambah, Edit, Hapus + Interactive Map Canvas) */}
+      {/* MANAGE ZONA FULL SUITE MODAL */}
       {showManageModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
           <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl space-y-4 relative">
@@ -303,7 +309,7 @@ export default function CityZones() {
               </button>
             </div>
 
-            {/* TAB SELECTION: TAMBAH / EDIT / HAPUS ZONA */}
+            {/* TAB SELECTION */}
             <div className="flex gap-1.5 bg-slate-100 p-1 rounded-2xl border text-xs font-bold text-slate-700">
               <button
                 type="button"
@@ -334,7 +340,7 @@ export default function CityZones() {
               </button>
             </div>
 
-            {/* INTERACTIVE DRAWING MAP CANVAS INSIDE MODAL (For Add & Edit Mode) */}
+            {/* INTERACTIVE DRAWING MAP CANVAS INSIDE MODAL */}
             {(manageTab === 'add' || manageTab === 'edit') && (
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs text-slate-600 font-bold">
@@ -352,7 +358,6 @@ export default function CityZones() {
             {/* TAB 1: FORM TAMBAH ZONA */}
             {manageTab === 'add' && (
               <form onSubmit={handleCreateZone} className="space-y-3 text-xs pt-1">
-                {/* Presets Shortcut Chips */}
                 <div className="space-y-1.5 p-3 rounded-2xl bg-teal-50/80 border border-teal-200">
                   <span className="text-[10px] font-bold text-teal-900 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-teal-600" /> Preset Koridor Cepat:
@@ -529,7 +534,7 @@ export default function CityZones() {
 
             {/* TAB 3: HAPUS ZONA */}
             {manageTab === 'delete' && (
-              <form onSubmit={handleDeleteZone} className="space-y-4 text-xs pt-1">
+              <form onSubmit={handleRequestDeleteZone} className="space-y-4 text-xs pt-1">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Pilih Zona yang Ingin Dihapus:</label>
                   <select
@@ -549,7 +554,7 @@ export default function CityZones() {
                   <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-900 space-y-2">
                     <span className="font-extrabold block text-rose-800">⚠️ Peringatan Hapus Zona:</span>
                     <p className="text-[11px] leading-relaxed">
-                      Zona yang dihapus tidak dapat dikembalikan. Seluruh slot booking aktif pada zona ini akan ditolak secara otomatis oleh sistem.
+                      Zona yang dihapus tidak dapat dikembalikan.
                     </p>
 
                     <Button
@@ -558,12 +563,49 @@ export default function CityZones() {
                       className="w-full py-2.5 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md mt-2 flex items-center justify-center gap-1.5"
                     >
                       <Trash2 className="h-4 w-4" />
-                      {loading ? 'Menghapus Zona...' : 'Konfirmasi Hapus Zona Permanen'}
+                      Proses Hapus Zona
                     </Button>
                   </div>
                 )}
               </form>
             )}
+          </Card>
+        </div>
+      )}
+
+      {/* ELEGANT DELETE CONFIRMATION CARD MODAL */}
+      {deleteConfirmZone && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-200">
+          <Card className="w-full max-w-sm p-6 bg-white rounded-3xl border border-rose-200 shadow-2xl space-y-4 text-center">
+            <div className="mx-auto h-12 w-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-inner">
+              <Trash2 className="h-6 w-6" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base font-black text-slate-900">Hapus Zona Logistik Permanen</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Apakah Anda yakin ingin menghapus zona <strong className="text-rose-600 font-extrabold">{deleteConfirmZone.name}</strong>?
+              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDeleteConfirmZone(null)}
+                className="flex-1 py-2 text-xs font-bold"
+              >
+                Batal
+              </Button>
+              <Button
+                type="button"
+                onClick={executeDeleteZone}
+                disabled={loading}
+                className="flex-1 py-2 text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-md"
+              >
+                {loading ? 'Menghapus...' : 'Ya, Hapus Permanen'}
+              </Button>
+            </div>
           </Card>
         </div>
       )}

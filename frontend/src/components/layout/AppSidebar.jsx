@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Truck,
@@ -105,35 +105,22 @@ const ROLE_SIDEBAR_CONFIG = {
     roleLabel: 'System Admin',
     perspectiveBadge: 'SUPERUSER CONTROL',
     ...UNIFORM_SIDEBAR_STYLE,
-    description: 'Akses Penuh Semua Modul Operasional',
+    description: 'Fokus: Pengawasan Sistem, Audit & Governance',
     sections: [
       {
-        title: 'Modul Kurir Logistik',
+        title: 'Manajemen System Admin',
         items: [
-          { to: '/rider/dashboard', label: 'Dashboard Kurir', icon: Truck, desc: 'Status GPS & Slot' },
-          { to: '/rider/bookings/new', label: 'SmartSlot Booking AI', icon: Calendar, desc: 'Pesan Unloading Bay' },
-        ],
-      },
-      {
-        title: 'Modul Tata Kota PostGIS',
-        items: [
-          { to: '/city/zones', label: 'Editor Zona PostGIS', icon: Building2, desc: 'Geofence Boundaries' },
-          { to: '/security/prompt-guard', label: 'Proteksi & Anti-Fraud GPS', icon: Lock, desc: 'Siber & Anti-Spoofing' },
-        ],
-      },
-      {
-        title: 'Modul Dishub & Telemetri',
-        items: [
-          { to: '/dishub/reports', label: 'Laporan Pelanggaran Warga', icon: ShieldAlert, desc: 'Penindakan Warga' },
-          { to: '/dispatch/voice', label: 'Voice Dispatch & Siren', icon: Mic, desc: 'Siren Preemption Console' },
+          { to: '/city/zones', label: 'Editor Zona PostGIS', icon: Building2, desc: 'Kelola Geofence Bay' },
+          { to: '/security/prompt-guard', label: 'Proteksi & Anti-Fraud GPS', icon: Lock, badge: 'Guard', desc: 'Siber & Anti-Spoofing' },
+          { to: '/dishub/reports', label: 'Pusat Laporan Pelanggaran', icon: ShieldAlert, badge: 'Audit', desc: 'Laporan & Enforcement' },
           { to: '/city/livemap', label: 'Telemetri & LiveMap 3D', icon: Shield, desc: 'Full City Spatial Map' },
-          { to: '/rider/congestion', label: 'Skor Kepadatan AI', icon: Activity, desc: 'Physics Kerbside Model' },
+          { to: '/rider/congestion', label: 'Analisis Kepadatan Kota', icon: Activity, desc: 'Physics Kerbside Model' },
         ],
       },
       {
-        title: 'Asisten AI Central',
+        title: 'Intelligence & Superuser AI',
         items: [
-          { to: '/logitalk', label: 'LogiTalk AI Superuser', icon: Bot, isAi: true, desc: 'Semua Fitur AI LogiTalk' },
+          { to: '/logitalk', label: 'LogiTalk AI Superuser', icon: Bot, isAi: true, desc: 'Pusat Inteligensi AI' },
         ],
       },
     ],
