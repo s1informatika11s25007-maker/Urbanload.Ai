@@ -1,5 +1,5 @@
-import React, { useState, lazy, Suspense } from 'react';
-import { Download, Plus, Loader2, X, MapPin, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { Download, Settings, Loader2, X, MapPin, Sparkles, Trash2, Edit3, Plus, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { Card } from '../components/ui/card.jsx';
 import { createClient } from '../lib/supabase/client.js';
@@ -35,29 +35,59 @@ const CITY_CORRIDOR_PRESETS = [
 
 export default function CityZones() {
   const { showToast } = useToast();
-  const [showAddModal, setShowShowAddModal] = useState(false);
-  const [loadingAdd, setLoadingAdd] = useState(false);
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [manageTab, setManageTab] = useState('add'); // 'add' | 'edit' | 'delete'
+  const [dbZones, setDbZones] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // New Zone Form
-  const [newZoneName, setNewZoneName] = useState('');
+  // Form States for Add / Edit
+  const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [zoneName, setZoneName] = useState('');
   const [maxCapacity, setMaxCapacity] = useState(15);
   const [zoneType, setZoneType] = useState('logistics');
   const [priorityLevel, setPriorityLevel] = useState('normal');
   const [selectedWKT, setSelectedWKT] = useState('POLYGON((106.820 -6.180, 106.830 -6.180, 106.830 -6.190, 106.820 -6.190, 106.820 -6.180))');
 
-  // Receive Created Polygon WKT from Interactive Map Editor Pins
+  // Load Zones from Supabase
+  const loadDbZones = async () => {
+    const supabase = createClient();
+    try {
+      const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
+      if (data) setDbZones(data);
+    } catch (e) {
+      console.error('Error fetching DB zones:', e);
+    }
+  };
+
+  useEffect(() => {
+    loadDbZones();
+  }, [showManageModal]);
+
+  // Handle Edit Zone Selection
+  const handleSelectZoneForEdit = (zoneId) => {
+    setSelectedZoneId(zoneId);
+    const z = dbZones.find((item) => item.id === zoneId);
+    if (z) {
+      setZoneName(z.name || '');
+      setMaxCapacity(z.max_truck_capacity || 15);
+      setZoneType(z.zone_type || 'logistics');
+      setPriorityLevel(z.priority_level || 'normal');
+      setSelectedWKT(z.boundary_polygon || '');
+    }
+  };
+
+  // Receive Polygon WKT from Interactive Map Editor Pins/Radius
   const handleSelectNewZoneWKT = (wktString) => {
     setSelectedWKT(wktString);
-    setShowShowAddModal(true);
     showToast({
-      title: 'Poligon Peta Berhasil Diterapkan!',
-      message: 'Batas zona baru dari penandaan pin merah telah dimasukkan ke form.',
+      title: 'Poligon Peta Terdaftar!',
+      message: 'Koordinat batas zona dari pin/radius berhasil dimasukkan ke form.',
       type: 'success'
     });
   };
 
   const handleApplyPreset = (preset) => {
-    setNewZoneName(preset.name);
+    setZoneName(preset.name);
     setMaxCapacity(preset.maxCapacity);
     setZoneType(preset.zoneType);
     setPriorityLevel(preset.priorityLevel);
@@ -65,16 +95,16 @@ export default function CityZones() {
     showToast({ title: 'Preset Koridor Diterapkan', message: preset.name, type: 'info' });
   };
 
+  // Create New Zone
   const handleCreateZone = async (e) => {
     e.preventDefault();
-    if (!newZoneName) return;
+    if (!zoneName) return;
 
-    setLoadingAdd(true);
+    setLoading(true);
     try {
       const supabase = createClient();
-
       const { error } = await supabase.from('zones').insert({
-        name: newZoneName,
+        name: zoneName,
         max_truck_capacity: Number(maxCapacity),
         zone_type: zoneType,
         priority_level: priorityLevel,
@@ -85,23 +115,90 @@ export default function CityZones() {
 
       if (!error) {
         showToast({
-          title: 'Zona Baru Berhasil Ditambahkan',
-          message: `${newZoneName} telah disimpan langsung ke database Supabase.`,
+          title: 'Zona Baru Ditambahkan',
+          message: `${zoneName} disimpan ke database.`,
           type: 'success',
         });
-        setNewZoneName('');
-        setShowShowAddModal(false);
+        setZoneName('');
+        setShowManageModal(false);
+        loadDbZones();
       } else {
-        showToast({
-          title: 'Gagal Menambah Zona',
-          message: error.message,
-          type: 'error',
-        });
+        showToast({ title: 'Gagal Menambah Zona', message: error.message, type: 'error' });
       }
     } catch (err) {
-      console.error('Error creating zone:', err);
+      console.error(err);
     } finally {
-      setLoadingAdd(false);
+      setLoading(false);
+    }
+  };
+
+  // Update Existing Zone
+  const handleUpdateZone = async (e) => {
+    e.preventDefault();
+    if (!selectedZoneId || !zoneName) return;
+
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('zones')
+        .update({
+          name: zoneName,
+          max_truck_capacity: Number(maxCapacity),
+          zone_type: zoneType,
+          priority_level: priorityLevel,
+          boundary_polygon: selectedWKT,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedZoneId);
+
+      if (!error) {
+        showToast({
+          title: 'Zona Berhasil Diperbarui',
+          message: `${zoneName} telah di-update di database.`,
+          type: 'success',
+        });
+        setShowManageModal(false);
+        loadDbZones();
+      } else {
+        showToast({ title: 'Gagal Memperbarui Zona', message: error.message, type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete Existing Zone
+  const handleDeleteZone = async (e) => {
+    e.preventDefault();
+    if (!selectedZoneId) return;
+
+    const matched = dbZones.find((z) => z.id === selectedZoneId);
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus zona ${matched?.name || 'ini'}?`)) return;
+
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from('zones').delete().eq('id', selectedZoneId);
+
+      if (!error) {
+        showToast({
+          title: 'Zona Dihapus',
+          message: `Zona telah dihapus dari database.`,
+          type: 'success',
+        });
+        setSelectedZoneId('');
+        setShowManageModal(false);
+        loadDbZones();
+      } else {
+        showToast({ title: 'Gagal Menghapus Zona', message: error.message, type: 'error' });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -154,12 +251,17 @@ export default function CityZones() {
         <div>
           <div className="text-[11px] sm:text-xs text-slate-500 mb-0.5">Beranda / Manajemen Zona</div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900">Editor Zona PostGIS</h1>
-          <p className="text-[11px] sm:text-xs text-slate-500">Editor geofence poligon PostGIS WGS84, penandaan pin merah & pengaturan radius zona.</p>
+          <p className="text-[11px] sm:text-xs text-slate-500">
+            Pemantauan geofence poligon PostGIS WGS84, penandaan pin/radius & kelola zona logistik.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-center">
-          <Button onClick={() => setShowShowAddModal(true)} className="text-xs flex items-center gap-1 font-bold bg-teal-600 hover:bg-teal-700 text-white">
-            <Plus className="h-3.5 w-3.5" /> Tambah Zona
+          <Button
+            onClick={() => { setManageTab('add'); setShowManageModal(true); }}
+            className="text-xs flex items-center gap-1 font-bold bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
+          >
+            <Settings className="h-3.5 w-3.5" /> Manage Zona
           </Button>
           <Button onClick={handleExportGeoJSON} variant="outline" className="text-xs flex items-center gap-1 font-bold">
             <Download className="h-3.5 w-3.5" /> Ekspor GeoJSON
@@ -167,14 +269,14 @@ export default function CityZones() {
         </div>
       </div>
 
-      {/* Section 1: Peta Interaktif Drawing Tool */}
+      {/* READ-ONLY VIEW MAPS AT INITIAL INGESTION */}
       <Suspense fallback={
         <div className="w-full h-[380px] sm:h-[500px] rounded-2xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-teal-400 text-xs font-bold gap-3 animate-pulse shadow-md">
           <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-          <span>Memuat MapLibre Drawing Editor...</span>
+          <span>Memuat View Peta PostGIS...</span>
         </div>
       }>
-        <ZoneDrawMap onSelectNewZoneWKT={handleSelectNewZoneWKT} />
+        <ZoneDrawMap readOnly={true} />
       </Suspense>
 
       {/* Section 2: Tabel Daftar Zona */}
@@ -187,110 +289,281 @@ export default function CityZones() {
         <GeofenceValidator />
       </Suspense>
 
-      {/* Modal Tambah Zona Baru Real */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <Card className="w-full max-w-md p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl space-y-4 relative">
+      {/* MANAGE ZONA FULL SUITE MODAL (Tambah, Edit, Hapus + Interactive Map Canvas) */}
+      {showManageModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl space-y-4 relative">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-teal-600" /> Tambah Zona Logistik Baru
-              </h3>
-              <button onClick={() => setShowShowAddModal(false)} className="text-slate-400 hover:text-slate-700 p-1">
+              <div className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-teal-600" />
+                <h3 className="text-base font-black text-slate-900">Kelola Zona Logistik PostGIS (Manage Zona)</h3>
+              </div>
+              <button onClick={() => setShowManageModal(false)} className="text-slate-400 hover:text-slate-700 p-1">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            {/* Presets Shortcut Chips */}
-            <div className="space-y-1.5 p-3 rounded-2xl bg-teal-50/80 border border-teal-200">
-              <span className="text-[10px] font-bold text-teal-900 flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-teal-600" /> Gunakan Preset Koridor Logistik Cepat:
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {CITY_CORRIDOR_PRESETS.map((p, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleApplyPreset(p)}
-                    className="text-[10px] font-bold bg-white text-teal-800 border border-teal-300 hover:bg-teal-600 hover:text-white px-2 py-1 rounded-lg transition"
-                  >
-                    + {p.name.split(' - ')[1] || p.name}
-                  </button>
-                ))}
-              </div>
+            {/* TAB SELECTION: TAMBAH / EDIT / HAPUS ZONA */}
+            <div className="flex gap-1.5 bg-slate-100 p-1 rounded-2xl border text-xs font-bold text-slate-700">
+              <button
+                type="button"
+                onClick={() => setManageTab('add')}
+                className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition ${
+                  manageTab === 'add' ? 'bg-teal-600 text-white shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                <Plus className="h-4 w-4" /> Tambah Zona Baru
+              </button>
+              <button
+                type="button"
+                onClick={() => setManageTab('edit')}
+                className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition ${
+                  manageTab === 'edit' ? 'bg-amber-600 text-white shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                <Edit3 className="h-4 w-4" /> Edit Zona Existing
+              </button>
+              <button
+                type="button"
+                onClick={() => setManageTab('delete')}
+                className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition ${
+                  manageTab === 'delete' ? 'bg-rose-600 text-white shadow-sm' : 'hover:bg-slate-200'
+                }`}
+              >
+                <Trash2 className="h-4 w-4" /> Hapus Zona
+              </button>
             </div>
 
-            <form onSubmit={handleCreateZone} className="space-y-3 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Nama Zona Logistik</label>
-                <input
-                  type="text"
-                  required
-                  value={newZoneName}
-                  onChange={(e) => setNewZoneName(e.target.value)}
-                  placeholder="Contoh: Zona E - Kawasan Industri Kebon Jeruk"
-                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
-                />
+            {/* INTERACTIVE DRAWING MAP CANVAS INSIDE MODAL (For Add & Edit Mode) */}
+            {(manageTab === 'add' || manageTab === 'edit') && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs text-slate-600 font-bold">
+                  <span>📍 Kanvas Penandaan Pin Merah & Radius Poligon:</span>
+                  <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-mono">
+                    Klik Peta / Slider Radius untuk Membentuk Poligon
+                  </span>
+                </div>
+                <Suspense fallback={<div className="h-[280px] bg-slate-900 rounded-2xl animate-pulse" />}>
+                  <ZoneDrawMap readOnly={false} onSelectNewZoneWKT={handleSelectNewZoneWKT} />
+                </Suspense>
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-3">
+            {/* TAB 1: FORM TAMBAH ZONA */}
+            {manageTab === 'add' && (
+              <form onSubmit={handleCreateZone} className="space-y-3 text-xs pt-1">
+                {/* Presets Shortcut Chips */}
+                <div className="space-y-1.5 p-3 rounded-2xl bg-teal-50/80 border border-teal-200">
+                  <span className="text-[10px] font-bold text-teal-900 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-teal-600" /> Preset Koridor Cepat:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CITY_CORRIDOR_PRESETS.map((p, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleApplyPreset(p)}
+                        className="text-[10px] font-bold bg-white text-teal-800 border border-teal-300 hover:bg-teal-600 hover:text-white px-2 py-1 rounded-lg transition"
+                      >
+                        + {p.name.split(' - ')[1] || p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Kapasitas Maks Truk</label>
+                  <label className="font-bold text-slate-700 block mb-1">Nama Zona Logistik</label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    min={1}
-                    value={maxCapacity}
-                    onChange={(e) => setMaxCapacity(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold text-slate-900 focus:border-teal-600"
+                    value={zoneName}
+                    onChange={(e) => setZoneName(e.target.value)}
+                    placeholder="Contoh: Zona H - Kawasan Industri Cengkareng"
+                    className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:border-teal-600"
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Kapasitas Maks Truk</label>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={maxCapacity}
+                      onChange={(e) => setMaxCapacity(e.target.value)}
+                      className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold focus:border-teal-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Prioritas Zona</label>
+                    <select
+                      value={priorityLevel}
+                      onChange={(e) => setPriorityLevel(e.target.value)}
+                      className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:border-teal-600"
+                    >
+                      <option value="normal">Normal</option>
+                      <option value="priority_pass">Priority Pass</option>
+                      <option value="restricted">Restricted</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Tipe Zona</label>
+                    <select
+                      value={zoneType}
+                      onChange={(e) => setZoneType(e.target.value)}
+                      className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:border-teal-600"
+                    >
+                      <option value="logistics">Logistics Only</option>
+                      <option value="mixed">Mixed Commercial</option>
+                      <option value="port">Port / Terminal</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Poligon Batas PostGIS (WKT)</label>
+                    <input
+                      type="text"
+                      required
+                      value={selectedWKT}
+                      onChange={(e) => setSelectedWKT(e.target.value)}
+                      className="w-full border border-slate-300 rounded-xl p-2.5 text-[10px] font-mono text-slate-700 bg-slate-50 focus:border-teal-600"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !zoneName}
+                  className="w-full py-3 text-xs font-bold shadow-md bg-teal-600 hover:bg-teal-700 text-white mt-2"
+                >
+                  {loading ? 'Menyimpan Zona Baru...' : 'Simpan Zona Baru Ke Database'}
+                </Button>
+              </form>
+            )}
+
+            {/* TAB 2: FORM EDIT ZONA EXISTING */}
+            {manageTab === 'edit' && (
+              <form onSubmit={handleUpdateZone} className="space-y-3 text-xs pt-1">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Prioritas Zona</label>
+                  <label className="font-bold text-slate-700 block mb-1">Pilih Zona yang Ingin Di-Edit:</label>
                   <select
-                    value={priorityLevel}
-                    onChange={(e) => setPriorityLevel(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
+                    value={selectedZoneId}
+                    onChange={(e) => handleSelectZoneForEdit(e.target.value)}
+                    className="w-full border border-amber-300 bg-amber-50/50 rounded-xl p-2.5 text-xs font-bold focus:border-amber-600 text-amber-900"
+                    required
                   >
-                    <option value="normal">Normal</option>
-                    <option value="priority_pass">Priority Pass</option>
-                    <option value="restricted">Restricted</option>
+                    <option value="">-- Pilih Zona Existing --</option>
+                    {dbZones.map((z) => (
+                      <option key={z.id} value={z.id}>{z.name} (Cap: {z.max_truck_capacity})</option>
+                    ))}
                   </select>
                 </div>
-              </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Tipe Zona</label>
-                <select
-                  value={zoneType}
-                  onChange={(e) => setZoneType(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold text-slate-900 focus:border-teal-600"
-                >
-                  <option value="logistics">Logistics Only</option>
-                  <option value="mixed">Mixed Commercial</option>
-                  <option value="port">Port / Harbour Terminal</option>
-                </select>
-              </div>
+                {selectedZoneId && (
+                  <>
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Nama Zona Baru</label>
+                      <input
+                        type="text"
+                        required
+                        value={zoneName}
+                        onChange={(e) => setZoneName(e.target.value)}
+                        className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:border-amber-600"
+                      />
+                    </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Poligon Batas PostGIS (WKT)</label>
-                <input
-                  type="text"
-                  required
-                  value={selectedWKT}
-                  onChange={(e) => setSelectedWKT(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl p-2.5 text-[10px] font-mono text-slate-700 bg-slate-50 focus:border-teal-600"
-                />
-              </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Kapasitas Maks Truk</label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          value={maxCapacity}
+                          onChange={(e) => setMaxCapacity(e.target.value)}
+                          className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-mono font-bold focus:border-amber-600"
+                        />
+                      </div>
 
-              <Button
-                type="submit"
-                disabled={loadingAdd || !newZoneName}
-                className="w-full py-3 text-xs font-bold shadow-md bg-teal-600 hover:bg-teal-700 text-white mt-2"
-              >
-                {loadingAdd ? 'Menyimpan Ke Database...' : 'Simpan Zona Baru'}
-              </Button>
-            </form>
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Prioritas Zona</label>
+                        <select
+                          value={priorityLevel}
+                          onChange={(e) => setPriorityLevel(e.target.value)}
+                          className="w-full border border-slate-300 rounded-xl p-2.5 text-xs font-semibold focus:border-amber-600"
+                        >
+                          <option value="normal">Normal</option>
+                          <option value="priority_pass">Priority Pass</option>
+                          <option value="restricted">Restricted</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-700 block mb-1">Poligon Batas PostGIS (WKT)</label>
+                      <input
+                        type="text"
+                        required
+                        value={selectedWKT}
+                        onChange={(e) => setSelectedWKT(e.target.value)}
+                        className="w-full border border-slate-300 rounded-xl p-2.5 text-[10px] font-mono text-slate-700 bg-slate-50 focus:border-amber-600"
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      disabled={loading || !selectedZoneId}
+                      className="w-full py-3 text-xs font-bold shadow-md bg-amber-600 hover:bg-amber-700 text-white mt-2"
+                    >
+                      {loading ? 'Memperbarui Zona...' : 'Update Permintaan Zona Ke Database'}
+                    </Button>
+                  </>
+                )}
+              </form>
+            )}
+
+            {/* TAB 3: HAPUS ZONA */}
+            {manageTab === 'delete' && (
+              <form onSubmit={handleDeleteZone} className="space-y-4 text-xs pt-1">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Pilih Zona yang Ingin Dihapus:</label>
+                  <select
+                    value={selectedZoneId}
+                    onChange={(e) => setSelectedZoneId(e.target.value)}
+                    className="w-full border border-rose-300 bg-rose-50/50 rounded-xl p-2.5 text-xs font-bold focus:border-rose-600 text-rose-900"
+                    required
+                  >
+                    <option value="">-- Pilih Zona untuk Dihapus --</option>
+                    {dbZones.map((z) => (
+                      <option key={z.id} value={z.id}>{z.name} (ID: {z.id.slice(0, 8)}...)</option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedZoneId && (
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-900 space-y-2">
+                    <span className="font-extrabold block text-rose-800">⚠️ Peringatan Hapus Zona:</span>
+                    <p className="text-[11px] leading-relaxed">
+                      Zona yang dihapus tidak dapat dikembalikan. Seluruh slot booking aktif pada zona ini akan ditolak secara otomatis oleh sistem.
+                    </p>
+
+                    <Button
+                      type="submit"
+                      disabled={loading || !selectedZoneId}
+                      className="w-full py-2.5 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md mt-2 flex items-center justify-center gap-1.5"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      {loading ? 'Menghapus Zona...' : 'Konfirmasi Hapus Zona Permanen'}
+                    </Button>
+                  </div>
+                )}
+              </form>
+            )}
           </Card>
         </div>
       )}

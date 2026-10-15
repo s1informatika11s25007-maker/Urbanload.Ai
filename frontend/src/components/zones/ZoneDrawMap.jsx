@@ -13,8 +13,7 @@ import {
   MapPin,
   Circle,
   RotateCcw,
-  Check,
-  Plus
+  Check
 } from 'lucide-react';
 
 const VECTORSTREET_STYLE = {
@@ -82,9 +81,6 @@ const PRESET_CORRIDORS = [
   [[106.8950, -6.1850], [106.9150, -6.1850], [106.9150, -6.2000], [106.8950, -6.2000], [106.8950, -6.1850]],
 ];
 
-/**
- * Generate Geodesic Circular Polygon Coordinates around a Center Point
- */
 function generateCirclePolygon([centerLng, centerLat], radiusMeters, numPoints = 32) {
   const coords = [];
   const km = radiusMeters / 1000;
@@ -229,7 +225,12 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
   return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 }
 
-export function ZoneDrawMap({ onSelectNewZoneWKT }) {
+/**
+ * ZoneDrawMap Component
+ * @param {boolean} readOnly - If true, map is in View-Only mode for initial dashboard display.
+ *                             If false, enables interactive Multi-Pin / Radius zone drawing editor.
+ */
+export function ZoneDrawMap({ readOnly = false, onSelectNewZoneWKT }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const zonePinMarkersRef = useRef([]);
@@ -238,9 +239,9 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
   const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
 
-  // INTERACTIVE MULTI-PIN & RADIUS DRAWING STATES
+  // INTERACTIVE DRAWING STATES (Only active when readOnly = false)
   const [drawMode, setDrawMode] = useState('pins'); // 'pins' or 'radius'
-  const [placedPins, setPlacedPins] = useState([]); // [[lng, lat], ...]
+  const [placedPins, setPlacedPins] = useState([]);
   const [zoneRadiusMeters, setZoneRadiusMeters] = useState(300);
   const [currentCreatedWKT, setCurrentCreatedWKT] = useState('');
 
@@ -254,7 +255,7 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
 
   const [selectedZone, setSelectedZone] = useState(null);
 
-  const loadRealZones = useCallback(async (silent = false) => {
+  const loadRealZones = useCallback(async () => {
     const supabase = createClient();
     try {
       const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
@@ -267,8 +268,8 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
     }
   }, []);
 
-  // Update Custom Created Polygon Layer on Map
   const updateCustomDrawLayer = useCallback(() => {
+    if (readOnly) return;
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
 
@@ -288,7 +289,6 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
     } else if (placedPins.length >= 3) {
       coords = [...placedPins, placedPins[0]];
     } else {
-      // Line or points preview
       coords = placedPins;
     }
 
@@ -324,10 +324,10 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
         paint: { 'line-color': '#f59e0b', 'line-width': 4.5 },
       });
     }
-  }, [placedPins, drawMode, zoneRadiusMeters]);
+  }, [placedPins, drawMode, zoneRadiusMeters, readOnly]);
 
-  // Handle Adding Pins on Map Click
   const handleMapClick = useCallback((e) => {
+    if (readOnly) return;
     const { lng, lat } = e.lngLat;
     const newPoint = [Number(lng.toFixed(6)), Number(lat.toFixed(6))];
 
@@ -336,10 +336,10 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
     } else {
       setPlacedPins((prev) => [...prev, newPoint]);
     }
-  }, [drawMode]);
+  }, [drawMode, readOnly]);
 
-  // Sync HTML Red Pin Markers
   useEffect(() => {
+    if (readOnly) return;
     const map = mapRef.current;
     if (!map) return;
 
@@ -364,9 +364,8 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
     });
 
     updateCustomDrawLayer();
-  }, [placedPins, updateCustomDrawLayer]);
+  }, [placedPins, updateCustomDrawLayer, readOnly]);
 
-  // Render Existing PostGIS Database Zones
   const renderZoneLayers = useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded() || !realZones.length) return;
@@ -499,7 +498,9 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
       loadRealZones(true);
     });
 
-    map.on('click', handleMapClick);
+    if (!readOnly) {
+      map.on('click', handleMapClick);
+    }
 
     mapRef.current = map;
 
@@ -511,7 +512,7 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
         mapRef.current = null;
       }
     };
-  }, [loadRealZones, handleMapClick]);
+  }, [loadRealZones, handleMapClick, readOnly]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -572,72 +573,72 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
   };
 
   return (
-    <Card className="p-0 h-[450px] sm:h-[520px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
-      <div ref={mapContainerRef} className="w-full h-full bg-slate-950 cursor-crosshair" />
+    <Card className="p-0 h-[420px] sm:h-[520px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
+      <div ref={mapContainerRef} className={`w-full h-full bg-slate-950 ${readOnly ? '' : 'cursor-crosshair'}`} />
 
-      {/* FLOATING MULTI-PIN & RADIUS INTERACTIVE EDITOR CONTROLS OVERLAY */}
-      <div className="absolute top-3 left-3 right-3 sm:left-4 sm:right-auto z-20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-900/95 p-2 sm:p-2.5 rounded-2xl border border-teal-500/40 backdrop-blur-md shadow-2xl text-xs text-white max-w-full sm:max-w-2xl">
-        <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl shrink-0">
-          <button
-            type="button"
-            onClick={() => setDrawMode('pins')}
-            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
-              drawMode === 'pins' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <MapPin className="h-3.5 w-3.5 text-red-400" /> Multi-Pin
-          </button>
-          <button
-            type="button"
-            onClick={() => setDrawMode('radius')}
-            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
-              drawMode === 'radius' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Circle className="h-3.5 w-3.5 text-amber-400" /> Mode Radius
-          </button>
-        </div>
-
-        {/* RADIUS SLIDER INPUT */}
-        {drawMode === 'radius' && (
-          <div className="flex items-center gap-2 bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-700 text-[11px] shrink-0">
-            <span className="font-bold text-amber-300 whitespace-nowrap">Radius: {zoneRadiusMeters} m</span>
-            <input
-              type="range"
-              min="50"
-              max="1500"
-              step="25"
-              value={zoneRadiusMeters}
-              onChange={(e) => setZoneRadiusMeters(Number(e.target.value))}
-              className="w-24 accent-amber-500 cursor-pointer"
-            />
-          </div>
-        )}
-
-        {/* ACTION BUTTONS */}
-        <div className="flex items-center gap-1.5 ml-auto">
-          {placedPins.length > 0 && (
+      {/* FLOATING MULTI-PIN & RADIUS INTERACTIVE EDITOR CONTROLS OVERLAY (Only visible when readOnly = false) */}
+      {!readOnly && (
+        <div className="absolute top-3 left-3 right-3 sm:left-4 sm:right-auto z-20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-900/95 p-2 sm:p-2.5 rounded-2xl border border-teal-500/40 backdrop-blur-md shadow-2xl text-xs text-white max-w-full sm:max-w-2xl">
+          <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl shrink-0">
             <button
               type="button"
-              onClick={handleResetPins}
-              className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center gap-1 transition border border-slate-700 text-[11px]"
-              title="Hapus semua pin merah"
+              onClick={() => setDrawMode('pins')}
+              className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
+                drawMode === 'pins' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+              }`}
             >
-              <RotateCcw className="h-3 w-3" /> Reset
+              <MapPin className="h-3.5 w-3.5 text-red-400" /> Multi-Pin
             </button>
+            <button
+              type="button"
+              onClick={() => setDrawMode('radius')}
+              className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
+                drawMode === 'radius' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Circle className="h-3.5 w-3.5 text-amber-400" /> Mode Radius
+            </button>
+          </div>
+
+          {drawMode === 'radius' && (
+            <div className="flex items-center gap-2 bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-700 text-[11px] shrink-0">
+              <span className="font-bold text-amber-300 whitespace-nowrap">Radius: {zoneRadiusMeters} m</span>
+              <input
+                type="range"
+                min="50"
+                max="1500"
+                step="25"
+                value={zoneRadiusMeters}
+                onChange={(e) => setZoneRadiusMeters(Number(e.target.value))}
+                className="w-24 accent-amber-500 cursor-pointer"
+              />
+            </div>
           )}
 
-          {currentCreatedWKT && (
-            <Button
-              type="button"
-              onClick={handleConfirmCustomWKT}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black flex items-center gap-1 shadow-md text-xs animate-pulse"
-            >
-              <Check className="h-4 w-4" /> Gunakan Poligon Ini
-            </Button>
-          )}
+          <div className="flex items-center gap-1.5 ml-auto">
+            {placedPins.length > 0 && (
+              <button
+                type="button"
+                onClick={handleResetPins}
+                className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center gap-1 transition border border-slate-700 text-[11px]"
+                title="Hapus semua pin merah"
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </button>
+            )}
+
+            {currentCreatedWKT && (
+              <Button
+                type="button"
+                onClick={handleConfirmCustomWKT}
+                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black flex items-center gap-1 shadow-md text-xs animate-pulse"
+              >
+                <Check className="h-4 w-4" /> Terapkan Poligon Ini
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Floating Style Switcher Top Right */}
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-[11px] text-white backdrop-blur-md shadow-lg">
@@ -679,14 +680,23 @@ export function ZoneDrawMap({ onSelectNewZoneWKT }) {
         </button>
       </div>
 
-      {/* Instruction Banner Bottom Left */}
+      {/* Status Overlay Bottom Left */}
       <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] text-slate-200 backdrop-blur-md flex items-center gap-2 shadow-xl">
-        <MapPin className="h-4 w-4 text-red-500 animate-bounce shrink-0" />
-        <span>
-          {drawMode === 'pins'
-            ? 'Klik pada peta untuk menandai pin merah. Tandai 3+ pin untuk membentuk poligon zona.'
-            : 'Klik pada peta untuk menaruh titik pusat, lalu geser slider radius zona.'}
-        </span>
+        {readOnly ? (
+          <>
+            <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>Tampilan Peta Spasial PostGIS ({realZones.length} Zona Aktif) — Klik 'Manage Zona' untuk Edit/Tambah/Hapus</span>
+          </>
+        ) : (
+          <>
+            <MapPin className="h-4 w-4 text-red-500 animate-bounce shrink-0" />
+            <span>
+              {drawMode === 'pins'
+                ? 'Klik pada peta untuk menandai pin merah. Tandai 3+ pin untuk membentuk poligon zona.'
+                : 'Klik pada peta untuk menaruh titik pusat, lalu geser slider radius zona.'}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Selected Zone Popup */}
