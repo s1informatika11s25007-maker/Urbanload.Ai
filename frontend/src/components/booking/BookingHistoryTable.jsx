@@ -7,37 +7,45 @@ import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
 import { RefreshCw, Radio, QrCode, ShieldCheck, X, Trash2 } from 'lucide-react';
 
+const LOCAL_STORAGE_KEY = 'urbanload_bookings_history_cache_v1';
+
 export function BookingHistoryTable() {
   const { showToast } = useToast();
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // INSTANT 0ms LOAD FROM LOCALSTORAGE CACHE
+  const [history, setHistory] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
+  const [loading, setLoading] = useState(() => history.length === 0);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
   const [reschedulingId, setReschedulingId] = useState(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
+  const loadData = useCallback(async (silent = false) => {
+    if (!silent && history.length === 0) setLoading(true);
     try {
       const res = await fetchBookings();
       if (res && res.data) {
         setHistory(res.data);
-      } else {
-        setHistory([]);
+        try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(res.data)); } catch (e) {}
       }
     } catch (e) {
       console.error('Error fetching booking history:', e);
-      setHistory([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [history.length]);
 
   useEffect(() => {
-    loadData();
+    loadData(true);
     const supabase = createClient();
     const channel = supabase
       .channel('booking_history_table_channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-        loadData();
+        loadData(true);
       })
       .subscribe();
 
@@ -46,7 +54,6 @@ export function BookingHistoryTable() {
     };
   }, [loadData]);
 
-  // Action: Delete Booking with Failover API
   const handleDeleteBooking = async (booking) => {
     const plateName = booking.vehicle_plate || 'tersebut';
     if (!window.confirm(`Apakah Anda yakin ingin menghapus riwayat booking armada ${plateName}?`)) {
@@ -61,7 +68,7 @@ export function BookingHistoryTable() {
         type: 'success',
       });
       setHistory((prev) => prev.filter((item) => item.id !== booking.id));
-      loadData();
+      loadData(true);
     } catch (err) {
       console.error('Delete booking error:', err);
       showToast({
@@ -72,13 +79,12 @@ export function BookingHistoryTable() {
     }
   };
 
-  // Action: Panic Reschedule (Emergency Re-route)
   const handlePanicReschedule = async (booking) => {
     setReschedulingId(booking.id);
     try {
       const supabase = createClient();
       const currentStart = new Date(booking.time_window_start || Date.now());
-      const newStart = new Date(currentStart.getTime() + 60 * 60 * 1000); // Shift +1 hour
+      const newStart = new Date(currentStart.getTime() + 60 * 60 * 1000);
       const newEnd = new Date(newStart.getTime() + 60 * 60 * 1000);
 
       const { error } = await supabase
@@ -97,7 +103,7 @@ export function BookingHistoryTable() {
           message: `Jadwal booking ${booking.vehicle_plate} telah digeser otomatis ke ${newStart.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB.`,
           type: 'warning',
         });
-        loadData();
+        loadData(true);
       }
     } catch (err) {
       console.error('Panic Reschedule error:', err);
@@ -118,7 +124,7 @@ export function BookingHistoryTable() {
           </div>
         </div>
 
-        <Button onClick={loadData} variant="outline" className="text-xs h-8 font-bold">
+        <Button onClick={() => loadData(false)} variant="outline" className="text-xs h-8 font-bold">
           <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Data
         </Button>
       </div>
@@ -197,7 +203,6 @@ export function BookingHistoryTable() {
         </table>
       </div>
 
-      {/* Modal QuickPass QR Ticket */}
       {activeQRBooking && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200">
           <Card className="w-full max-w-sm p-6 bg-white rounded-3xl border border-teal-200 shadow-2xl relative space-y-4 text-center">

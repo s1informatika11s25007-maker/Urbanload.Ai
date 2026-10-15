@@ -71,17 +71,11 @@ const VECTORDARK_STYLE = {
   ],
 };
 
-// Preset WGS84 Logistics Corridor Polygons centered around Jakarta (Zero-Fail Fallbacks)
 const PRESET_CORRIDORS = [
-  // Zona A: Tanah Abang
   [[106.8100, -6.1800], [106.8250, -6.1800], [106.8250, -6.1920], [106.8100, -6.1920], [106.8100, -6.1800]],
-  // Zona B: Tanjung Priok
   [[106.8750, -6.1080], [106.8950, -6.1080], [106.8950, -6.1220], [106.8750, -6.1220], [106.8750, -6.1080]],
-  // Zona C: Pulogadung
   [[106.8950, -6.1850], [106.9150, -6.1850], [106.9150, -6.2000], [106.8950, -6.2000], [106.8950, -6.1850]],
-  // Zona D: Pasar Senen
   [[106.8380, -6.1720], [106.8520, -6.1720], [106.8520, -6.1850], [106.8380, -6.1850], [106.8380, -6.1720]],
-  // Zona E: Kebon Jeruk
   [[106.7680, -6.1820], [106.7850, -6.1820], [106.7850, -6.1960], [106.7680, -6.1960], [106.7680, -6.1820]],
 ];
 
@@ -205,10 +199,6 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
   return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 }
 
-/**
- * Official PostGIS Zone Layer Viewer
- * Guarantees 100% visible zone polygons and interactive zone pin badges on MapLibre GL 3D.
- */
 export function ZoneDrawMap() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -216,33 +206,34 @@ export function ZoneDrawMap() {
 
   const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
-  const [realZones, setRealZones] = useState([]);
-  const [selectedZone, setSelectedZone] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const loadRealZones = useCallback(async () => {
-    setLoading(true);
+  // INSTANT 0ms RENDER FROM LOCALSTORAGE CACHE
+  const [realZones, setRealZones] = useState(() => {
+    try {
+      const saved = localStorage.getItem('urbanload_zones_cache_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [loading, setLoading] = useState(() => realZones.length === 0);
+
+  const loadRealZones = useCallback(async (silent = false) => {
+    if (!silent && realZones.length === 0) setLoading(true);
     const supabase = createClient();
     try {
       const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
       if (data && data.length > 0) {
         setRealZones(data);
-      } else {
-        setRealZones([
-          { id: 'z1', name: 'Zona A - Pasar Tanah Abang Block A', max_truck_capacity: 10, zone_type: 'logistics', priority_level: 'priority_pass' },
-          { id: 'z2', name: 'Zona B - Pelabuhan Tanjung Priok Terminal 1', max_truck_capacity: 25, zone_type: 'logistics', priority_level: 'priority_pass' },
-          { id: 'z3', name: 'Zona C - Kawasan Industri Pulogadung', max_truck_capacity: 20, zone_type: 'logistics', priority_level: 'normal' },
-          { id: 'z4', name: 'Zona D - Pusat Grosir Pasar Senen', max_truck_capacity: 12, zone_type: 'mixed', priority_level: 'normal' },
-        ]);
+        try { localStorage.setItem('urbanload_zones_cache_v1', JSON.stringify(data)); } catch (e) {}
       }
     } catch (e) {
       console.error('Error fetching zones from database:', e);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [realZones.length]);
 
-  // Render Zone Polygons and Interactive Zone Center Pin Badges
   const renderZoneLayers = useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded() || !realZones.length) return;
@@ -372,7 +363,7 @@ export function ZoneDrawMap() {
     map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true }), 'top-right');
 
     map.on('load', () => {
-      loadRealZones();
+      loadRealZones(true);
     });
 
     mapRef.current = map;
@@ -467,7 +458,7 @@ export function ZoneDrawMap() {
         </button>
         <button
           type="button"
-          onClick={loadRealZones}
+          onClick={() => loadRealZones(false)}
           className="p-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
           title="Sinkronkan Layer PostGIS"
         >

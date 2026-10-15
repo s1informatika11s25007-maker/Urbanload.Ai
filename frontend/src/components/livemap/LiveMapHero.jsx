@@ -121,10 +121,6 @@ const VECTORDARK_STYLE = {
   ],
 };
 
-/**
- * Universal PostGIS EWKB Hex String Parser for Browser
- * Handles Endianness, SRID, Polygon (3), MultiPolygon (6), and Z/M coordinate flags.
- */
 function parseEWKBHex(cleanHex) {
   try {
     const bytes = new Uint8Array(cleanHex.length / 2);
@@ -194,14 +190,9 @@ function parseEWKBHex(cleanHex) {
   }
 }
 
-/**
- * Universal Boundary Polygon Parser
- * Handles GeoJSON objects, stringified GeoJSON, PostGIS EWKB Hex (\x / 0x), WKT, and Preset Fallbacks.
- */
 function parseBoundaryPolygon(poly, fallbackIndex = 0) {
   if (!poly) return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 
-  // 1. Direct GeoJSON object
   if (typeof poly === 'object') {
     if (poly.type === 'Polygon' && Array.isArray(poly.coordinates)) {
       return poly.coordinates;
@@ -211,11 +202,9 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
     }
   }
 
-  // 2. String formats
   if (typeof poly === 'string') {
     const trimmed = poly.trim();
 
-    // A. JSON String
     if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
       try {
         const parsed = JSON.parse(trimmed);
@@ -227,14 +216,12 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
       }
     }
 
-    // B. PostGIS EWKB Hex String (\x0103... or 0x0103... or 0103...)
     const cleanHex = trimmed.replace(/^(\\x|0x)/i, '');
     if (/^[0-9a-fA-F]{30,}$/.test(cleanHex)) {
       const ewkbRings = parseEWKBHex(cleanHex);
       if (ewkbRings && ewkbRings.length > 0) return ewkbRings;
     }
 
-    // C. WKT String format e.g. "SRID=4326;POLYGON((106.812 -6.185, ...))"
     const wktUpper = trimmed.toUpperCase();
     if (wktUpper.includes('POLYGON')) {
       const match = trimmed.match(/\(\((.*?)\)\)/) || trimmed.match(/\((.*?)\)/);
@@ -267,25 +254,37 @@ export function LiveMapHero() {
   const watchPositionIdRef = useRef(null);
 
   // Control States
-  const [mapMode, setMapMode] = useState('street'); // Default Street/Vektor Mode
+  const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
   const [autoRotate, setAutoRotate] = useState(false);
   const [showZones, setShowZones] = useState(true);
   const [showTrucks, setShowTrucks] = useState(true);
 
-  // Database States
-  const [realZones, setRealZones] = useState([]);
-  const [realBookings, setRealBookings] = useState([]);
+  // INSTANT 0ms RENDER FROM LOCALSTORAGE CACHE
+  const [realZones, setRealZones] = useState(() => {
+    try {
+      const saved = localStorage.getItem('urbanload_zones_cache_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
+  const [realBookings, setRealBookings] = useState(() => {
+    try {
+      const saved = localStorage.getItem('urbanload_bookings_cache_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+
   const [selectedFeature, setSelectedFeature] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => realZones.length === 0);
 
   // User Live GNSS Location State
   const [userLocation, setUserLocation] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
 
-  // Load Real Database Data from Supabase with REST API Fallback
-  const loadDatabaseData = useCallback(async () => {
-    setLoading(true);
+  // Load Real Database Data Silently in Background without Blocking UI
+  const loadDatabaseData = useCallback(async (silent = false) => {
+    if (!silent && realZones.length === 0) setLoading(true);
     const supabase = createClient();
 
     try {
@@ -303,33 +302,25 @@ export function LiveMapHero() {
 
       if (zonesRes.data && zonesRes.data.length > 0) {
         setRealZones(zonesRes.data);
-      } else {
-        setRealZones([
-          { id: 'z1', name: 'Zona A - Pasar Tanah Abang Block A', max_truck_capacity: 10, zone_type: 'logistics', priority_level: 'priority_pass' },
-          { id: 'z2', name: 'Zona B - Pelabuhan Tanjung Priok Terminal 1', max_truck_capacity: 25, zone_type: 'logistics', priority_level: 'priority_pass' },
-          { id: 'z3', name: 'Zona C - Kawasan Industri Pulogadung', max_truck_capacity: 20, zone_type: 'logistics', priority_level: 'normal' },
-          { id: 'z4', name: 'Zona D - Pusat Grosir Pasar Senen', max_truck_capacity: 12, zone_type: 'mixed', priority_level: 'normal' },
-        ]);
+        try { localStorage.setItem('urbanload_zones_cache_v1', JSON.stringify(zonesRes.data)); } catch (e) {}
       }
 
       if (bookingsRes.data && !bookingsRes.error) {
         setRealBookings(bookingsRes.data);
+        try { localStorage.setItem('urbanload_bookings_cache_v1', JSON.stringify(bookingsRes.data)); } catch (e) {}
       } else {
         const apiRes = await fetchBookings();
-        if (apiRes && apiRes.data) setRealBookings(apiRes.data);
+        if (apiRes && apiRes.data) {
+          setRealBookings(apiRes.data);
+          try { localStorage.setItem('urbanload_bookings_cache_v1', JSON.stringify(apiRes.data)); } catch (e) {}
+        }
       }
     } catch (err) {
       console.error('Error fetching Supabase map data:', err);
-      try {
-        const apiRes = await fetchBookings();
-        if (apiRes && apiRes.data) setRealBookings(apiRes.data);
-      } catch (e) {
-        console.error('REST API fallback error:', e);
-      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [realZones.length]);
 
   // Update User Live Location Marker on Map
   const updateUserMarker = useCallback((map, lng, lat, accuracy) => {
@@ -398,7 +389,6 @@ export function LiveMapHero() {
           ? '#f59e0b'
           : '#3b82f6';
 
-      // 1. PostGIS GeoFence 3D Polygon Feature
       zoneFeatures.push({
         type: 'Feature',
         properties: {
@@ -418,7 +408,6 @@ export function LiveMapHero() {
         },
       });
 
-      // 2. LoadBalancer AI Routing Flow Line Feature
       const entranceLng = ring[0][0] - 0.008;
       const entranceLat = ring[0][1] - 0.008;
       flowLineFeatures.push({
@@ -437,7 +426,6 @@ export function LiveMapHero() {
         },
       });
 
-      // 3. Interactive 3D HTML Zone Pin Badge
       const el = document.createElement('div');
       el.className = 'group cursor-pointer z-20';
       el.innerHTML = `
@@ -474,7 +462,6 @@ export function LiveMapHero() {
     const realGeoJSON = { type: 'FeatureCollection', features: zoneFeatures };
     const flowGeoJSON = { type: 'FeatureCollection', features: flowLineFeatures };
 
-    // Update existing sources or add new ones cleanly
     if (map.getSource('real-zones-source')) {
       map.getSource('real-zones-source').setData(realGeoJSON);
     } else {
@@ -547,13 +534,12 @@ export function LiveMapHero() {
       });
     }
 
-    // Camera auto-fit bounds on initial data load
     if (!bounds.isEmpty()) {
       map.fitBounds(bounds, { padding: 80, maxZoom: 13, duration: 1000 });
     }
   }, [realZones]);
 
-  // Update Truck Markers purely from Supabase Database Bookings with zero-flicker Map matching
+  // Update Truck Markers
   const renderTruckMarkers = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -605,12 +591,10 @@ export function LiveMapHero() {
       const driverName = b.profiles?.full_name || b.driver_name || 'Pengemudi Terverifikasi';
       const zoneName = b.zones?.name || b.zone_name || 'Zona Logistik';
 
-      // Update existing marker position smoothly if available
       if (truckMarkersMapRef.current.has(bookingKey)) {
         const existingMarker = truckMarkersMapRef.current.get(bookingKey);
         existingMarker.setLngLat(coords);
       } else {
-        // Create new HTML marker element
         const el = document.createElement('div');
         el.className = 'group relative cursor-pointer z-30';
         el.innerHTML = `
@@ -660,7 +644,6 @@ export function LiveMapHero() {
       }
     });
 
-    // Remove obsolete truck markers
     truckMarkersMapRef.current.forEach((marker, key) => {
       if (!activeIds.has(key)) {
         marker.remove();
@@ -709,7 +692,8 @@ export function LiveMapHero() {
     map.addControl(new maplibregl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'top-right');
 
     map.on('load', () => {
-      loadDatabaseData();
+      // Execute silent background sync on mount
+      loadDatabaseData(true);
       startAutoLocateUser(map);
     });
 
@@ -719,12 +703,12 @@ export function LiveMapHero() {
     const supabase = createClient();
     const zonesChannel = supabase
       .channel('realtime_map_zones_ch')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => loadDatabaseData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'zones' }, () => loadDatabaseData(true))
       .subscribe();
 
     const bookingsChannel = supabase
       .channel('realtime_map_bookings_ch')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadDatabaseData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadDatabaseData(true))
       .subscribe();
 
     return () => {
@@ -1042,7 +1026,7 @@ export function LiveMapHero() {
         {/* Refresh Real Data Button */}
         <button
           type="button"
-          onClick={loadDatabaseData}
+          onClick={() => loadDatabaseData(false)}
           className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
           title="Sinkronisasi Data Real Database"
         >

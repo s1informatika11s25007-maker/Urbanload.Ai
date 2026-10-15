@@ -1,32 +1,83 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '../lib/supabase/client.js';
 
+const LOCAL_STORAGE_KEY = 'urbanload_bookings_cache_v1';
+
+let globalBookingsCache = null;
+let globalBookingsListeners = new Set();
+let isRealtimeSubscribed = false;
+
+try {
+  const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (stored) {
+    globalBookingsCache = JSON.parse(stored);
+  }
+} catch (e) {}
+
+function updateGlobalBookings(newBookings) {
+  globalBookingsCache = newBookings;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newBookings));
+  } catch (e) {}
+
+  globalBookingsListeners.forEach((listener) => listener(newBookings));
+}
+
+async function silentSyncBookings() {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('id, vehicle_plate, status, time_window_start, created_at, zone_id, zones(name)')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!error && data) {
+      updateGlobalBookings(data);
+    }
+  } catch (e) {
+    console.warn('Silent bookings sync warning:', e);
+  }
+}
+
+function initBookingsRealtimeChannel() {
+  if (isRealtimeSubscribed) return;
+  isRealtimeSubscribed = true;
+
+  const supabase = createClient();
+  supabase
+    .channel('global_bookings_realtime_channel')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+      silentSyncBookings();
+    })
+    .subscribe();
+}
+
 export function useRealtimeBookings() {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState(globalBookingsCache || []);
+  const [loading, setLoading] = useState(!globalBookingsCache || globalBookingsCache.length === 0);
 
   useEffect(() => {
-    const supabase = createClient();
-    const fetchInitialBookings = async () => {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('id, vehicle_plate, status, time_window_start, created_at, zone_id, zones(name)')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (!error && data) setBookings(data);
+    const listener = (newBookings) => {
+      setBookings(newBookings);
       setLoading(false);
     };
-    fetchInitialBookings();
+    globalBookingsListeners.add(listener);
 
-    const channel = supabase.channel('bookings_realtime_channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
-        if (payload.eventType === 'INSERT') setBookings((prev) => [payload.new, ...prev]);
-        else if (payload.eventType === 'UPDATE') setBookings((prev) => prev.map((b) => (b.id === payload.new.id ? payload.new : b)));
-        else if (payload.eventType === 'DELETE') setBookings((prev) => prev.filter((b) => b.id !== payload.old.id));
-      }).subscribe();
+    if (globalBookingsCache && globalBookingsCache.length > 0) {
+      setBookings(globalBookingsCache);
+      setLoading(false);
+    }
 
-    return () => supabase.removeChannel(channel);
+    silentSyncBookings().then(() => {
+      setLoading(false);
+    });
+
+    initBookingsRealtimeChannel();
+
+    return () => {
+      globalBookingsListeners.delete(listener);
+    };
   }, []);
 
   return { bookings, loading };
