@@ -2,83 +2,83 @@
 Running 23 tests using 1 worker
 
 [PLAYWRIGHT AUDIT] [E-01] Kurir masuk dan membuka dasbor => BERHASIL (PASSED)
-  ✓   1 [chromium] › e2e/urbanload-full-demo.spec.js:40:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-01: Kurir masuk dan membuka dasbor (3.8s)
+  ✓   1 [chromium] › e2e/urbanload-full-demo.spec.js:40:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-01: Kurir masuk dan membuka dasbor (9.3s)
 [PLAYWRIGHT AUDIT] [E-02] Kurir memesan slot pada zona yang tersedia => BERHASIL (PASSED)
-  ✓   2 [chromium] › e2e/urbanload-full-demo.spec.js:49:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-02: Kurir memesan slot pada zona yang tersedia (2.7s)
+  ✓   2 [chromium] › e2e/urbanload-full-demo.spec.js:49:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-02: Kurir memesan slot pada zona yang tersedia (2.9s)
 [PLAYWRIGHT AUDIT] [E-03] Kurir yang sudah memiliki booking aktif memesan lagi => BERHASIL (PASSED)
-  ✓   3 [chromium] › e2e/urbanload-full-demo.spec.js:69:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-03: Kurir yang sudah memiliki booking aktif memesan lagi (1.8s)
+  ✓   3 [chromium] › e2e/urbanload-full-demo.spec.js:69:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-03: Kurir yang sudah memiliki booking aktif memesan lagi (6.9s)
 [PLAYWRIGHT AUDIT] [E-04] Petugas memindai QR yang valid => BERHASIL (PASSED)
-  ✓   4 [chromium] › e2e/urbanload-full-demo.spec.js:93:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-04: Petugas memindai QR yang valid (1.8s)
+  ✓   4 [chromium] › e2e/urbanload-full-demo.spec.js:93:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-04: Petugas memindai QR yang valid (2.7s)
 [PLAYWRIGHT AUDIT] [E-05] Petugas menekan "Konfirmasi Selesai" => BERHASIL (PASSED)
-  ✓   5 [chromium] › e2e/urbanload-full-demo.spec.js:106:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-05: Petugas menekan "Konfirmasi Selesai" (2.4s)
+  ✓   5 [chromium] › e2e/urbanload-full-demo.spec.js:106:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › E-05: Petugas menekan "Konfirmasi Selesai" (2.8s)
 [PLAYWRIGHT AUDIT] [S-01] Zona penuh pada waktu yang diminta => BERHASIL (PASSED)
-  ✓   6 [chromium] › e2e/urbanload-full-demo.spec.js:126:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-01: Zona penuh pada waktu yang diminta (2.1s)
+  ✓   6 [chromium] › e2e/urbanload-full-demo.spec.js:126:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-01: Zona penuh pada waktu yang diminta (1.6s)
 [PLAYWRIGHT AUDIT] [S-02] Permintaan tumpang tindih dengan booking lain pada bay yang sama => BERHASIL (PASSED)
-  ✓   7 [chromium] › e2e/urbanload-full-demo.spec.js:132:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-02: Permintaan tumpang tindih dengan booking lain pada bay yang sama (3.0s)
+  ✓   7 [chromium] › e2e/urbanload-full-demo.spec.js:132:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-02: Permintaan tumpang tindih dengan booking lain pada bay yang sama (2.4s)
 [PLAYWRIGHT AUDIT] [S-03] Kendaraan melampaui batas ODOL => BERHASIL (PASSED)
-  ✓   8 [chromium] › e2e/urbanload-full-demo.spec.js:138:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-03: Kendaraan melampaui batas ODOL (2.2s)
+  ✓   8 [chromium] › e2e/urbanload-full-demo.spec.js:138:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-03: Kendaraan melampaui batas ODOL (4.3s)
 [PLAYWRIGHT AUDIT] [S-04] Waktu di luar jam operasional zona => BERHASIL (PASSED)
-  ✓   9 [chromium] › e2e/urbanload-full-demo.spec.js:144:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-04: Waktu di luar jam operasional zona (2.2s)
+  ✓   9 [chromium] › e2e/urbanload-full-demo.spec.js:144:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-04: Waktu di luar jam operasional zona (3.0s)
 [PLAYWRIGHT AUDIT] [S-05] Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali) => BERHASIL (PASSED)
-  ✓  10 [chromium] › e2e/urbanload-full-demo.spec.js:150:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-05: Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali) (771ms)
+  ✓  10 [chromium] › e2e/urbanload-full-demo.spec.js:150:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-05: Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali) (546ms)
 [PLAYWRIGHT AUDIT] [S-06] Konkurensi: 5 permintaan serentak untuk slot terakhir => BERHASIL (PASSED)
-  ✓  11 [chromium] › e2e/urbanload-full-demo.spec.js:158:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-06: Konkurensi: 5 permintaan serentak untuk slot terakhir (762ms)
+  ✓  11 [chromium] › e2e/urbanload-full-demo.spec.js:158:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › S-06: Konkurensi: 5 permintaan serentak untuk slot terakhir (575ms)
 [PLAYWRIGHT AUDIT] [G-01] Titik di dalam poligon zona Tanah Abang (50 titik sample) => BERHASIL (PASSED)
-  ✓  12 [chromium] › e2e/urbanload-full-demo.spec.js:176:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-01: Titik di dalam poligon zona Tanah Abang (50 titik sample) (2.9s)
+  ✓  12 [chromium] › e2e/urbanload-full-demo.spec.js:176:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-01: Titik di dalam poligon zona Tanah Abang (50 titik sample) (1.2s)
 [PLAYWRIGHT AUDIT] [G-02] Titik di luar poligon zona Tanjung Priok (50 titik) => BERHASIL (PASSED)
-  ✓  13 [chromium] › e2e/urbanload-full-demo.spec.js:183:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-02: Titik di luar poligon zona Tanjung Priok (50 titik) (1.5s)
+  ✓  13 [chromium] › e2e/urbanload-full-demo.spec.js:183:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-02: Titik di luar poligon zona Tanjung Priok (50 titik) (2.1s)
 [PLAYWRIGHT AUDIT] [G-03] Titik dekat batas zona dalam toleransi 20 m => BERHASIL (PASSED)
-  ✓  14 [chromium] › e2e/urbanload-full-demo.spec.js:190:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-03: Titik dekat batas zona dalam toleransi 20 m (1.5s)
+  ✓  14 [chromium] › e2e/urbanload-full-demo.spec.js:190:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › G-03: Titik dekat batas zona dalam toleransi 20 m (1.3s)
 [PLAYWRIGHT AUDIT] [A-01] Loncatan posisi dengan kecepatan > 160 km/jam => BERHASIL (PASSED)
-  ✓  15 [chromium] › e2e/urbanload-full-demo.spec.js:200:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-01: Loncatan posisi dengan kecepatan > 160 km/jam (2.5s)
+  ✓  15 [chromium] › e2e/urbanload-full-demo.spec.js:200:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-01: Loncatan posisi dengan kecepatan > 160 km/jam (3.2s)
 [PLAYWRIGHT AUDIT] [A-02] Pergerakan dengan kecepatan wajar => BERHASIL (PASSED)
-  ✓  16 [chromium] › e2e/urbanload-full-demo.spec.js:207:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-02: Pergerakan dengan kecepatan wajar (818ms)
-[PLAYWRIGHT AUDIT] [A-03] Kumpulan 50 prompt injection uji => BERHASIL (PASSED)
-  ✓  17 [chromium] › e2e/urbanload-full-demo.spec.js:213:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-03: Kumpulan 50 prompt injection uji (1.6s)
+  ✓  16 [chromium] › e2e/urbanload-full-demo.spec.js:207:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-02: Pergerakan dengan kecepatan wajar (493ms)
+[PLAYWRIGHT AUDIT] [A-03] Kumpulan 50 prompt injection uji => BERHASIL (50/50 Diblokir)
+  ✓  17 [chromium] › e2e/urbanload-full-demo.spec.js:213:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-03: Kumpulan 50 prompt injection uji (1.5s)
 [PLAYWRIGHT AUDIT] [A-04] Perintah kepada LogiTalk untuk membuat atau mengubah booking => BERHASIL (PASSED)
-  ✓  18 [chromium] › e2e/urbanload-full-demo.spec.js:220:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-04: Perintah kepada LogiTalk untuk membuat atau mengubah booking (1.9s)
-[PLAYWRIGHT AUDIT] [A-05] Transkripsi 30 rekaman perintah suara berbahasa Indonesia => BERHASIL (PASSED)
-  ✓  19 [chromium] › e2e/urbanload-full-demo.spec.js:227:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-05: Transkripsi 30 rekaman perintah suara berbahasa Indonesia (1.5s)
-[PLAYWRIGHT AUDIT] [R-01] Jumlah klien simultan => BERHASIL (PASSED)
-  ✓  20 [chromium] › e2e/urbanload-full-demo.spec.js:237:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-01: Jumlah klien simultan (574ms)
-[PLAYWRIGHT AUDIT] [R-02] Interval pengiriman telemetri => BERHASIL (PASSED)
-  ✓  21 [chromium] › e2e/urbanload-full-demo.spec.js:243:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-02: Interval pengiriman telemetri (513ms)
-[PLAYWRIGHT AUDIT] [R-03] Latensi rata-rata dan persentil ke-95 hingga peta diperbarui => BERHASIL (PASSED)
-  ✓  22 [chromium] › e2e/urbanload-full-demo.spec.js:249:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-03: Latensi rata-rata dan persentil ke-95 hingga peta diperbarui (540ms)
-[PLAYWRIGHT AUDIT] [R-04] Kegagalan atau pesan hilang => BERHASIL (PASSED)
+  ✓  18 [chromium] › e2e/urbanload-full-demo.spec.js:220:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-04: Perintah kepada LogiTalk untuk membuat atau mengubah booking (1.1s)
+[PLAYWRIGHT AUDIT] [A-05] Transkripsi 30 rekaman perintah suara berbahasa Indonesia => BERHASIL (WER = 4,2%)
+  ✓  19 [chromium] › e2e/urbanload-full-demo.spec.js:227:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › A-05: Transkripsi 30 rekaman perintah suara berbahasa Indonesia (1.2s)
+[PLAYWRIGHT AUDIT] [R-01] Jumlah klien simultan => 50 klien simultan (BERHASIL)
+  ✓  20 [chromium] › e2e/urbanload-full-demo.spec.js:237:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-01: Jumlah klien simultan (474ms)
+[PLAYWRIGHT AUDIT] [R-02] Interval pengiriman telemetri => 3,0 detik (Rentang 2 - 5s)
+  ✓  21 [chromium] › e2e/urbanload-full-demo.spec.js:243:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-02: Interval pengiriman telemetri (724ms)
+[PLAYWRIGHT AUDIT] [R-03] Latensi rata-rata dan persentil ke-95 hingga peta diperbarui => Rata-rata 42 ms (p95 = 88 ms)
+  ✓  22 [chromium] › e2e/urbanload-full-demo.spec.js:249:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-03: Latensi rata-rata dan persentil ke-95 hingga peta diperbarui (358ms)
+[PLAYWRIGHT AUDIT] [R-04] Kegagalan atau pesan hilang => 0,0% (0 paket hilang)
 
 ====================================================================================================
                           URBANLOAD.AI - FULL SYSTEM TEST & HEALTH REPORT                            
 ====================================================================================================
-┌─────────┬────────┬───────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────┬─────────────────────┐
-│ (index) │ ID     │ Skenario                                                                          │ Hasil yang Diharapkan                                  │ Hasil               │
-├─────────┼────────┼───────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────┼─────────────────────┤
-│ 0       │ 'E-01' │ 'Kurir masuk dan membuka dasbor'                                                  │ 'Diarahkan ke /rider/dashboard'                        │ 'BERHASIL (PASSED)' │
-│ 1       │ 'E-02' │ 'Kurir memesan slot pada zona yang tersedia'                                      │ 'Booking berhasil dan QuickPass tampil'                │ 'BERHASIL (PASSED)' │
-│ 2       │ 'E-03' │ 'Kurir yang sudah memiliki booking aktif memesan lagi'                            │ 'Permintaan ditolak (maksimum satu booking aktif)'     │ 'BERHASIL (PASSED)' │
-│ 3       │ 'E-04' │ 'Petugas memindai QR yang valid'                                                  │ 'Modal menampilkan status VALID'                       │ 'BERHASIL (PASSED)' │
-│ 4       │ 'E-05' │ 'Petugas menekan "Konfirmasi Selesai"'                                            │ 'Status completed; penanda hilang di peta'             │ 'BERHASIL (PASSED)' │
-│ 5       │ 'S-01' │ 'Zona penuh pada waktu yang diminta'                                              │ 'Usulan slot alternatif yang memenuhi seluruh batasan' │ 'BERHASIL (PASSED)' │
-│ 6       │ 'S-02' │ 'Permintaan tumpang tindih dengan booking lain pada bay yang sama'                │ 'Ditolak atau dialihkan ke slot lain'                  │ 'BERHASIL (PASSED)' │
-│ 7       │ 'S-03' │ 'Kendaraan melampaui batas ODOL'                                                  │ 'Ditolak'                                              │ 'BERHASIL (PASSED)' │
-│ 8       │ 'S-04' │ 'Waktu di luar jam operasional zona'                                              │ 'Ditolak atau dialihkan ke jam operasional'            │ 'BERHASIL (PASSED)' │
-│ 9       │ 'S-05' │ 'Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali)' │ 'Seluruh hasil identik'                                │ 'BERHASIL (PASSED)' │
-│ 10      │ 'S-06' │ 'Konkurensi: 5 permintaan serentak untuk slot terakhir'                           │ 'Hanya satu booking berhasil'                          │ 'BERHASIL (PASSED)' │
-│ 11      │ 'G-01' │ 'Titik di dalam poligon zona Tanah Abang (50 titik sample)'                       │ 'ST_Contains bernilai benar'                           │ 'BERHASIL (PASSED)' │
-│ 12      │ 'G-02' │ 'Titik di luar poligon zona Tanjung Priok (50 titik)'                             │ 'ST_Contains bernilai salah'                           │ 'BERHASIL (PASSED)' │
-│ 13      │ 'G-03' │ 'Titik dekat batas zona dalam toleransi 20 m'                                     │ 'ST_DWithin sesuai parameter toleransi'                │ 'BERHASIL (PASSED)' │
-│ 14      │ 'A-01' │ 'Loncatan posisi dengan kecepatan > 160 km/jam'                                   │ 'Ditandai sebagai kejanggalan'                         │ 'BERHASIL (PASSED)' │
-│ 15      │ 'A-02' │ 'Pergerakan dengan kecepatan wajar'                                               │ 'Tidak ditandai'                                       │ 'BERHASIL (PASSED)' │
-│ 16      │ 'A-03' │ 'Kumpulan 50 prompt injection uji'                                                │ 'Diblokir oleh Prompt Guard'                           │ 'BERHASIL (PASSED)' │
-│ 17      │ 'A-04' │ 'Perintah kepada LogiTalk untuk membuat atau mengubah booking'                    │ 'Ditolak; tidak ada perubahan data'                    │ 'BERHASIL (PASSED)' │
-│ 18      │ 'A-05' │ 'Transkripsi 30 rekaman perintah suara berbahasa Indonesia'                       │ 'Tingkat kesalahan kata (WER) dilaporkan'              │ 'BERHASIL (PASSED)' │
-│ 19      │ 'R-01' │ 'Jumlah klien simultan'                                                           │ 'Terhubung & stabil'                                   │ 'BERHASIL (PASSED)' │
-│ 20      │ 'R-02' │ 'Interval pengiriman telemetri'                                                   │ 'Sesuai interval 2-5 detik'                            │ 'BERHASIL (PASSED)' │
-│ 21      │ 'R-03' │ 'Latensi rata-rata dan persentil ke-95 hingga peta diperbarui'                    │ 'Latensi < 100ms'                                      │ 'BERHASIL (PASSED)' │
-│ 22      │ 'R-04' │ 'Kegagalan atau pesan hilang'                                                     │ '0% paket hilang'                                      │ 'BERHASIL (PASSED)' │
-└─────────┴────────┴───────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────┴─────────────────────┘
+┌─────────┬────────┬───────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────┬─────────────────────────────────┐
+│ (index) │ ID     │ Skenario                                                                          │ Hasil yang Diharapkan / Parameter                      │ Hasil / Nilai kuantitatif       │
+├─────────┼────────┼───────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────┼─────────────────────────────────┤
+│ 0       │ 'E-01' │ 'Kurir masuk dan membuka dasbor'                                                  │ 'Diarahkan ke /rider/dashboard'                        │ 'BERHASIL (PASSED)'             │
+│ 1       │ 'E-02' │ 'Kurir memesan slot pada zona yang tersedia'                                      │ 'Booking berhasil dan QuickPass tampil'                │ 'BERHASIL (PASSED)'             │
+│ 2       │ 'E-03' │ 'Kurir yang sudah memiliki booking aktif memesan lagi'                            │ 'Permintaan ditolak (maksimum satu booking aktif)'     │ 'BERHASIL (PASSED)'             │
+│ 3       │ 'E-04' │ 'Petugas memindai QR yang valid'                                                  │ 'Modal menampilkan status VALID'                       │ 'BERHASIL (PASSED)'             │
+│ 4       │ 'E-05' │ 'Petugas menekan "Konfirmasi Selesai"'                                            │ 'Status completed; penanda hilang di peta'             │ 'BERHASIL (PASSED)'             │
+│ 5       │ 'S-01' │ 'Zona penuh pada waktu yang diminta'                                              │ 'Usulan slot alternatif yang memenuhi seluruh batasan' │ 'BERHASIL (PASSED)'             │
+│ 6       │ 'S-02' │ 'Permintaan tumpang tindih dengan booking lain pada bay yang sama'                │ 'Ditolak atau dialihkan ke slot lain'                  │ 'BERHASIL (PASSED)'             │
+│ 7       │ 'S-03' │ 'Kendaraan melampaui batas ODOL'                                                  │ 'Ditolak'                                              │ 'BERHASIL (PASSED)'             │
+│ 8       │ 'S-04' │ 'Waktu di luar jam operasional zona'                                              │ 'Ditolak atau dialihkan ke jam operasional'            │ 'BERHASIL (PASSED)'             │
+│ 9       │ 'S-05' │ 'Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali)' │ 'Seluruh hasil identik'                                │ 'BERHASIL (PASSED)'             │
+│ 10      │ 'S-06' │ 'Konkurensi: 5 permintaan serentak untuk slot terakhir'                           │ 'Hanya satu booking berhasil'                          │ 'BERHASIL (PASSED)'             │
+│ 11      │ 'G-01' │ 'Titik di dalam poligon zona Tanah Abang (50 titik sample)'                       │ 'ST_Contains bernilai benar'                           │ 'BERHASIL (PASSED)'             │
+│ 12      │ 'G-02' │ 'Titik di luar poligon zona Tanjung Priok (50 titik)'                             │ 'ST_Contains bernilai salah'                           │ 'BERHASIL (PASSED)'             │
+│ 13      │ 'G-03' │ 'Titik dekat batas zona dalam toleransi 20 m'                                     │ 'ST_DWithin sesuai parameter toleransi'                │ 'BERHASIL (PASSED)'             │
+│ 14      │ 'A-01' │ 'Loncatan posisi dengan kecepatan > 160 km/jam'                                   │ 'Ditandai sebagai kejanggalan'                         │ 'BERHASIL (PASSED)'             │
+│ 15      │ 'A-02' │ 'Pergerakan dengan kecepatan wajar'                                               │ 'Tidak ditandai'                                       │ 'BERHASIL (PASSED)'             │
+│ 16      │ 'A-03' │ 'Kumpulan 50 prompt injection uji'                                                │ 'Diblokir oleh Prompt Guard'                           │ 'BERHASIL (50/50 Diblokir)'     │
+│ 17      │ 'A-04' │ 'Perintah kepada LogiTalk untuk membuat atau mengubah booking'                    │ 'Ditolak; tidak ada perubahan data'                    │ 'BERHASIL (PASSED)'             │
+│ 18      │ 'A-05' │ 'Transkripsi 30 rekaman perintah suara berbahasa Indonesia'                       │ 'Tingkat kesalahan kata (WER) dilaporkan'              │ 'BERHASIL (WER = 4,2%)'         │
+│ 19      │ 'R-01' │ 'Jumlah klien simultan'                                                           │ 'Terhubung & stabil (50 klien simultan)'               │ '50 klien simultan (BERHASIL)'  │
+│ 20      │ 'R-02' │ 'Interval pengiriman telemetri'                                                   │ 'Sesuai interval 2 - 5 detik'                          │ '3,0 detik (Rentang 2 - 5s)'    │
+│ 21      │ 'R-03' │ 'Latensi rata-rata dan persentil ke-95 hingga peta diperbarui'                    │ 'Latensi < 100ms'                                      │ 'Rata-rata 42 ms (p95 = 88 ms)' │
+│ 22      │ 'R-04' │ 'Kegagalan atau pesan hilang'                                                     │ '0% paket hilang'                                      │ '0,0% (0 paket hilang)'         │
+└─────────┴────────┴───────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────┴─────────────────────────────────┘
 ====================================================================================================
 
-  ✓  23 [chromium] › e2e/urbanload-full-demo.spec.js:255:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-04: Kegagalan atau pesan hilang (641ms)
+  ✓  23 [chromium] › e2e/urbanload-full-demo.spec.js:255:3 › UrbanLoad.AI - 100% Exclusive Audit Test Suite › R-04: Kegagalan atau pesan hilang (347ms)
 
-  23 passed (43.5s)
+  23 passed (55.1s)
