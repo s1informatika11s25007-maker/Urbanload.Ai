@@ -45,6 +45,17 @@ export default function CityZones() {
   const [priorityLevel, setPriorityLevel] = useState('normal');
   const [selectedWKT, setSelectedWKT] = useState('POLYGON((106.820 -6.180, 106.830 -6.180, 106.830 -6.190, 106.820 -6.190, 106.820 -6.180))');
 
+  // Receive Created Polygon WKT from Interactive Map Editor Pins
+  const handleSelectNewZoneWKT = (wktString) => {
+    setSelectedWKT(wktString);
+    setShowShowAddModal(true);
+    showToast({
+      title: 'Poligon Peta Berhasil Diterapkan!',
+      message: 'Batas zona baru dari penandaan pin merah telah dimasukkan ke form.',
+      type: 'success'
+    });
+  };
+
   const handleApplyPreset = (preset) => {
     setNewZoneName(preset.name);
     setMaxCapacity(preset.maxCapacity);
@@ -143,7 +154,7 @@ export default function CityZones() {
         <div>
           <div className="text-[11px] sm:text-xs text-slate-500 mb-0.5">Beranda / Manajemen Zona</div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900">Editor Zona PostGIS</h1>
-          <p className="text-[11px] sm:text-xs text-slate-500">Editor geofence poligon PostGIS WGS84, pengaturan bay bongkar muat & jam operasional.</p>
+          <p className="text-[11px] sm:text-xs text-slate-500">Editor geofence poligon PostGIS WGS84, penandaan pin merah & pengaturan radius zona.</p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-center">
@@ -163,7 +174,7 @@ export default function CityZones() {
           <span>Memuat MapLibre Drawing Editor...</span>
         </div>
       }>
-        <ZoneDrawMap />
+        <ZoneDrawMap onSelectNewZoneWKT={handleSelectNewZoneWKT} />
       </Suspense>
 
       {/* Section 2: Tabel Daftar Zona */}
@@ -259,6 +270,17 @@ export default function CityZones() {
                   <option value="mixed">Mixed Commercial</option>
                   <option value="port">Port / Harbour Terminal</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Poligon Batas PostGIS (WKT)</label>
+                <input
+                  type="text"
+                  required
+                  value={selectedWKT}
+                  onChange={(e) => setSelectedWKT(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-2.5 text-[10px] font-mono text-slate-700 bg-slate-50 focus:border-teal-600"
+                />
               </div>
 
               <Button

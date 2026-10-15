@@ -3,13 +3,18 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { createClient } from '../../lib/supabase/client.js';
 import { Card } from '../ui/card.jsx';
+import { Button } from '../ui/button.jsx';
 import {
   Layers,
   Globe,
   Box,
-  RefreshCw,
   ShieldCheck,
-  Building2
+  Building2,
+  MapPin,
+  Circle,
+  RotateCcw,
+  Check,
+  Plus
 } from 'lucide-react';
 
 const VECTORSTREET_STYLE = {
@@ -75,9 +80,34 @@ const PRESET_CORRIDORS = [
   [[106.8100, -6.1800], [106.8250, -6.1800], [106.8250, -6.1920], [106.8100, -6.1920], [106.8100, -6.1800]],
   [[106.8750, -6.1080], [106.8950, -6.1080], [106.8950, -6.1220], [106.8750, -6.1220], [106.8750, -6.1080]],
   [[106.8950, -6.1850], [106.9150, -6.1850], [106.9150, -6.2000], [106.8950, -6.2000], [106.8950, -6.1850]],
-  [[106.8380, -6.1720], [106.8520, -6.1720], [106.8520, -6.1850], [106.8380, -6.1850], [106.8380, -6.1720]],
-  [[106.7680, -6.1820], [106.7850, -6.1820], [106.7850, -6.1960], [106.7680, -6.1960], [106.7680, -6.1820]],
 ];
+
+/**
+ * Generate Geodesic Circular Polygon Coordinates around a Center Point
+ */
+function generateCirclePolygon([centerLng, centerLat], radiusMeters, numPoints = 32) {
+  const coords = [];
+  const km = radiusMeters / 1000;
+  const radLat = (centerLat * Math.PI) / 180;
+
+  for (let i = 0; i <= numPoints; i++) {
+    const angle = (i * 2 * Math.PI) / numPoints;
+    const dLat = (km / 6371) * (180 / Math.PI) * Math.cos(angle);
+    const dLng = (km / (6371 * Math.cos(radLat))) * (180 / Math.PI) * Math.sin(angle);
+    coords.push([Number((centerLng + dLng).toFixed(6)), Number((centerLat + dLat).toFixed(6))]);
+  }
+  return [coords];
+}
+
+function coordsToWKT(ring) {
+  if (!ring || ring.length < 3) return '';
+  const closed = [...ring];
+  if (closed[0][0] !== closed[closed.length - 1][0] || closed[0][1] !== closed[closed.length - 1][1]) {
+    closed.push(closed[0]);
+  }
+  const pairs = closed.map(([lng, lat]) => `${lng.toFixed(6)} ${lat.toFixed(6)}`).join(', ');
+  return `POLYGON((${pairs}))`;
+}
 
 function parseEWKBHex(cleanHex) {
   try {
@@ -199,13 +229,20 @@ function parseBoundaryPolygon(poly, fallbackIndex = 0) {
   return [PRESET_CORRIDORS[fallbackIndex % PRESET_CORRIDORS.length]];
 }
 
-export function ZoneDrawMap() {
+export function ZoneDrawMap({ onSelectNewZoneWKT }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const zonePinMarkersRef = useRef([]);
+  const customPinsRef = useRef([]);
 
   const [mapMode, setMapMode] = useState('street');
   const [is3D, setIs3D] = useState(true);
+
+  // INTERACTIVE MULTI-PIN & RADIUS DRAWING STATES
+  const [drawMode, setDrawMode] = useState('pins'); // 'pins' or 'radius'
+  const [placedPins, setPlacedPins] = useState([]); // [[lng, lat], ...]
+  const [zoneRadiusMeters, setZoneRadiusMeters] = useState(300);
+  const [currentCreatedWKT, setCurrentCreatedWKT] = useState('');
 
   // INSTANT 0ms RENDER FROM LOCALSTORAGE CACHE
   const [realZones, setRealZones] = useState(() => {
@@ -216,10 +253,8 @@ export function ZoneDrawMap() {
   });
 
   const [selectedZone, setSelectedZone] = useState(null);
-  const [loading, setLoading] = useState(() => realZones.length === 0);
 
   const loadRealZones = useCallback(async (silent = false) => {
-    if (!silent && realZones.length === 0) setLoading(true);
     const supabase = createClient();
     try {
       const { data } = await supabase.from('zones').select('*').order('created_at', { ascending: false });
@@ -229,11 +264,109 @@ export function ZoneDrawMap() {
       }
     } catch (e) {
       console.error('Error fetching zones from database:', e);
-    } finally {
-      setLoading(false);
     }
-  }, [realZones.length]);
+  }, []);
 
+  // Update Custom Created Polygon Layer on Map
+  const updateCustomDrawLayer = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+
+    let coords = [];
+    if (placedPins.length === 0) {
+      if (map.getLayer('custom-draw-fill')) map.removeLayer('custom-draw-fill');
+      if (map.getLayer('custom-draw-outline')) map.removeLayer('custom-draw-outline');
+      if (map.getSource('custom-draw-source')) map.removeSource('custom-draw-source');
+      setCurrentCreatedWKT('');
+      return;
+    }
+
+    if (drawMode === 'radius' && placedPins.length > 0) {
+      const centerPin = placedPins[0];
+      const circleRings = generateCirclePolygon(centerPin, zoneRadiusMeters);
+      coords = circleRings[0];
+    } else if (placedPins.length >= 3) {
+      coords = [...placedPins, placedPins[0]];
+    } else {
+      // Line or points preview
+      coords = placedPins;
+    }
+
+    if (coords.length < 3) return;
+
+    const wkt = coordsToWKT(coords);
+    setCurrentCreatedWKT(wkt);
+
+    const geojson = {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coords]
+      }
+    };
+
+    if (map.getSource('custom-draw-source')) {
+      map.getSource('custom-draw-source').setData(geojson);
+    } else {
+      map.addSource('custom-draw-source', { type: 'geojson', data: geojson });
+
+      map.addLayer({
+        id: 'custom-draw-fill',
+        type: 'fill',
+        source: 'custom-draw-source',
+        paint: { 'fill-color': '#f59e0b', 'fill-opacity': 0.55 },
+      });
+
+      map.addLayer({
+        id: 'custom-draw-outline',
+        type: 'line',
+        source: 'custom-draw-source',
+        paint: { 'line-color': '#f59e0b', 'line-width': 4.5 },
+      });
+    }
+  }, [placedPins, drawMode, zoneRadiusMeters]);
+
+  // Handle Adding Pins on Map Click
+  const handleMapClick = useCallback((e) => {
+    const { lng, lat } = e.lngLat;
+    const newPoint = [Number(lng.toFixed(6)), Number(lat.toFixed(6))];
+
+    if (drawMode === 'radius') {
+      setPlacedPins([newPoint]);
+    } else {
+      setPlacedPins((prev) => [...prev, newPoint]);
+    }
+  }, [drawMode]);
+
+  // Sync HTML Red Pin Markers
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    customPinsRef.current.forEach((m) => m.remove());
+    customPinsRef.current = [];
+
+    placedPins.forEach(([lng, lat], idx) => {
+      const el = document.createElement('div');
+      el.className = 'cursor-pointer hover:scale-125 transition-transform duration-200 z-50';
+      el.innerHTML = `
+        <div class="flex items-center gap-1 bg-red-600 text-white px-2 py-1 rounded-full shadow-2xl border-2 border-white font-black text-[10px] animate-bounce">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Pin #${idx + 1}</span>
+        </div>
+      `;
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([lng, lat])
+        .addTo(map);
+
+      customPinsRef.current.push(marker);
+    });
+
+    updateCustomDrawLayer();
+  }, [placedPins, updateCustomDrawLayer]);
+
+  // Render Existing PostGIS Database Zones
   const renderZoneLayers = useCallback(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded() || !realZones.length) return;
@@ -340,10 +473,10 @@ export function ZoneDrawMap() {
       });
     }
 
-    if (!bounds.isEmpty()) {
+    if (!bounds.isEmpty() && placedPins.length === 0) {
       map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 1000 });
     }
-  }, [realZones]);
+  }, [realZones, placedPins.length]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -366,16 +499,19 @@ export function ZoneDrawMap() {
       loadRealZones(true);
     });
 
+    map.on('click', handleMapClick);
+
     mapRef.current = map;
 
     return () => {
       zonePinMarkersRef.current.forEach((m) => m.remove());
+      customPinsRef.current.forEach((m) => m.remove());
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
     };
-  }, [loadRealZones]);
+  }, [loadRealZones, handleMapClick]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -383,10 +519,14 @@ export function ZoneDrawMap() {
 
     if (map.isStyleLoaded()) {
       renderZoneLayers();
+      updateCustomDrawLayer();
     } else {
-      map.once('style.load', renderZoneLayers);
+      map.once('style.load', () => {
+        renderZoneLayers();
+        updateCustomDrawLayer();
+      });
     }
-  }, [realZones, renderZoneLayers]);
+  }, [realZones, renderZoneLayers, updateCustomDrawLayer]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -400,10 +540,14 @@ export function ZoneDrawMap() {
 
     if (map.isStyleLoaded()) {
       renderZoneLayers();
+      updateCustomDrawLayer();
     } else {
-      map.once('style.load', renderZoneLayers);
+      map.once('style.load', () => {
+        renderZoneLayers();
+        updateCustomDrawLayer();
+      });
     }
-  }, [mapMode, renderZoneLayers]);
+  }, [mapMode, renderZoneLayers, updateCustomDrawLayer]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -414,48 +558,135 @@ export function ZoneDrawMap() {
     }
   }, [is3D]);
 
-  return (
-    <Card className="p-0 h-[420px] sm:h-[500px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
-      <div ref={mapContainerRef} className="w-full h-full bg-slate-950" />
+  const handleResetPins = () => {
+    setPlacedPins([]);
+    setCurrentCreatedWKT('');
+    customPinsRef.current.forEach((m) => m.remove());
+    customPinsRef.current = [];
+  };
 
-      {/* Floating Mode Switcher Top Left */}
-      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-20 flex items-center gap-1.5 sm:gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-700/80 backdrop-blur-md shadow-lg text-xs text-white">
+  const handleConfirmCustomWKT = () => {
+    if (currentCreatedWKT && onSelectNewZoneWKT) {
+      onSelectNewZoneWKT(currentCreatedWKT);
+    }
+  };
+
+  return (
+    <Card className="p-0 h-[450px] sm:h-[520px] overflow-hidden relative bg-slate-950 border border-slate-800 shadow-xl rounded-2xl sm:rounded-3xl">
+      <div ref={mapContainerRef} className="w-full h-full bg-slate-950 cursor-crosshair" />
+
+      {/* FLOATING MULTI-PIN & RADIUS INTERACTIVE EDITOR CONTROLS OVERLAY */}
+      <div className="absolute top-3 left-3 right-3 sm:left-4 sm:right-auto z-20 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-900/95 p-2 sm:p-2.5 rounded-2xl border border-teal-500/40 backdrop-blur-md shadow-2xl text-xs text-white max-w-full sm:max-w-2xl">
+        <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl shrink-0">
+          <button
+            type="button"
+            onClick={() => setDrawMode('pins')}
+            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
+              drawMode === 'pins' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <MapPin className="h-3.5 w-3.5 text-red-400" /> Multi-Pin
+          </button>
+          <button
+            type="button"
+            onClick={() => setDrawMode('radius')}
+            className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1 transition ${
+              drawMode === 'radius' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Circle className="h-3.5 w-3.5 text-amber-400" /> Mode Radius
+          </button>
+        </div>
+
+        {/* RADIUS SLIDER INPUT */}
+        {drawMode === 'radius' && (
+          <div className="flex items-center gap-2 bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-700 text-[11px] shrink-0">
+            <span className="font-bold text-amber-300 whitespace-nowrap">Radius: {zoneRadiusMeters} m</span>
+            <input
+              type="range"
+              min="50"
+              max="1500"
+              step="25"
+              value={zoneRadiusMeters}
+              onChange={(e) => setZoneRadiusMeters(Number(e.target.value))}
+              className="w-24 accent-amber-500 cursor-pointer"
+            />
+          </div>
+        )}
+
+        {/* ACTION BUTTONS */}
+        <div className="flex items-center gap-1.5 ml-auto">
+          {placedPins.length > 0 && (
+            <button
+              type="button"
+              onClick={handleResetPins}
+              className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center gap-1 transition border border-slate-700 text-[11px]"
+              title="Hapus semua pin merah"
+            >
+              <RotateCcw className="h-3 w-3" /> Reset
+            </button>
+          )}
+
+          {currentCreatedWKT && (
+            <Button
+              type="button"
+              onClick={handleConfirmCustomWKT}
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black flex items-center gap-1 shadow-md text-xs animate-pulse"
+            >
+              <Check className="h-4 w-4" /> Gunakan Poligon Ini
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Style Switcher Top Right */}
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-[11px] text-white backdrop-blur-md shadow-lg">
         <button
           type="button"
           onClick={() => setMapMode('street')}
-          className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 transition ${
-            mapMode === 'street' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+          className={`px-2 py-0.5 rounded-lg font-bold transition ${
+            mapMode === 'street' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Layers className="h-3.5 w-3.5" /> Vektor
+          <Layers className="h-3 w-3 inline mr-1" /> Vektor
         </button>
         <button
           type="button"
           onClick={() => setMapMode('satellite')}
-          className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 transition ${
-            mapMode === 'satellite' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+          className={`px-2 py-0.5 rounded-lg font-bold transition ${
+            mapMode === 'satellite' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Globe className="h-3.5 w-3.5" /> Satelit
+          <Globe className="h-3 w-3 inline mr-1" /> Satelit
         </button>
         <button
           type="button"
           onClick={() => setMapMode('dark')}
-          className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 transition ${
-            mapMode === 'dark' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-white'
+          className={`px-2 py-0.5 rounded-lg font-bold transition ${
+            mapMode === 'dark' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Layers className="h-3.5 w-3.5 text-slate-300" /> Gelap
+          Gelap
         </button>
         <button
           type="button"
           onClick={() => setIs3D(!is3D)}
-          className={`px-2.5 py-1 rounded-xl font-bold flex items-center gap-1 border transition ${
+          className={`px-2 py-0.5 rounded-lg font-bold border transition ${
             is3D ? 'bg-amber-500/20 text-amber-300 border-amber-500/50' : 'bg-slate-800 text-slate-300 border-slate-700'
           }`}
         >
-          <Box className="h-3.5 w-3.5" /> {is3D ? '3D' : '2D'}
+          <Box className="h-3 w-3 inline mr-1" /> {is3D ? '3D' : '2D'}
         </button>
+      </div>
+
+      {/* Instruction Banner Bottom Left */}
+      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] text-slate-200 backdrop-blur-md flex items-center gap-2 shadow-xl">
+        <MapPin className="h-4 w-4 text-red-500 animate-bounce shrink-0" />
+        <span>
+          {drawMode === 'pins'
+            ? 'Klik pada peta untuk menandai pin merah. Tandai 3+ pin untuk membentuk poligon zona.'
+            : 'Klik pada peta untuk menaruh titik pusat, lalu geser slider radius zona.'}
+        </span>
       </div>
 
       {/* Selected Zone Popup */}
@@ -475,11 +706,6 @@ export function ZoneDrawMap() {
           </div>
         </div>
       )}
-
-      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 text-[11px] text-slate-300 font-mono backdrop-blur-md flex items-center gap-1.5 shadow-lg">
-        <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-        Layer Terverifikasi PostGIS WGS84 ({realZones.length} Zona Aktif)
-      </div>
     </Card>
   );
 }
