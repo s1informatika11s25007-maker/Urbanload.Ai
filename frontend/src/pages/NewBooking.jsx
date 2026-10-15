@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { RefreshCw, HelpCircle, ShieldCheck } from 'lucide-react';
+import { RefreshCw, HelpCircle } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
 import { createBooking } from '../lib/api/bookings.js';
 import { createClient } from '../lib/supabase/client.js';
@@ -31,7 +31,6 @@ export default function NewBooking() {
     try {
       const cleanPlate = formData.vehicle.trim().toUpperCase();
 
-      // Double check active booking per vehicle before final insert
       const supabase = createClient();
       const { data: existingActive } = await supabase
         .from('bookings')
@@ -52,7 +51,6 @@ export default function NewBooking() {
       const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h || 10, m || 0);
       const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
 
-      // Save to Database using Unified Booking API
       const res = await createBooking({
         zoneId: formData.zoneId,
         vehiclePlate: formData.vehicle,
@@ -76,14 +74,14 @@ export default function NewBooking() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4">
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">
-            <Link to="/" className="hover:underline">Beranda</Link> / <Link to="/rider/dashboard" className="hover:underline">Booking</Link> / <span className="font-semibold text-slate-700">Baru</span>
+            <Link to="/" className="hover:underline">Beranda</Link> / <Link to="/rider/dashboard" className="hover:underline">Operasional Kurir</Link> / <span className="font-semibold text-slate-700">Booking Slot</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900">Pesan Slot Bongkar Muat Realtime</h1>
-          <p className="text-xs text-slate-500">"Pilih zona, isi plat kendaraan, sistem UrbanLoad AI akan mengoptimalkan slot bebas antrean."</p>
+          <h1 className="text-2xl font-black text-slate-900">SmartSlot Booking AI</h1>
+          <p className="text-xs text-slate-500">Pesan slot bongkar muat bebas antrean berbasis Solver Backend Deterministik & PostGIS Virtual GeoFence.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -96,14 +94,14 @@ export default function NewBooking() {
         </div>
       </div>
 
-      <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Form Booking AI...</div>}>
+      <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Form Booking...</div>}>
         <BookingForm onCheckSlot={handleCheckSlot} />
         <SlotAvailabilityTable onSelectSlot={handleSelectSlot} />
         <BookingSummary bookingData={formData} onConfirm={handleConfirm} onCancel={() => setFormData(null)} />
         <BookingHistoryTable />
       </Suspense>
 
-      {/* Footer Halaman: Catatan Kebijakan */}
+      {/* Footer Halaman */}
       <div className="rounded-xl bg-slate-100 p-4 text-xs text-slate-600 space-y-1 border border-slate-200">
         <div className="font-bold text-slate-800">Catatan Kebijakan & Pembatalan:</div>
         <p>• Pembatalan ≤2 jam sebelum slot: Gratis tanpa biaya penalti.</p>

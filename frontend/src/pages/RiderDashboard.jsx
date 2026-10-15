@@ -11,10 +11,6 @@ import {
   RefreshCw,
   Truck,
   HelpCircle,
-  MapPin,
-  Calendar,
-  QrCode,
-  CheckCircle2
 } from 'lucide-react';
 
 const BookingHistoryTable = lazy(() => import('../components/booking/BookingHistoryTable.jsx').then(m => ({ default: m.BookingHistoryTable })));
@@ -89,12 +85,12 @@ function DashboardMainContent() {
         </span>
       </div>
 
-      {/* Header Dashboard */}
+      {/* Header Dashboard - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Dashboard Operasional Kurir Logistik</h1>
+          <h1 className="text-2xl font-black text-slate-900">Dashboard Kurir</h1>
           <p className="text-xs text-slate-500">
-            Manajemen slot bongkar muat & status tiket QuickPass QR real-time.
+            Manajemen status GPS telemetri, slot bongkar muat & tiket QuickPass QR real-time.
           </p>
         </div>
 

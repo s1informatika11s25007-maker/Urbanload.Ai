@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { Activity, Radio, MapPin, RefreshCw, Cpu, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Activity, RefreshCw, ArrowRight } from 'lucide-react';
 
 const CongestionTrendChart = lazy(() => import('../components/congestion/CongestionTrendChart.jsx').then((m) => ({ default: m.CongestionTrendChart })));
 
@@ -68,14 +68,14 @@ export default function RiderCongestion() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4">
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">
-            <Link to="/rider/dashboard" className="hover:underline">Dashboard</Link> / <span className="font-semibold text-slate-700">Kepadatan</span>
+            <Link to="/rider/dashboard" className="hover:underline">Dashboard</Link> / <span className="font-semibold text-slate-700">Skor Kepadatan</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-            <Activity className="h-6 w-6 text-teal-600" /> Dashboard Kepadatan & CongestionScore Real-Time
+            <Activity className="h-6 w-6 text-teal-600" /> Skor Kepadatan Rute
           </h1>
           <p className="text-xs text-slate-500">
             Pemantauan skor kepadatan zona (1.0 - 10.0) berbasis UrbanLoad AI & telemetri real-time.

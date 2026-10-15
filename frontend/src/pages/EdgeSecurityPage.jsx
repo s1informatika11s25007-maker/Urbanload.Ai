@@ -4,10 +4,6 @@ import { Button } from '../components/ui/button.jsx';
 import { useToast } from '../components/ui/ToastNotification.jsx';
 import { ShieldCheck, ShieldAlert, Lock, Send } from 'lucide-react';
 
-/**
- * [PAGE] Zero-Trust Edge Prompt Guard & GPS Spoofing Interceptor
- * Inspeksi keamanan gateway dan verifikasi kecepatan spasial perangkat.
- */
 export default function EdgeSecurityPage() {
   const { showToast } = useToast();
   const [promptInput, setPromptInput] = useState('');
@@ -85,11 +81,11 @@ export default function EdgeSecurityPage() {
         </span>
       </div>
 
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Keamanan Siber / Anti-Fraud GPS</div>
-          <h1 className="text-2xl font-black text-slate-900">Proteksi Siber & Anti-Fraud GPS</h1>
+          <h1 className="text-2xl font-black text-slate-900">Proteksi & Anti-Fraud GPS</h1>
           <p className="text-xs text-slate-500 mt-1">
             Penapis ancaman di gateway untuk menolak manipulasi perintah AI dan memverifikasi lokasi fisik kurir.
           </p>
@@ -149,7 +145,6 @@ export default function EdgeSecurityPage() {
           </div>
         </form>
 
-        {/* Live Security Output Box */}
         {securityResult && (
           <div className={`p-4 rounded-2xl border text-xs font-mono space-y-2 ${
             securityResult.isSafe && !securityResult.isGPSSpoofed

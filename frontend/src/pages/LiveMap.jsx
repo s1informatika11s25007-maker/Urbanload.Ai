@@ -77,11 +77,12 @@ function LiveMapMainContent() {
         </div>
       )}
 
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Beranda / LiveMap</div>
-          <h1 className="text-2xl font-black text-slate-900">Dashboard Pemantauan Perkotaan — UrbanLoad.AI</h1>
+          <h1 className="text-2xl font-black text-slate-900">Telemetri & LiveMap 3D</h1>
+          <p className="text-xs text-slate-500">Peta interaktif 3D pemantauan spasial lalu lintas logistik perkotaan realtime.</p>
         </div>
 
         <div className="flex items-center gap-4">
@@ -94,7 +95,7 @@ function LiveMapMainContent() {
         </div>
       </div>
 
-      {/* SECTION 1: PETA SPASIAL 3D UTAMA (FULL WIDTH PERLEBAR) */}
+      {/* SECTION 1: PETA SPASIAL 3D UTAMA */}
       <div className="w-full">
         <Suspense fallback={
           <div className="w-full h-[520px] rounded-2xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-teal-400 text-xs font-bold gap-3 animate-pulse shadow-md">
@@ -106,7 +107,7 @@ function LiveMapMainContent() {
         </Suspense>
       </div>
 
-      {/* SECTION 2: STATISTIK DIBANA MAPS (Total Booking Real, Zone Paling Padat, BayUtilization Tracker & Feed Aktivitas) */}
+      {/* SECTION 2: STATISTIK DIBANA MAPS */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
         <div className="lg:col-span-7">
           <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Analytics...</div>}>

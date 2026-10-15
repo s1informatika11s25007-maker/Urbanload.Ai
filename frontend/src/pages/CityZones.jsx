@@ -149,16 +149,17 @@ export default function CityZones() {
         </span>
       </div>
 
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Beranda / Manajemen Zona</div>
-          <h1 className="text-2xl font-black text-slate-900">Manajemen Batas Zona Logistik Real Database</h1>
+          <h1 className="text-2xl font-black text-slate-900">Editor Zona PostGIS</h1>
+          <p className="text-xs text-slate-500">Editor geofence poligon PostGIS WGS84, pengaturan bay bongkar muat & jam operasional.</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button onClick={() => setShowShowAddModal(true)} className="text-xs flex items-center gap-1 font-bold bg-teal-600 hover:bg-teal-700 text-white">
-            <Plus className="h-3.5 w-3.5" /> Tambah Zona Baru Real
+            <Plus className="h-3.5 w-3.5" /> Tambah Zona Baru
           </Button>
           <Button onClick={handleExportGeoJSON} variant="outline" className="text-xs flex items-center gap-1 font-bold">
             <Download className="h-3.5 w-3.5" /> Ekspor GeoJSON

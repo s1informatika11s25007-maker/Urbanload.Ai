@@ -48,11 +48,14 @@ export default function DishubReportsPage() {
         </span>
       </div>
 
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Beranda / Penindakan & Verifikasi Dishub</div>
-          <h1 className="text-2xl font-black text-slate-900">Pusat Pengawasan & Verifikasi QR Dishub</h1>
+          <h1 className="text-2xl font-black text-slate-900">Pusat Laporan Pelanggaran</h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Pengawasan laporan parkir liar warga & pemindaian tiket pas digital QuickPass QR.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-3 py-1 rounded-full">

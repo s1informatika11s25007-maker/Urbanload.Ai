@@ -17,11 +17,11 @@ export default function VoiceDispatchPage() {
         </span>
       </div>
 
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-2">
         <div>
           <div className="text-xs text-slate-500 mb-1">Fitur Operasional / Dispatch Suara</div>
-          <h1 className="text-2xl font-black text-slate-900">Voice-Driven Hands-Free Dispatch & Siren Preemption</h1>
+          <h1 className="text-2xl font-black text-slate-900">Voice Dispatch Console</h1>
           <p className="text-xs text-slate-500 mt-1">
             Sistem perintah suara dua arah hands-free untuk pengemudi truk saat menyetir dan pengosongan jalur sirene darurat Dishub.
           </p>
