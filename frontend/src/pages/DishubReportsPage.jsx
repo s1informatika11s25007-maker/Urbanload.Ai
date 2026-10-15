@@ -33,17 +33,20 @@ export default function DishubReportsPage() {
     checkRole();
   }, []);
 
-  const isDishubOfficer = userRole === 'dishub_officer' || userRole === 'dishub' || userRole === 'admin';
+  // EXCLUSIVE DISHUB OFFICER ACCESS: QR Scanner is strictly for Petugas Dishub (NOT Admin / City Admin)
+  const isDishubOfficer = userRole === 'dishub_officer' || userRole === 'dishub';
 
   return (
     <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto p-2.5 sm:p-4">
-      {/* Header Halaman */}
+      {/* Header Halaman - Synchronized with Sidebar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 sm:pb-4 gap-2">
         <div>
           <div className="text-[11px] sm:text-xs text-slate-500 mb-0.5">Beranda / Penindakan & Verifikasi Dishub</div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">Pusat Laporan Pelanggaran</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">
+            {isDishubOfficer ? 'Pusat Laporan Pelanggaran & Pemindai QR' : 'Pusat Laporan Pelanggaran'}
+          </h1>
           <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-            Pengawasan laporan parkir liar warga & pemindaian tiket pas digital QuickPass QR.
+            Pengawasan laporan parkir liar warga & pemindaian tiket pas digital QuickPass QR petugas Dishub.
           </p>
         </div>
 
@@ -52,7 +55,7 @@ export default function DishubReportsPage() {
         </div>
       </div>
 
-      {/* SECTION 1: QR QUICKPASS SCANNER (KHUSUS ROLE DISHUB OFFICER) */}
+      {/* SECTION 1: QR QUICKPASS SCANNER (KHUSUS EKSKLUSIF PETUGAS DISHUB OFFICER) */}
       {isDishubOfficer && <QRScanner />}
 
       {/* SECTION 2: CITIZEN REPORT FEED */}
