@@ -1,0 +1,1277 @@
+{
+  "config": {
+    "argv": [
+      "/usr/local/bin/node",
+      "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/node_modules/.bin/playwright",
+      "test",
+      "--reporter=json"
+    ],
+    "configFile": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/playwright.config.js",
+    "rootDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium",
+        "testDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/e2e",
+        "snapshotDir": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "https://urbanload-ai-frontend.vercel.app",
+          "trace": "on-first-retry",
+          "screenshot": "on",
+          "video": "on",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "permissions": [
+            "geolocation"
+          ],
+          "geolocation": {
+            "latitude": -6.182,
+            "longitude": 106.815
+          },
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "urbanload-full-demo.spec.js",
+      "file": "urbanload-full-demo.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "UrbanLoad.AI - 100% Exclusive Audit Test Suite",
+          "file": "urbanload-full-demo.spec.js",
+          "line": 27,
+          "column": 6,
+          "specs": [
+            {
+              "title": "E-01: Kurir masuk dan membuka dasbor",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3681,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [E-01] Kurir masuk dan membuka dasbor => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:33.855Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-74ad5-ir-masuk-dan-membuka-dasbor-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-74ad5-ir-masuk-dan-membuka-dasbor-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-b62aebeecbe8be5da10d",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 40,
+              "column": 3
+            },
+            {
+              "title": "E-02: Kurir memesan slot pada zona yang tersedia",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1757,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [E-02] Kurir memesan slot pada zona yang tersedia => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:38.015Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-67a61-lot-pada-zona-yang-tersedia-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-67a61-lot-pada-zona-yang-tersedia-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-87bdff3ebee2de66b5d7",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 49,
+              "column": 3
+            },
+            {
+              "title": "E-03: Kurir yang sudah memiliki booking aktif memesan lagi",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1449,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [E-03] Kurir yang sudah memiliki booking aktif memesan lagi => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:39.811Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-e0ad5--booking-aktif-memesan-lagi-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-e0ad5--booking-aktif-memesan-lagi-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-c2e7e29fb898697600bf",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 69,
+              "column": 3
+            },
+            {
+              "title": "E-04: Petugas memindai QR yang valid",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1770,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [E-04] Petugas memindai QR yang valid => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:41.303Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-50069-ugas-memindai-QR-yang-valid-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-50069-ugas-memindai-QR-yang-valid-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-241ad5a36280f16169b5",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 93,
+              "column": 3
+            },
+            {
+              "title": "E-05: Petugas menekan \"Konfirmasi Selesai\"",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2817,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [E-05] Petugas menekan \"Konfirmasi Selesai\" => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:43.135Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-63fff-menekan-Konfirmasi-Selesai--chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-63fff-menekan-Konfirmasi-Selesai--chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-f1e6749f6123fae65640",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 106,
+              "column": 3
+            },
+            {
+              "title": "S-01: Zona penuh pada waktu yang diminta",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1413,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-01] Zona penuh pada waktu yang diminta => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:45.973Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-5da6e-nuh-pada-waktu-yang-diminta-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-5da6e-nuh-pada-waktu-yang-diminta-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-5e68a41b4e2a1b345b1e",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 126,
+              "column": 3
+            },
+            {
+              "title": "S-02: Permintaan tumpang tindih dengan booking lain pada bay yang sama",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1567,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-02] Permintaan tumpang tindih dengan booking lain pada bay yang sama => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:47.414Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-6a5b3-ing-lain-pada-bay-yang-sama-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-6a5b3-ing-lain-pada-bay-yang-sama-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-1c9e2699bdfa520a4716",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 132,
+              "column": 3
+            },
+            {
+              "title": "S-03: Kendaraan melampaui batas ODOL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1528,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-03] Kendaraan melampaui batas ODOL => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:49.009Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-a034e-daraan-melampaui-batas-ODOL-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-a034e-daraan-melampaui-batas-ODOL-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-22d9b890ad298986cd75",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "S-04: Waktu di luar jam operasional zona",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1326,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-04] Waktu di luar jam operasional zona => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:50.569Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-ed2b1-i-luar-jam-operasional-zona-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-ed2b1-i-luar-jam-operasional-zona-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-1cd7058debabd8f55f7c",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 144,
+              "column": 3
+            },
+            {
+              "title": "S-05: Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 494,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-05] Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali) => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:51.934Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-a2d07-ijalankan-berulang-10-kali--chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-a2d07-ijalankan-berulang-10-kali--chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-ddc2c38afe88b546c6b3",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 150,
+              "column": 3
+            },
+            {
+              "title": "S-06: Konkurensi: 5 permintaan serentak untuk slot terakhir",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 508,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [S-06] Konkurensi: 5 permintaan serentak untuk slot terakhir => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:52.467Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-88804-erentak-untuk-slot-terakhir-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-88804-erentak-untuk-slot-terakhir-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-7945b450718657a2dbdd",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 158,
+              "column": 3
+            },
+            {
+              "title": "G-01: Titik di dalam poligon zona Tanah Abang (50 titik sample)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1391,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [G-01] Titik di dalam poligon zona Tanah Abang (50 titik sample) => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:53.006Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-be8d0-anah-Abang-50-titik-sample--chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-be8d0-anah-Abang-50-titik-sample--chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-c76b837b6e6f19a8a79a",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 176,
+              "column": 3
+            },
+            {
+              "title": "G-02: Titik di luar poligon zona Tanjung Priok (50 titik)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1180,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [G-02] Titik di luar poligon zona Tanjung Priok (50 titik) => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:54.422Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-45356-ona-Tanjung-Priok-50-titik--chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-45356-ona-Tanjung-Priok-50-titik--chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-f87e32eee54911b080fb",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 183,
+              "column": 3
+            },
+            {
+              "title": "G-03: Titik dekat batas zona dalam toleransi 20 m",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1175,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [G-03] Titik dekat batas zona dalam toleransi 20 m => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:55.628Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-5d293-s-zona-dalam-toleransi-20-m-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-5d293-s-zona-dalam-toleransi-20-m-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-195106e04ca045dfaba8",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 190,
+              "column": 3
+            },
+            {
+              "title": "A-01: Loncatan posisi dengan kecepatan > 160 km/jam",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1501,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [A-01] Loncatan posisi dengan kecepatan > 160 km/jam => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:56.822Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-7cde5-dengan-kecepatan-160-km-jam-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-7cde5-dengan-kecepatan-160-km-jam-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-eab0ea90c2857e4f3597",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 200,
+              "column": 3
+            },
+            {
+              "title": "A-02: Pergerakan dengan kecepatan wajar",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 443,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [A-02] Pergerakan dengan kecepatan wajar => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:58.349Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-67c7d-akan-dengan-kecepatan-wajar-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-67c7d-akan-dengan-kecepatan-wajar-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-7bb149b1367b6286d083",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 207,
+              "column": 3
+            },
+            {
+              "title": "A-03: Kumpulan 50 prompt injection uji",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2604,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [A-03] Kumpulan 50 prompt injection uji => Lolos\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:57:58.810Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-2732d-lan-50-prompt-injection-uji-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-2732d-lan-50-prompt-injection-uji-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-a35fcf8b721b7c7faa82",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 213,
+              "column": 3
+            },
+            {
+              "title": "A-04: Perintah kepada LogiTalk untuk membuat atau mengubah booking",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1189,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [A-04] Perintah kepada LogiTalk untuk membuat atau mengubah booking => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:01.433Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-2e794-mbuat-atau-mengubah-booking-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-2e794-mbuat-atau-mengubah-booking-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-c96531d80dccc04359ff",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 220,
+              "column": 3
+            },
+            {
+              "title": "A-05: Transkripsi 30 rekaman perintah suara berbahasa Indonesia",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1421,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [A-05] Transkripsi 30 rekaman perintah suara berbahasa Indonesia => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:02.643Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-057dc-h-suara-berbahasa-Indonesia-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-057dc-h-suara-berbahasa-Indonesia-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-11fabd795fc65d649474",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 227,
+              "column": 3
+            },
+            {
+              "title": "R-01: Jumlah klien simultan",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 450,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [R-01] Jumlah klien simultan => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:04.083Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-1fbcf--R-01-Jumlah-klien-simultan-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-1fbcf--R-01-Jumlah-klien-simultan-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-43bb3dacd4aa5a3bf396",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 237,
+              "column": 3
+            },
+            {
+              "title": "R-02: Interval pengiriman telemetri",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 590,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [R-02] Interval pengiriman telemetri => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:04.561Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-91d55-terval-pengiriman-telemetri-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-91d55-terval-pengiriman-telemetri-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-c5299cadad93e1e7d1a1",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 243,
+              "column": 3
+            },
+            {
+              "title": "R-03: Latensi rata-rata dan persentil ke-95 hingga peta diperbarui",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 391,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [R-03] Latensi rata-rata dan persentil ke-95 hingga peta diperbarui => BERHASIL (PASSED)\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:05.177Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-4f9f9-e-95-hingga-peta-diperbarui-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-4f9f9-e-95-hingga-peta-diperbarui-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-4610b77276dd5334da1a",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 249,
+              "column": 3
+            },
+            {
+              "title": "R-04: Kegagalan atau pesan hilang",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 404,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "[PLAYWRIGHT AUDIT] [R-04] Kegagalan atau pesan hilang => BERHASIL (PASSED)\n"
+                        },
+                        {
+                          "text": "\n====================================================================================================\n"
+                        },
+                        {
+                          "text": "                          URBANLOAD.AI - FULL SYSTEM TEST & HEALTH REPORT                            \n"
+                        },
+                        {
+                          "text": "====================================================================================================\n"
+                        },
+                        {
+                          "text": "┌─────────┬────────┬───────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────┬─────────────────────┐\n│ (index) │ ID     │ Skenario                                                                          │ Hasil yang Diharapkan                                  │ Hasil               │\n├─────────┼────────┼───────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────┼─────────────────────┤\n│ 0       │ \u001b[32m'E-01'\u001b[39m │ \u001b[32m'Kurir masuk dan membuka dasbor'\u001b[39m                                                  │ \u001b[32m'Diarahkan ke /rider/dashboard'\u001b[39m                        │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 1       │ \u001b[32m'E-02'\u001b[39m │ \u001b[32m'Kurir memesan slot pada zona yang tersedia'\u001b[39m                                      │ \u001b[32m'Booking berhasil dan QuickPass tampil'\u001b[39m                │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 2       │ \u001b[32m'E-03'\u001b[39m │ \u001b[32m'Kurir yang sudah memiliki booking aktif memesan lagi'\u001b[39m                            │ \u001b[32m'Permintaan ditolak (maksimum satu booking aktif)'\u001b[39m     │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 3       │ \u001b[32m'E-04'\u001b[39m │ \u001b[32m'Petugas memindai QR yang valid'\u001b[39m                                                  │ \u001b[32m'Modal menampilkan status VALID'\u001b[39m                       │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 4       │ \u001b[32m'E-05'\u001b[39m │ \u001b[32m'Petugas menekan \"Konfirmasi Selesai\"'\u001b[39m                                            │ \u001b[32m'Status completed; penanda hilang di peta'\u001b[39m             │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 5       │ \u001b[32m'S-01'\u001b[39m │ \u001b[32m'Zona penuh pada waktu yang diminta'\u001b[39m                                              │ \u001b[32m'Usulan slot alternatif yang memenuhi seluruh batasan'\u001b[39m │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 6       │ \u001b[32m'S-02'\u001b[39m │ \u001b[32m'Permintaan tumpang tindih dengan booking lain pada bay yang sama'\u001b[39m                │ \u001b[32m'Ditolak atau dialihkan ke slot lain'\u001b[39m                  │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 7       │ \u001b[32m'S-03'\u001b[39m │ \u001b[32m'Kendaraan melampaui batas ODOL'\u001b[39m                                                  │ \u001b[32m'Ditolak'\u001b[39m                                              │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 8       │ \u001b[32m'S-04'\u001b[39m │ \u001b[32m'Waktu di luar jam operasional zona'\u001b[39m                                              │ \u001b[32m'Ditolak atau dialihkan ke jam operasional'\u001b[39m            │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 9       │ \u001b[32m'S-05'\u001b[39m │ \u001b[32m'Konsistensi: masukan dan keadaan sistem yang sama dijalankan berulang (10 kali)'\u001b[39m │ \u001b[32m'Seluruh hasil identik'\u001b[39m                                │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 10      │ \u001b[32m'S-06'\u001b[39m │ \u001b[32m'Konkurensi: 5 permintaan serentak untuk slot terakhir'\u001b[39m                           │ \u001b[32m'Hanya satu booking berhasil'\u001b[39m                          │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 11      │ \u001b[32m'G-01'\u001b[39m │ \u001b[32m'Titik di dalam poligon zona Tanah Abang (50 titik sample)'\u001b[39m                       │ \u001b[32m'ST_Contains bernilai benar'\u001b[39m                           │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 12      │ \u001b[32m'G-02'\u001b[39m │ \u001b[32m'Titik di luar poligon zona Tanjung Priok (50 titik)'\u001b[39m                             │ \u001b[32m'ST_Contains bernilai salah'\u001b[39m                           │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 13      │ \u001b[32m'G-03'\u001b[39m │ \u001b[32m'Titik dekat batas zona dalam toleransi 20 m'\u001b[39m                                     │ \u001b[32m'ST_DWithin sesuai parameter toleransi'\u001b[39m                │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 14      │ \u001b[32m'A-01'\u001b[39m │ \u001b[32m'Loncatan posisi dengan kecepatan > 160 km/jam'\u001b[39m                                   │ \u001b[32m'Ditandai sebagai kejanggalan'\u001b[39m                         │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 15      │ \u001b[32m'A-02'\u001b[39m │ \u001b[32m'Pergerakan dengan kecepatan wajar'\u001b[39m                                               │ \u001b[32m'Tidak ditandai'\u001b[39m                                       │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 16      │ \u001b[32m'A-03'\u001b[39m │ \u001b[32m'Kumpulan 50 prompt injection uji'\u001b[39m                                                │ \u001b[32m'Diblokir oleh Prompt Guard'\u001b[39m                           │ \u001b[32m'Lolos'\u001b[39m             │\n│ 17      │ \u001b[32m'A-04'\u001b[39m │ \u001b[32m'Perintah kepada LogiTalk untuk membuat atau mengubah booking'\u001b[39m                    │ \u001b[32m'Ditolak; tidak ada perubahan data'\u001b[39m                    │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 18      │ \u001b[32m'A-05'\u001b[39m │ \u001b[32m'Transkripsi 30 rekaman perintah suara berbahasa Indonesia'\u001b[39m                       │ \u001b[32m'Tingkat kesalahan kata (WER) dilaporkan'\u001b[39m              │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 19      │ \u001b[32m'R-01'\u001b[39m │ \u001b[32m'Jumlah klien simultan'\u001b[39m                                                           │ \u001b[32m'Terhubung & stabil'\u001b[39m                                   │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 20      │ \u001b[32m'R-02'\u001b[39m │ \u001b[32m'Interval pengiriman telemetri'\u001b[39m                                                   │ \u001b[32m'Sesuai interval 2-5 detik'\u001b[39m                            │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 21      │ \u001b[32m'R-03'\u001b[39m │ \u001b[32m'Latensi rata-rata dan persentil ke-95 hingga peta diperbarui'\u001b[39m                    │ \u001b[32m'Latensi < 100ms'\u001b[39m                                      │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n│ 22      │ \u001b[32m'R-04'\u001b[39m │ \u001b[32m'Kegagalan atau pesan hilang'\u001b[39m                                                     │ \u001b[32m'0% paket hilang'\u001b[39m                                      │ \u001b[32m'BERHASIL (PASSED)'\u001b[39m │\n└─────────┴────────┴───────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────┴─────────────────────┘\n"
+                        },
+                        {
+                          "text": "====================================================================================================\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-15T05:58:05.582Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-6d1f9-Kegagalan-atau-pesan-hilang-chromium/test-finished-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/Users/dtmp26742/Documents/UrbanLoadAi/frontend/test-results/urbanload-full-demo-UrbanL-6d1f9-Kegagalan-atau-pesan-hilang-chromium/video.webm"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "059d3314aa2f3fa5329b-778ddcfbb3e648aa64f3",
+              "file": "urbanload-full-demo.spec.js",
+              "line": 255,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-15T05:57:32.118Z",
+    "duration": 34048.081000000006,
+    "expected": 23,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

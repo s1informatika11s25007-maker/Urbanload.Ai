@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright E2E Full Demo Configuration for UrbanLoad.AI
+ * Playwright E2E Config for UrbanLoad.AI (Targeting Live Vercel Production)
  */
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'https://urbanload-ai-frontend.vercel.app';
+
 export default defineConfig({
   testDir: './frontend/e2e',
-  timeout: 120 * 1000, // 120s timeout for complete multi-step demo
+  timeout: 120 * 1000, // 120s timeout for complete test suite
   expect: {
     timeout: 15 * 1000,
   },
@@ -18,7 +20,7 @@ export default defineConfig({
     ['html', { open: 'never' }]
   ],
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'on',
     video: 'on',
@@ -32,10 +34,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'cd frontend && npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: true,
-    timeout: 30 * 1000,
-  },
+  ...(baseURL.includes('localhost') ? {
+    webServer: {
+      command: 'cd frontend && npm run dev',
+      url: 'http://localhost:3000',
+      reuseExistingServer: true,
+      timeout: 30 * 1000,
+    }
+  } : {}),
 });
