@@ -456,14 +456,6 @@ export function ZoneDrawMap() {
         >
           <Box className="h-3.5 w-3.5" /> {is3D ? '3D' : '2D'}
         </button>
-        <button
-          type="button"
-          onClick={() => loadRealZones(false)}
-          className="p-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
-          title="Sinkronkan Layer PostGIS"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin text-teal-400' : ''}`} />
-        </button>
       </div>
 
       {/* Selected Zone Popup */}

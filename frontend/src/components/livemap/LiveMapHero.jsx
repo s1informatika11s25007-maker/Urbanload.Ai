@@ -1022,16 +1022,6 @@ export function LiveMapHero() {
             {autoRotate ? <Pause className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-teal-400" /> : <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
           </button>
         )}
-
-        {/* Refresh Real Data Button */}
-        <button
-          type="button"
-          onClick={() => loadDatabaseData(false)}
-          className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition"
-          title="Sinkronisasi Data Real Database"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${loading ? 'animate-spin text-teal-400' : ''}`} />
-        </button>
       </div>
 
       {/* MANUAL CAMERA NAVIGATION & ROTATION CONTROL PANEL */}

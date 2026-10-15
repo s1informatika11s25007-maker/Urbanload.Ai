@@ -76,10 +76,6 @@ export function SlotAvailabilityTable({ selectedZoneId, onSelectSlot }) {
               <option key={z.id} value={z.id}>{z.name}</option>
             ))}
           </select>
-
-          <Button onClick={() => loadSlots(activeZoneId)} variant="outline" className="h-8 text-xs font-bold">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-          </Button>
         </div>
       </div>
 

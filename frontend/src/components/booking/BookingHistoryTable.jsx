@@ -123,10 +123,6 @@ export function BookingHistoryTable() {
             </span>
           </div>
         </div>
-
-        <Button onClick={() => loadData(false)} variant="outline" className="text-xs h-8 font-bold">
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Data
-        </Button>
       </div>
 
       <div className="overflow-x-auto border border-slate-200 rounded-xl">

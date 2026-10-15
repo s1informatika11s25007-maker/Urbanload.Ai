@@ -14,11 +14,8 @@ import {
   FileText,
   AlertTriangle,
   Cpu,
-  Layers,
   BarChart3,
-  RefreshCw,
   Send,
-  HelpCircle,
   Database
 } from 'lucide-react';
 
@@ -154,13 +151,13 @@ export function CityAdminPanel() {
   }, [activeTab]);
 
   return (
-    <Card className="p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-5">
+    <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4 sm:space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
         <div>
-          <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-teal-600" /> Executive Analytics & Decision Audit Control
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-[11px] sm:text-xs text-slate-500">
             Panel Pengambil Keputusan Dishub & Bappeda untuk Audit Solver, What-If, dan Kluster Henti Liar.
           </p>
         </div>
@@ -169,7 +166,7 @@ export function CityAdminPanel() {
         <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl border text-xs font-bold text-slate-600">
           <button
             onClick={() => setActiveTab('decision_logs')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1 transition-all ${
               activeTab === 'decision_logs' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
@@ -177,7 +174,7 @@ export function CityAdminPanel() {
           </button>
           <button
             onClick={() => setActiveTab('what_if')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1 transition-all ${
               activeTab === 'what_if' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
@@ -185,7 +182,7 @@ export function CityAdminPanel() {
           </button>
           <button
             onClick={() => setActiveTab('clusters')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1 transition-all ${
               activeTab === 'clusters' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
@@ -193,7 +190,7 @@ export function CityAdminPanel() {
           </button>
           <button
             onClick={() => setActiveTab('configs')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1 transition-all ${
               activeTab === 'configs' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
@@ -201,7 +198,7 @@ export function CityAdminPanel() {
           </button>
           <button
             onClick={() => setActiveTab('llm')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all ${
+            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg flex items-center gap-1 transition-all ${
               activeTab === 'llm' ? 'bg-white text-slate-900 shadow-sm' : 'hover:text-slate-900'
             }`}
           >
@@ -215,9 +212,6 @@ export function CityAdminPanel() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-slate-700">Append-Only Audit Trail Log Keputusan Solver</span>
-            <Button variant="outline" onClick={loadLogs} className="text-xs flex items-center gap-1">
-              <RefreshCw className={`h-3.5 w-3.5 ${loadingLogs ? 'animate-spin' : ''}`} /> Refresh Log
-            </Button>
           </div>
 
           {loadingLogs ? (
@@ -314,8 +308,8 @@ export function CityAdminPanel() {
             disabled={runningWhatIf}
             className="w-full py-2.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center gap-2"
           >
-            {runningWhatIf ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            Jalankan Simulasi Kebijakan What-If
+            <Play className="h-4 w-4" />
+            {runningWhatIf ? 'Menjalankan Simulasi...' : 'Jalankan Simulasi Kebijakan What-If'}
           </Button>
 
           {whatIfResult && (
@@ -355,9 +349,6 @@ export function CityAdminPanel() {
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-slate-700">Deteksi Henti Liar Bahu Jalan via PostGIS Spatial Clustering (ST_ClusterDBSCAN)</span>
-            <Button variant="outline" onClick={loadClusters} className="text-xs flex items-center gap-1">
-              <RefreshCw className={`h-3.5 w-3.5 ${loadingClusters ? 'animate-spin' : ''}`} /> Refresh
-            </Button>
           </div>
 
           {loadingClusters ? (
@@ -389,10 +380,7 @@ export function CityAdminPanel() {
       {activeTab === 'configs' && (
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-slate-700">Tabel Parameter Konfigurasi Domain System Config (Tanpa Hardcode)</span>
-            <Button variant="outline" onClick={loadConfigs} className="text-xs flex items-center gap-1">
-              <RefreshCw className={`h-3.5 w-3.5 ${loadingConfigs ? 'animate-spin' : ''}`} /> Refresh
-            </Button>
+            <span className="text-xs font-bold text-slate-700">Tabel Parameter Konfigurasi Domain System Config</span>
           </div>
 
           {loadingConfigs ? (
@@ -440,7 +428,7 @@ export function CityAdminPanel() {
       {activeTab === 'llm' && (
         <div className="space-y-4">
           <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-900 font-medium">
-            UrbanLoad AI Copilot — Asisten Cerdas Pengambil Keputusan Logistik. AI menganalisis kondisi zona & mensimulasikan kebijakan menggunakan tool terintegrasi.
+            UrbanLoad AI Copilot — Asisten Cerdas Pengambil Keputusan Logistik.
           </div>
 
           <div className="h-64 overflow-y-auto border rounded-xl p-4 space-y-3 bg-slate-50">
@@ -472,7 +460,7 @@ export function CityAdminPanel() {
               className="flex-1 p-2.5 border rounded-xl text-xs focus:border-teal-600 font-medium"
             />
             <Button type="submit" disabled={loadingLLM || !llmQuery.trim()} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4">
-              {loadingLLM ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Send className="h-4 w-4" />
             </Button>
           </form>
         </div>

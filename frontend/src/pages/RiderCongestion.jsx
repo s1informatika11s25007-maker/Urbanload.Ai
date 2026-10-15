@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/card.jsx';
 import { Button } from '../components/ui/button.jsx';
 import { createClient } from '../lib/supabase/client.js';
-import { Activity, RefreshCw, ArrowRight } from 'lucide-react';
+import { Activity, ArrowRight } from 'lucide-react';
 
 const CongestionTrendChart = lazy(() => import('../components/congestion/CongestionTrendChart.jsx').then((m) => ({ default: m.CongestionTrendChart })));
 
@@ -12,7 +12,6 @@ export default function RiderCongestion() {
   const [loading, setLoading] = useState(true);
 
   const loadCongestionData = async () => {
-    setLoading(true);
     const supabase = createClient();
 
     try {
@@ -67,53 +66,50 @@ export default function RiderCongestion() {
   }, []);
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto p-4">
-      {/* Header Halaman - Synchronized with Sidebar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
+    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto p-2.5 sm:p-4">
+      {/* Header Halaman */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 sm:pb-4 gap-2">
         <div>
-          <div className="text-xs text-slate-500 mb-1">
+          <div className="text-[11px] sm:text-xs text-slate-500 mb-0.5">
             <Link to="/rider/dashboard" className="hover:underline">Dashboard</Link> / <span className="font-semibold text-slate-700">Skor Kepadatan</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-            <Activity className="h-6 w-6 text-teal-600" /> Skor Kepadatan Rute
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
+            <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600" /> Skor Kepadatan Rute
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-[11px] sm:text-xs text-slate-500">
             Pemantauan skor kepadatan zona (1.0 - 10.0) berbasis UrbanLoad AI & telemetri real-time.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button onClick={loadCongestionData} variant="outline" className="text-xs flex items-center gap-1 font-bold">
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Data
-          </Button>
+        <div className="flex items-center gap-2 self-start sm:self-center">
           <Link to="/city/livemap">
-            <Button className="text-xs py-2 px-4 flex items-center gap-1.5 shadow-md bg-teal-600 hover:bg-teal-700 font-bold">
-              Buka LiveMap Spasial <ArrowRight className="h-4 w-4" />
+            <Button className="text-xs py-2 px-3.5 flex items-center gap-1.5 shadow-md bg-teal-600 hover:bg-teal-700 font-bold">
+              LiveMap Spasial <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
         </div>
       </div>
 
       {/* Grid Status Kepadatan Zona Realtime */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {zones.length === 0 ? (
           <div className="col-span-1 sm:col-span-2 lg:col-span-3 p-8 text-center text-xs text-slate-400">
             {loading ? 'Memuat data skor kepadatan zona real...' : 'Belum ada data zona di database.'}
           </div>
         ) : (
           zones.map((z) => (
-            <Card key={z.id} className="p-5 border-slate-200 bg-white shadow-sm rounded-2xl space-y-3 hover:border-teal-500 transition">
+            <Card key={z.id} className="p-4 sm:p-5 border-slate-200 bg-white shadow-sm rounded-2xl space-y-3 hover:border-teal-500 transition">
               <div className="flex justify-between items-start">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 font-mono uppercase block">Zona Logistik</span>
-                  <h3 className="font-black text-sm text-slate-900">{z.name}</h3>
+                  <h3 className="font-black text-xs sm:text-sm text-slate-900">{z.name}</h3>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-black font-mono border" style={{ backgroundColor: `${z.color}15`, color: z.color, borderColor: `${z.color}40` }}>
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-black font-mono border" style={{ backgroundColor: `${z.color}15`, color: z.color, borderColor: `${z.color}40` }}>
                   {z.score} / 10
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-xl space-y-1.5 text-xs">
+              <div className="p-2.5 sm:p-3 bg-slate-50 rounded-xl space-y-1.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-500 font-semibold">Status Kepadatan:</span>
                   <span className="font-extrabold" style={{ color: z.color }}>{z.statusLabel}</span>

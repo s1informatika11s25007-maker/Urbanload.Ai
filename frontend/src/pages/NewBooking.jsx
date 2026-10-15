@@ -1,7 +1,5 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { RefreshCw, HelpCircle } from 'lucide-react';
-import { Button } from '../components/ui/button.jsx';
 import { createBooking } from '../lib/api/bookings.js';
 import { createClient } from '../lib/supabase/client.js';
 
@@ -73,24 +71,15 @@ export default function NewBooking() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto p-4">
-      {/* Header Halaman - Synchronized with Sidebar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-4 gap-2">
+    <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto p-2.5 sm:p-4">
+      {/* Header Halaman */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 sm:pb-4 gap-2">
         <div>
-          <div className="text-xs text-slate-500 mb-1">
+          <div className="text-[11px] sm:text-xs text-slate-500 mb-0.5">
             <Link to="/" className="hover:underline">Beranda</Link> / <Link to="/rider/dashboard" className="hover:underline">Operasional Kurir</Link> / <span className="font-semibold text-slate-700">Booking Slot</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900">SmartSlot Booking AI</h1>
-          <p className="text-xs text-slate-500">Pesan slot bongkar muat bebas antrean berbasis Solver Backend Deterministik & PostGIS Virtual GeoFence.</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="text-xs flex items-center gap-1 font-bold">
-            <RefreshCw className="h-3.5 w-3.5" /> Refresh Slot
-          </Button>
-          <Button variant="ghost" className="text-xs flex items-center gap-1 font-semibold">
-            <HelpCircle className="h-3.5 w-3.5" /> Panduan
-          </Button>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">SmartSlot Booking AI</h1>
+          <p className="text-[11px] sm:text-xs text-slate-500">Pesan slot bongkar muat bebas antrean berbasis Solver Backend Deterministik & PostGIS Virtual GeoFence.</p>
         </div>
       </div>
 
@@ -100,14 +89,6 @@ export default function NewBooking() {
         <BookingSummary bookingData={formData} onConfirm={handleConfirm} onCancel={() => setFormData(null)} />
         <BookingHistoryTable />
       </Suspense>
-
-      {/* Footer Halaman */}
-      <div className="rounded-xl bg-slate-100 p-4 text-xs text-slate-600 space-y-1 border border-slate-200">
-        <div className="font-bold text-slate-800">Catatan Kebijakan & Pembatalan:</div>
-        <p>• Pembatalan ≤2 jam sebelum slot: Gratis tanpa biaya penalti.</p>
-        <p>• Pembatalan &lt;2 jam sebelum slot: Dikenakan sanksi penalti StrikeBan harian.</p>
-        <p>• Layanan Panic Button dapat digunakan untuk reschedule darurat otomatis.</p>
-      </div>
     </div>
   );
 }
