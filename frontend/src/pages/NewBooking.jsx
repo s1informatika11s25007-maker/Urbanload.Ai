@@ -59,7 +59,7 @@ export default function NewBooking() {
       });
 
       if (res && res.success) {
-        alert(`Booking SmartSlot Berhasil Disimpan Ke Database!\nPlat: ${cleanPlate}\nJadwal: ${slotTime} WIB`);
+        alert(`Booking SmartSlot Berhasil Disimpan!\nPlat: ${cleanPlate}\nJadwal: ${slotTime} WIB`);
         navigate('/rider/dashboard');
       }
     } catch (err) {
@@ -79,7 +79,7 @@ export default function NewBooking() {
             <Link to="/" className="hover:underline">Beranda</Link> / <Link to="/rider/dashboard" className="hover:underline">Operasional Kurir</Link> / <span className="font-semibold text-slate-700">Booking Slot</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900">SmartSlot Booking AI</h1>
-          <p className="text-[11px] sm:text-xs text-slate-500">Pesan slot bongkar muat bebas antrean berbasis Solver Backend Deterministik & PostGIS Virtual GeoFence.</p>
+          <p className="text-[11px] sm:text-xs text-slate-500">Pesan slot bongkar muat bebas antrean berbasis PostGIS Virtual GeoFence.</p>
         </div>
       </div>
 

@@ -73,7 +73,7 @@ export function BookingForm({ onCheckSlot }) {
         .eq('zone_id', zoneId)
         .in('status', ['confirmed', 'active', 'pending']);
 
-      // 3. DETERMINISTIC BACKEND SLOT SOLVER ENGINE (No LLM / Zero Hallucination)
+      // 3. DETERMINISTIC BACKEND SLOT SOLVER ENGINE
       const solverResult = await runDeterministicSlotSolver({
         zoneId,
         zoneName: selectedZoneObj?.name || 'Zona Logistik',
@@ -93,7 +93,7 @@ export function BookingForm({ onCheckSlot }) {
         aiResult: solverResult,
       });
     } catch (err) {
-      console.error('Error running Backend Deterministic Slot Solver:', err);
+      console.error('Error running Slot Engine:', err);
     } finally {
       setLoadingSolver(false);
     }
@@ -103,10 +103,10 @@ export function BookingForm({ onCheckSlot }) {
     <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-5">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
         <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking — Backend Deterministic Solver Engine
+          <Truck className="h-5 w-5 text-teal-600" /> SmartSlot Booking
         </h3>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-bold bg-gradient-to-r from-teal-50 to-emerald-50 text-teal-800 border border-teal-200 px-3 py-1 rounded-full">
-          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> Solver Backend Deterministik (100% Akurat, Tanpa Hallucination LLM)
+          <Cpu className="h-3.5 w-3.5 text-teal-600 animate-pulse" /> Automatic Slot Engine
         </span>
       </div>
 
@@ -190,12 +190,12 @@ export function BookingForm({ onCheckSlot }) {
           {loadingSolver ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin text-white" />
-              <span>Memproses Solver Backend Deterministik...</span>
+              <span>Memproses Alokasi Slot...</span>
             </>
           ) : (
             <>
               <ShieldCheck className="h-4 w-4" />
-              <span>Hitung Slot (Backend Solver Deterministik)</span>
+              <span>Hitung Slot Kedatangan</span>
             </>
           )}
         </Button>

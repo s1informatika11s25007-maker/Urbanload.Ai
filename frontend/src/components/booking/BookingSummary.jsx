@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
-import { Cpu, ShieldCheck, CheckCircle2, ArrowRight, QrCode, AlertTriangle } from 'lucide-react';
+import { Cpu, CheckCircle2, ArrowRight, QrCode, AlertTriangle } from 'lucide-react';
 
 export function BookingSummary({ bookingData, onConfirm, onCancel }) {
   if (!bookingData) return null;
@@ -17,8 +17,8 @@ export function BookingSummary({ bookingData, onConfirm, onCancel }) {
             <Cpu className="h-5 w-5 animate-pulse" />
           </div>
           <div>
-            <h3 className="text-base font-black text-slate-900">Keputusan Alokasi Slot — Solver Backend Deterministik</h3>
-            <p className="text-[11px] text-teal-800 font-semibold">{aiResult?.source || 'Deterministic Backend Constraint Solver'}</p>
+            <h3 className="text-base font-black text-slate-900">Keputusan Alokasi Slot</h3>
+            <p className="text-[11px] text-teal-800 font-semibold">{aiResult?.source || 'Automatic Slot Engine'}</p>
           </div>
         </div>
 
@@ -32,10 +32,10 @@ export function BookingSummary({ bookingData, onConfirm, onCancel }) {
         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
           <div className="font-extrabold flex items-center gap-1.5 text-amber-900">
             <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
-            <span>Solver Deterministik: Penyeimbangan Jadwal Kedatangan Aktif</span>
+            <span>Penyeimbangan Jadwal Kedatangan Aktif</span>
           </div>
           <p className="text-amber-800 leading-relaxed text-[11px]">
-            Terdapat penumpukan truk di {zoneName} pada jam {requestedTime} WIB. Untuk mencegah kemacetan total bahu jalan, Solver Backend Deterministik menggeser jadwal kedatangan Anda secara presisi ke jam <strong className="font-bold font-mono underline text-amber-950">{aiResult.recommendedSlotTime} WIB</strong>.
+            Terdapat penumpukan truk di {zoneName} pada jam {requestedTime} WIB. Untuk mencegah kemacetan total bahu jalan, sistem menggeser jadwal kedatangan Anda secara presisi ke jam <strong className="font-bold font-mono underline text-amber-950">{aiResult.recommendedSlotTime} WIB</strong>.
           </p>
         </div>
       )}
@@ -55,7 +55,7 @@ export function BookingSummary({ bookingData, onConfirm, onCancel }) {
           <span className="font-bold text-slate-500">{requestedTime} WIB</span>
         </div>
         <div>
-          <span className="text-[10px] text-teal-700 font-bold uppercase block">Jadwal Disetujui (Solver Deterministik)</span>
+          <span className="text-[10px] text-teal-700 font-bold uppercase block">Jadwal Disetujui</span>
           <span className="font-black font-mono text-emerald-600 text-sm flex items-center gap-1">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" /> {aiResult?.recommendedSlotTime || requestedTime} WIB
           </span>

@@ -3,7 +3,7 @@ import { createClient } from './supabase/client.js';
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || import.meta.env.GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
-// Security Guardrail Model (Used ONLY for Prompt Injection checks, NOT for slot decisions)
+// Security Guardrail Model (Used ONLY for Prompt Injection checks)
 const MODEL_GUARDRAIL = 'llama-guard-3-8b';
 
 /**
@@ -44,7 +44,7 @@ export async function validatePromptGuard(inputText) {
 }
 
 /**
- * 2. DETERMINISTIC BACKEND SLOT SOLVER ENGINE (No LLM / Zero Hallucination)
+ * 2. DETERMINISTIC BACKEND SLOT SOLVER ENGINE
  * Slot allocations are strictly handled by deterministic backend code (Capacity, Operating Hours,
  * Truck Dimensions, ODOL limits, Priorities, and Pigovian Carbon Toll Pricing).
  */
@@ -103,7 +103,7 @@ export async function runGroqLogixOptimization({
       originalTime: requestedTime,
       activeTrucks: activeTrucksCount,
       explanation: `[ODOL Intercept] Kendaraan (${weightTon} Ton, ${lengthM}m) melebihi kapasitas bay. Dialihkan ke Staging Zone.`,
-      source: 'Deterministic Backend Solver (100% Akurat, Tanpa Hallucination LLM)',
+      source: 'Automatic Slot Engine',
     };
   }
 
@@ -143,9 +143,9 @@ export async function runGroqLogixOptimization({
     originalTime: requestedTime,
     activeTrucks: activeTrucksCount,
     explanation: isRebalanced
-      ? `Slot disesuaikan ke ${adjustedTime} WIB oleh Backend Solver untuk mencegah penumpukan di lokasi bongkar muat.`
+      ? `Slot disesuaikan ke ${adjustedTime} WIB untuk mencegah penumpukan di lokasi bongkar muat.`
       : `Slot disetujui pada jam ${requestedTime} WIB (Kapasitas & Jam Operasional Terverifikasi).`,
-    source: 'Deterministic Backend Solver (100% Akurat, Tanpa Hallucination LLM)',
+    source: 'Automatic Slot Engine',
   };
 }
 
