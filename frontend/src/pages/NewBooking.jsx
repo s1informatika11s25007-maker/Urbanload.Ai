@@ -2,6 +2,7 @@ import React, { useState, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RefreshCw, HelpCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '../components/ui/button.jsx';
+import { createBooking } from '../lib/api/bookings.js';
 import { createClient } from '../lib/supabase/client.js';
 
 const BookingForm = lazy(() => import('../components/booking/BookingForm.jsx').then(m => ({ default: m.BookingForm })));
@@ -28,18 +29,10 @@ export default function NewBooking() {
     setSubmitting(true);
 
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-
-      const user_id = user.id;
       const cleanPlate = formData.vehicle.trim().toUpperCase();
 
       // Double check active booking per vehicle before final insert
+      const supabase = createClient();
       const { data: existingActive } = await supabase
         .from('bookings')
         .select('id, status')
@@ -59,30 +52,23 @@ export default function NewBooking() {
       const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h || 10, m || 0);
       const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
 
-      // 1. Insert Real Booking into Supabase DB
-      const { data: newBooking, error } = await supabase
-        .from('bookings')
-        .insert({
-          user_id,
-          zone_id: formData.zoneId,
-          vehicle_plate: formData.vehicle,
-          cargo_type: 'Bahan Pokok Logistik',
-          time_window_start: startTime.toISOString(),
-          time_window_end: endTime.toISOString(),
-          status: 'confirmed',
-        })
-        .select('*')
-        .single();
+      // Save to Database using Unified Booking API
+      const res = await createBooking({
+        zoneId: formData.zoneId,
+        vehiclePlate: formData.vehicle,
+        cargoType: 'Bahan Pokok Logistik',
+        truckDimension: formData.truckDimensions,
+        timeWindowStart: startTime.toISOString(),
+        timeWindowEnd: endTime.toISOString(),
+      });
 
-      if (error && !newBooking) {
-        console.warn('Booking insertion notice:', error);
+      if (res && res.success) {
+        alert(`Booking SmartSlot Berhasil Disimpan Ke Database!\nPlat: ${cleanPlate}\nJadwal: ${slotTime} WIB`);
+        navigate('/rider/dashboard');
       }
-
-      // Smooth Navigation to Rider Dashboard
-      navigate('/rider/dashboard');
     } catch (err) {
       console.error('Error confirming booking:', err);
-      navigate('/rider/dashboard');
+      alert(`Gagal menyimpan booking: ${err.message || 'Terjadi kesalahan sistem'}`);
     } finally {
       setSubmitting(false);
     }

@@ -6,7 +6,6 @@ import { createClient } from '../lib/supabase/client.js';
 const LiveMapHero = lazy(() => import('../components/livemap/LiveMapHero.jsx').then(m => ({ default: m.LiveMapHero })));
 const StatsSidebar = lazy(() => import('../components/livemap/StatsSidebar.jsx').then(m => ({ default: m.StatsSidebar })));
 const LiveActivityTable = lazy(() => import('../components/livemap/LiveActivityTable.jsx').then(m => ({ default: m.LiveActivityTable })));
-const CitizenReportsFeed = lazy(() => import('../components/enforcement/CitizenReportsFeed.jsx').then(m => ({ default: m.CitizenReportsFeed })));
 
 function LiveMapMainContent() {
   const [searchParams] = useSearchParams();
@@ -95,32 +94,32 @@ function LiveMapMainContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Section 1: Peta Utama */}
-        <div className="lg:col-span-8">
-          <Suspense fallback={
-            <div className="w-full h-[calc(100vh-120px)] rounded-2xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-teal-400 text-xs font-bold gap-3 animate-pulse shadow-md">
-              <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-              <span>Memuat MapLibre GL JS WebGL Engine...</span>
-            </div>
-          }>
-            <LiveMapHero />
+      {/* SECTION 1: PETA SPASIAL 3D UTAMA (FULL WIDTH PERLEBAR) */}
+      <div className="w-full">
+        <Suspense fallback={
+          <div className="w-full h-[520px] rounded-2xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-teal-400 text-xs font-bold gap-3 animate-pulse shadow-md">
+            <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
+            <span>Memuat MapLibre GL JS WebGL Engine...</span>
+          </div>
+        }>
+          <LiveMapHero />
+        </Suspense>
+      </div>
+
+      {/* SECTION 2: STATISTIK DIBANA MAPS (Total Booking Real, Zone Paling Padat, BayUtilization Tracker & Feed Aktivitas) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-2">
+        <div className="lg:col-span-7">
+          <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Analytics...</div>}>
+            <StatsSidebar />
           </Suspense>
         </div>
 
-        {/* Section 2: Panel Statistik Ringkas */}
-        <div className="lg:col-span-4 space-y-6">
-          <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Statistik...</div>}>
-            <StatsSidebar />
+        <div className="lg:col-span-5">
+          <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Feed Aktivitas...</div>}>
             <LiveActivityTable />
           </Suspense>
         </div>
       </div>
-
-      {/* Section 3: CitizenReport Live Feed for Dishub Officers & City Admins */}
-      <Suspense fallback={<div className="p-4 text-xs text-slate-400">Memuat Feed Laporan Masyarakat...</div>}>
-        <CitizenReportsFeed />
-      </Suspense>
     </div>
   );
 }

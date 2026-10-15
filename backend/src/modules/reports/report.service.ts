@@ -1,4 +1,5 @@
 import { queryDb } from '../../config/db';
+import { sanitizeString, sanitizePlateNumber } from '../../utils/security';
 
 export interface CitizenReportInput {
   violationType: string;
@@ -18,10 +19,15 @@ export async function getAllReports() {
 }
 
 export async function createReport(data: CitizenReportInput) {
-  if (!data.violationType) {
+  const violationType = sanitizeString(data.violationType, 100);
+  const locationName = sanitizeString(data.locationName, 250);
+  const description = sanitizeString(data.description, 1000);
+  const vehiclePlate = sanitizePlateNumber(data.vehiclePlate);
+
+  if (!violationType) {
     throw new Error('Kategori pelanggaran (violationType) wajib diisi.');
   }
-  if (!data.locationName) {
+  if (!locationName) {
     throw new Error('Lokasi kejadian (locationName) wajib diisi.');
   }
 
@@ -30,10 +36,10 @@ export async function createReport(data: CitizenReportInput) {
      VALUES ($1, $2, $3, $4, $5, 'pending')
      RETURNING id, violation_type, vehicle_plate, location_name, description, photo_url, status, created_at, updated_at`,
     [
-      data.violationType,
-      data.vehiclePlate ? data.vehiclePlate.toUpperCase() : null,
-      data.locationName,
-      data.description || null,
+      violationType,
+      vehiclePlate || null,
+      locationName,
+      description || null,
       data.photoUrl || null,
     ]
   );
@@ -42,11 +48,19 @@ export async function createReport(data: CitizenReportInput) {
 }
 
 export async function updateReportStatus(id: string, status: string) {
-  if (!id) {
+  const cleanId = sanitizeString(id, 50);
+  const cleanStatus = sanitizeString(status, 30).toLowerCase();
+
+  if (!cleanId) {
     throw new Error('ID laporan wajib diisi.');
   }
-  if (!status) {
+  if (!cleanStatus) {
     throw new Error('Status laporan wajib diisi.');
+  }
+
+  const allowedStatuses = ['pending', 'investigating', 'resolved', 'dismissed'];
+  if (!allowedStatuses.includes(cleanStatus)) {
+    throw new Error(`Status ${cleanStatus} tidak valid.`);
   }
 
   const rows = await queryDb(
@@ -54,11 +68,11 @@ export async function updateReportStatus(id: string, status: string) {
      SET status = $1, updated_at = NOW()
      WHERE id = $2
      RETURNING id, violation_type, vehicle_plate, location_name, description, photo_url, status, created_at, updated_at`,
-    [status, id]
+    [cleanStatus, cleanId]
   );
 
   if (rows.length === 0) {
-    throw new Error(`Laporan dengan ID ${id} tidak ditemukan.`);
+    throw new Error(`Laporan dengan ID ${cleanId} tidak ditemukan.`);
   }
 
   return rows[0];

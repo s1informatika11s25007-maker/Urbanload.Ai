@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
+import { fetchBookings, deleteBooking } from '../../lib/api/bookings.js';
 import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
 import { RefreshCw, Radio, QrCode, ShieldCheck, X, Trash2 } from 'lucide-react';
@@ -15,20 +16,15 @@ export function BookingHistoryTable() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const supabase = createClient();
     try {
-      const { data, error } = await supabase
-        .from('bookings')
-        .select('id, vehicle_plate, time_window_start, status, created_at')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (!error && data) {
-        setHistory(data);
+      const res = await fetchBookings();
+      if (res && res.data) {
+        setHistory(res.data);
       } else {
         setHistory([]);
       }
     } catch (e) {
+      console.error('Error fetching booking history:', e);
       setHistory([]);
     } finally {
       setLoading(false);
@@ -50,7 +46,7 @@ export function BookingHistoryTable() {
     };
   }, [loadData]);
 
-  // Action: Delete Booking directly from Supabase Database
+  // Action: Delete Booking with Failover API
   const handleDeleteBooking = async (booking) => {
     const plateName = booking.vehicle_plate || 'tersebut';
     if (!window.confirm(`Apakah Anda yakin ingin menghapus riwayat booking armada ${plateName}?`)) {
@@ -58,33 +54,21 @@ export function BookingHistoryTable() {
     }
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('bookings')
-        .delete()
-        .eq('id', booking.id);
-
-      if (!error) {
-        showToast({
-          title: 'Riwayat Booking Dihapus!',
-          message: `Riwayat booking kendaraan ${plateName} telah dihapus dari database.`,
-          type: 'success',
-        });
-      } else {
-        console.warn('Database delete notice:', error);
-        showToast({
-          title: 'Riwayat Dihapus',
-          message: `Riwayat booking ${plateName} berhasil dibersihkan.`,
-          type: 'info',
-        });
-      }
-
-      // Optimistically update UI list
+      await deleteBooking(booking.id);
+      showToast({
+        title: 'Riwayat Booking Dihapus!',
+        message: `Riwayat booking kendaraan ${plateName} telah dihapus dari database.`,
+        type: 'success',
+      });
       setHistory((prev) => prev.filter((item) => item.id !== booking.id));
       loadData();
     } catch (err) {
       console.error('Delete booking error:', err);
-      setHistory((prev) => prev.filter((item) => item.id !== booking.id));
+      showToast({
+        title: 'Gagal Menghapus Booking',
+        message: err.message || 'Terjadi kesalahan saat terhubung ke database.',
+        type: 'error',
+      });
     }
   };
 

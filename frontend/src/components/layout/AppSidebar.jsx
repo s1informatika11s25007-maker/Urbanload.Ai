@@ -9,20 +9,14 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ShieldAlert,
   Bot,
   Radio,
-  ShieldCheck,
   Mic,
   Lock,
-  Sparkles,
-  Sliders
 } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 
-// Configuration per role for differentiated sidebar navigation
-// Styled with a clean, high-contrast, comfortable color palette pleasing for all age groups
 const UNIFORM_SIDEBAR_STYLE = {
   badgeClass: 'bg-teal-500/15 text-teal-300 border-teal-500/30',
   activeBg: 'bg-teal-600 text-white shadow-md shadow-teal-900/40',
@@ -68,7 +62,6 @@ const ROLE_SIDEBAR_CONFIG = {
         items: [
           { to: '/city/zones', label: 'Editor Zona PostGIS', icon: Building2, desc: 'Kelola Geofence Bay' },
           { to: '/city/livemap', label: 'Telemetri & LiveMap 3D', icon: Shield, desc: 'Pantau Lalu Lintas Kota' },
-          { to: '/dishub/reports', label: 'Laporan Warga (Citizen)', icon: ShieldAlert, desc: 'Pengawasan Parkir Liar' },
           { to: '/rider/congestion', label: 'Analisis Kepadatan Kota', icon: Activity, desc: 'Pigovian Tariff AI' },
         ],
       },
@@ -153,7 +146,6 @@ export function AppSidebar() {
   const navigate = useNavigate();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [showUserPopup, setShowUserPopup] = useState(false);
 
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -164,8 +156,6 @@ export function AppSidebar() {
     initial: 'K',
     email: ''
   });
-
-  const popupRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -230,17 +220,6 @@ export function AppSidebar() {
     };
   }, [pathname]);
 
-  // Click Outside Listener to close User Popup
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setShowUserPopup(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const isPublicPreviewMap = pathname === '/city/livemap' && searchParams.get('preview') === 'public';
   const isPublicPage = pathname === '/' || pathname === '/lapor' || pathname.startsWith('/lapor') || (
     !currentUser && (
@@ -259,7 +238,6 @@ export function AppSidebar() {
   const roleConfig = ROLE_SIDEBAR_CONFIG[activeRoleKey] || ROLE_SIDEBAR_CONFIG.rider;
 
   const handleLogout = async () => {
-    setShowUserPopup(false);
     setLoadingProfile(true);
     setCurrentUser(null);
     setUserProfile({ name: 'Pengguna', role: 'rider', roleLabel: 'Kurir Logistik', initial: 'K', email: '' });
@@ -404,7 +382,7 @@ export function AppSidebar() {
         )}
       </div>
 
-      {/* BAWAH KIRI POJOK: Tombol Keluar Akun Langsung (Bersih & Profesional Tanpa Duplikasi Profil Header) */}
+      {/* BAWAH KIRI POJOK: Tombol Keluar Akun Langsung */}
       <div className="p-3 border-t border-slate-800/80">
         <button
           onClick={handleLogout}
@@ -420,4 +398,3 @@ export function AppSidebar() {
     </aside>
   );
 }
-

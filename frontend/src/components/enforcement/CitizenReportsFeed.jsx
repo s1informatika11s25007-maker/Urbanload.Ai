@@ -4,13 +4,38 @@ import { Button } from '../ui/button.jsx';
 import { useToast } from '../ui/ToastNotification.jsx';
 import { fetchCitizenReports, updateCitizenReportStatus } from '../../lib/api/reports.js';
 import { createClient } from '../../lib/supabase/client.js';
-import { Radio, RefreshCw, ShieldAlert, CheckCircle2, Clock, XCircle, MapPin, Eye, AlertOctagon } from 'lucide-react';
+import { Radio, RefreshCw, ShieldAlert, MapPin, Eye, Lock } from 'lucide-react';
 
-export function CitizenReportsFeed() {
+export function CitizenReportsFeed({ readOnly: forcedReadOnly }) {
   const { showToast } = useToast();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [userRole, setUserRole] = useState('rider');
+
+  // Check active user role to restrict action buttons to Dishub Officer only
+  useEffect(() => {
+    async function checkUserRole() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (profile?.role) {
+            setUserRole(profile.role);
+          }
+        }
+      } catch (err) {
+        console.warn('Role check warning:', err);
+      }
+    }
+    checkUserRole();
+  }, []);
 
   const loadReports = async () => {
     setLoading(true);
@@ -61,6 +86,10 @@ export function CitizenReportsFeed() {
     }
   };
 
+  // Determine if user can perform Dishub actions (Selidiki, Tindak, Tolak)
+  const isDishubOfficer = userRole === 'dishub_officer' || userRole === 'dishub';
+  const canPerformAction = forcedReadOnly !== undefined ? !forcedReadOnly : isDishubOfficer;
+
   return (
     <Card className="p-4 sm:p-6 border-slate-200 bg-white shadow-sm rounded-2xl space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b pb-3">
@@ -71,11 +100,13 @@ export function CitizenReportsFeed() {
             </span>
             <h3 className="text-base font-black text-slate-900">Feed Laporan Masyarakat (CitizenReport)</h3>
             <span className="flex items-center gap-1 text-[10px] font-bold bg-red-50 text-red-800 border border-red-200 px-2.5 py-0.5 rounded-full">
-              <Radio className="h-3 w-3 text-red-600 animate-pulse" /> Live Realtime Dishub
+              <Radio className="h-3 w-3 text-red-600 animate-pulse" /> Live Realtime Feed
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Pantau dan tindak lanjuti laporan parkir liar & pemblokiran bahu jalan dari warga kota secara real-time.
+            {canPerformAction
+              ? 'Mode Petugas Dishub: Pantau dan lakukan penindakan sanksi parkir liar warga secara real-time.'
+              : 'Pantauan Publik (Read-Only): Laporan partisipasi warga terkait parkir liar dan pemblokiran bahu jalan.'}
           </p>
         </div>
 
@@ -116,7 +147,13 @@ export function CitizenReportsFeed() {
                           : 'bg-slate-100 text-slate-600 border-slate-200'
                       }`}
                     >
-                      {r.status === 'pending' ? 'Laporan Baru' : r.status === 'investigating' ? 'Diselidiki' : r.status === 'resolved' ? 'Selesai / Ditindak' : 'Ditolak'}
+                      {r.status === 'pending'
+                        ? 'Laporan Baru'
+                        : r.status === 'investigating'
+                        ? 'Diselidiki'
+                        : r.status === 'resolved'
+                        ? 'Selesai / Ditindak'
+                        : 'Ditolak'}
                     </span>
                   </div>
 
@@ -156,7 +193,11 @@ export function CitizenReportsFeed() {
                       onClick={() => setSelectedPhoto(r.photo_url)}
                       className="w-full h-24 rounded-xl overflow-hidden border border-slate-200 bg-slate-950 relative group cursor-pointer"
                     >
-                      <img src={r.photo_url} alt="Foto Bukti" className="object-cover w-full h-full opacity-85 group-hover:opacity-100 transition" />
+                      <img
+                        src={r.photo_url}
+                        alt="Foto Bukti"
+                        className="object-cover w-full h-full opacity-85 group-hover:opacity-100 transition"
+                      />
                       <span className="absolute bottom-1 right-1 bg-slate-900/80 text-white text-[9px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
                         <Eye className="h-3 w-3" /> Lihat Bukti Foto
                       </span>
@@ -164,40 +205,53 @@ export function CitizenReportsFeed() {
                   )}
                 </div>
 
-                {/* Dishub Action Controls */}
-                <div className="pt-2 border-t border-slate-200/80 space-y-1 text-xs">
-                  <span className="text-[10px] font-mono text-slate-400 block mb-1">Tindakan Petugas Dishub:</span>
-                  <div className="flex items-center gap-1.5">
-                    {r.status !== 'investigating' && (
-                      <Button
-                        onClick={() => updateStatus(r.id, 'investigating')}
-                        variant="outline"
-                        className="flex-1 text-[10px] py-1 h-7 font-bold border-blue-300 text-blue-800 hover:bg-blue-50"
-                      >
-                        Selidiki
-                      </Button>
-                    )}
+                {/* Dishub Action Controls (ONLY FOR DISHUB OFFICER ROLE) */}
+                {canPerformAction ? (
+                  <div className="pt-2 border-t border-slate-200/80 space-y-1 text-xs">
+                    <span className="text-[10px] font-mono text-slate-400 block mb-1">
+                      Tindakan Petugas Dishub:
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {r.status !== 'investigating' && (
+                        <Button
+                          onClick={() => updateStatus(r.id, 'investigating')}
+                          variant="outline"
+                          className="flex-1 text-[10px] py-1 h-7 font-bold border-blue-300 text-blue-800 hover:bg-blue-50"
+                        >
+                          Selidiki
+                        </Button>
+                      )}
 
-                    {r.status !== 'resolved' && (
-                      <Button
-                        onClick={() => updateStatus(r.id, 'resolved')}
-                        className="flex-1 text-[10px] py-1 h-7 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                      >
-                        Tindak & Sanksi
-                      </Button>
-                    )}
+                      {r.status !== 'resolved' && (
+                        <Button
+                          onClick={() => updateStatus(r.id, 'resolved')}
+                          className="flex-1 text-[10px] py-1 h-7 font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                        >
+                          Tindak & Sanksi
+                        </Button>
+                      )}
 
-                    {r.status !== 'dismissed' && (
-                      <Button
-                        onClick={() => updateStatus(r.id, 'dismissed')}
-                        variant="outline"
-                        className="text-[10px] py-1 h-7 px-2 font-bold border-slate-200 text-slate-500 hover:bg-slate-100"
-                      >
-                        Tolak
-                      </Button>
-                    )}
+                      {r.status !== 'dismissed' && (
+                        <Button
+                          onClick={() => updateStatus(r.id, 'dismissed')}
+                          variant="outline"
+                          className="text-[10px] py-1 h-7 px-2 font-bold border-slate-200 text-slate-500 hover:bg-slate-100"
+                        >
+                          Tolak
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="pt-2 border-t border-slate-200/80 text-[10px] text-slate-500 font-semibold flex items-center justify-between">
+                    <span className="flex items-center gap-1 italic text-slate-400">
+                      <Lock className="h-3 w-3 text-slate-400" /> Mode Pantauan Publik (Read-Only)
+                    </span>
+                    <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono font-bold">
+                      Warga Verified
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })
@@ -210,7 +264,7 @@ export function CitizenReportsFeed() {
           <div className="relative max-w-lg w-full bg-slate-900 rounded-3xl overflow-hidden border border-slate-700 shadow-2xl p-2 space-y-2">
             <div className="flex justify-between items-center px-2 pt-1 text-white text-xs font-bold">
               <span>Bukti Foto Pelanggaran (CitizenReport)</span>
-              <button onClick={() => setSelectedPhoto(null)} className="text-slate-400 hover:text-white p-1">
+              <button onClick={() => setSelectedPhoto(null)} className="text-slate-400 hover:text-white p-1 font-bold">
                 Tutup [X]
               </button>
             </div>

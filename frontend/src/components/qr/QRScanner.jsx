@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '../ui/card.jsx';
 import { Button } from '../ui/button.jsx';
-import { QrCode, Search, ShieldCheck, CheckCircle2, Truck, MapPin, Clock, X, AlertCircle } from 'lucide-react';
+import { QrCode, Search, ShieldCheck, CheckCircle2, Truck, X, AlertCircle } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client.js';
 import { useToast } from '../ui/ToastNotification.jsx';
 
@@ -11,6 +11,36 @@ export function QRScanner({ onScan }) {
   const [searching, setSearching] = useState(false);
   const [scannedBooking, setScannedBooking] = useState(null);
   const [updating, setUpdating] = useState(false);
+  const [userRole, setUserRole] = useState('dishub_officer');
+
+  useEffect(() => {
+    async function checkRole() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (profile?.role) {
+            setUserRole(profile.role);
+          }
+        }
+      } catch (err) {
+        console.warn('Role check in QRScanner notice:', err);
+      }
+    }
+    checkRole();
+  }, []);
+
+  const isDishubOfficer = userRole === 'dishub_officer' || userRole === 'dishub' || userRole === 'admin';
+
+  if (!isDishubOfficer) {
+    return null;
+  }
 
   const parseInputToQuery = (rawInput) => {
     const text = rawInput.trim();
@@ -34,7 +64,7 @@ export function QRScanner({ onScan }) {
     const supabase = createClient();
 
     try {
-      // 1. Try fetching by booking ID or vehicle plate
+      // 1. Try fetching by booking ID or vehicle plate from database
       let { data, error } = await supabase
         .from('bookings')
         .select('*, profiles(full_name), zones(name)')
@@ -45,20 +75,22 @@ export function QRScanner({ onScan }) {
       if (!error && data && data.length > 0) {
         setScannedBooking(data[0]);
       } else {
-        // Fallback mock payload if offline or booking ID not in database
-        setScannedBooking({
-          id: parsed.id || 'UL-DEMO-99',
-          vehicle_plate: parsed.plate || 'B 9234 UAI',
-          status: 'confirmed',
-          profiles: { full_name: 'Sutrisno (Kurir Logistik)' },
-          zones: { name: 'Zona A - Pasar Tanah Abang' },
-          time_window_start: new Date().toISOString(),
+        showToast({
+          title: 'Booking Tidak Ditemukan',
+          message: `Booking / Nopol "${parsed.plate}" tidak terdaftar di database.`,
+          type: 'error',
         });
+        setScannedBooking(null);
       }
 
       if (onScan) onScan(manualId.trim());
     } catch (err) {
       console.warn('QR Lookup warning:', err);
+      showToast({
+        title: 'Verifikasi Gagal',
+        message: 'Gagal menghubungkan ke database verifikasi QR.',
+        type: 'error',
+      });
     } finally {
       setSearching(false);
     }
@@ -166,7 +198,7 @@ export function QRScanner({ onScan }) {
             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 text-xs font-mono">
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-slate-500 font-bold">Nomor Polisi:</span>
-                <span className="text-sm font-black text-teal-700">{scannedBooking.vehicle_plate || 'B 9234 UAI'}</span>
+                <span className="text-sm font-black text-teal-700">{scannedBooking.vehicle_plate}</span>
               </div>
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-slate-500 font-bold">Pengemudi:</span>
@@ -174,7 +206,7 @@ export function QRScanner({ onScan }) {
               </div>
               <div className="flex justify-between items-center border-b pb-2">
                 <span className="text-slate-500 font-bold">Zona Logistik:</span>
-                <span className="font-bold text-slate-800">{scannedBooking.zones?.name || 'Zona A - Pasar Tanah Abang'}</span>
+                <span className="font-bold text-slate-800">{scannedBooking.zones?.name || 'Zona Logistik'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-bold">Status Saat Ini:</span>
@@ -219,4 +251,3 @@ export function QRScanner({ onScan }) {
     </Card>
   );
 }
-
