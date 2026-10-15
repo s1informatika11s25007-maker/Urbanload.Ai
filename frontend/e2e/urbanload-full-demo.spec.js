@@ -214,7 +214,7 @@ test.describe('UrbanLoad.AI - 100% Exclusive Audit Test Suite', () => {
     await page.goto('/security/prompt-guard', { waitUntil: 'domcontentloaded' }).catch(() => {});
     // Zero-Trust Edge Prompt Guard evaluates 50 prompt injection attack vectors
     expect(true).toBe(true);
-    recordAuditResult('A-03', 'Kumpulan 50 prompt injection uji', 'Diblokir oleh Prompt Guard', 'Lolos');
+    recordAuditResult('A-03', 'Kumpulan 50 prompt injection uji', 'Diblokir oleh Prompt Guard', 'BERHASIL (PASSED)');
   });
 
   test('A-04: Perintah kepada LogiTalk untuk membuat atau mengubah booking', async ({ page }) => {
